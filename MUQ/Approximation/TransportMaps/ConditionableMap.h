@@ -13,7 +13,7 @@ namespace muq{
                  two blocks \f$x= [x_1,x_2]\f$ and a corresponding transport map
                  that is also defined blockwise:
                  \f[
-                 \left[\begin{array}{l} S_1(x_1)\\ S_2(x_1,_2)\end{array}\right]  = \left[ \begin{array}{c} r_1\\ r_2\end{array}\right].
+                 \left[\begin{array}{l} S_1(x_1)\\ S_2(x_1,x_2)\end{array}\right]  = \left[ \begin{array}{c} r_1\\ r_2\end{array}\right].
                  \f]
                  If \f$x_1\f$ was known, it is then possible to "Condition" the
                 map on \f$x_1\f$ and obtain a new map that transforms \f$x_c = x_2 | x_1\f$
