@@ -1,5 +1,5 @@
-#ifndef TRANSPORTMAPBASE_H
-#define TRANSPORTMAPBASE_H
+#ifndef TRANSPORTMAP_H
+#define TRANSPORTMAP_H
 
 #include "MUQ/Modeling/ModPiece.h"
 
@@ -24,24 +24,26 @@ namespace muq{
         - EvaluateForward (Evaluates the map, \f$S(x) = r\f$)
         - LogDeterminant (Evaluates the log determinant of the map Jacobian, \f$\det \nabla S (x)\f$)
     */
-    class TransportMapBase : public muq::Modeling::ModPiece {
+    class TransportMap : public muq::Modeling::ModPiece {
 
     public:
 
-      virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
-                                              Eigen::VectorXd const& tgtPt0) const = 0;
+      TransportMap();
 
-      virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const = 0;
+      //virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
+      //                                        Eigen::VectorXd const& tgtPt0) const = 0;
 
-      virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const = 0;
+      //virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const = 0;
+
+      //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const = 0;
 
 
-      virtual std::shared_ptr<TransportMapBase> Inverse(Eigen::VectorXd const& tgtPt0) const;
+      //virtual std::shared_ptr<TransportMapBase> Inverse(Eigen::VectorXd const& tgtPt0) const;
 
     private:
 
       // Implemented in "TransportMap" base class by calling EvaluateForward
-      virtual void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override;
+      virtual void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override {}
 
     }; // class TransportMapBase
 
@@ -49,3 +51,5 @@ namespace muq{
 
   }
 }
+
+#endif

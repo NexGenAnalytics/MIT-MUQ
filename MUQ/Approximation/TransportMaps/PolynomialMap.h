@@ -1,7 +1,7 @@
 #ifndef POLYNOMIALMAP_H
 #define POLYNOMIALMAP_H
 
-#include "MUQ/Approximation/TransportMaps/ConditionableMapBase.h"
+#include "MUQ/Approximation/TransportMaps/ConditionableMap.h"
 
 #include "MUQ/Approximation/Polynomials/BasisExpansion.h"
 
@@ -18,14 +18,16 @@ namespace muq{
     {
     public:
 
-      virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
-                                              Eigen::VectorXd const& tgtPt0) const override;
+      PolynomialMap();
 
-      virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const override;
+      //virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
+      //                                        Eigen::VectorXd const& tgtPt0) const override;
 
-      virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const override;
+      //virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const override;
 
-      virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const override;
+      //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const override;
+
+      //virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const override;
 
     private:
 

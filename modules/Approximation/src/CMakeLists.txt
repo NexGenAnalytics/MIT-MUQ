@@ -72,3 +72,17 @@ CreateCompileGroup(
     GaussianProcesses/StateSpaceGP.cpp
     GaussianProcesses/GaussianProcess.cpp
 )
+
+CreateCompileGroup(
+    APPROXIMATION_TRANSPORT_MAP
+    "Tools for constructing transport maps."
+    muqApproximation
+    "MODELING_CORE"
+    "EIGEN3;BOOST"
+    ""
+
+		TransportMaps/TransportMap.cpp
+		TransportMaps/ConditionableMap.cpp
+		TransportMaps/PolynomialMap.cpp
+
+)
