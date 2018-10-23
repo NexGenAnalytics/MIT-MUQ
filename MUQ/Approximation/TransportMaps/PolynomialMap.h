@@ -26,7 +26,7 @@ namespace muq{
 
       virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const override;
 
-      //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const override;
+      virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const override;
 
       //virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const override;
 

@@ -41,10 +41,9 @@ namespace muq{
 
       virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const = 0;
 
-      //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const = 0;
+      virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const = 0;
 
-
-      //virtual std::shared_ptr<TransportMapBase> Inverse(Eigen::VectorXd const& tgtPt0) const;
+      //virtual std::shared_ptr<TransportMap> Inverse(Eigen::VectorXd const& tgtPt0) const;
 
     private:
 

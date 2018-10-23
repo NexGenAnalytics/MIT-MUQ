@@ -8,6 +8,8 @@ PolynomialMap::PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const
 }
 
 Eigen::VectorXd PolynomialMap::EvaluateForward(Eigen::VectorXd const& x) const {
+  assert(x.size()==expansions.size());
+
   // evaluate each expansion
   Eigen::VectorXd result(expansions.size());
   for( unsigned int i=0; i<expansions.size(); ++i ) { result(i) = boost::any_cast<Eigen::VectorXd>(expansions[i]->Evaluate((Eigen::VectorXd)x.head(i+1)) [0]) (0); }
@@ -17,6 +19,9 @@ Eigen::VectorXd PolynomialMap::EvaluateForward(Eigen::VectorXd const& x) const {
 }
 
 Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eigen::VectorXd const& tgtPt0) const {
+  assert(refPt.size()==expansions.size());
+  assert(tgtPt0.size()==expansions.size());
+
   // set initial guess
   Eigen::VectorXd result = tgtPt0;
 
@@ -36,4 +41,15 @@ Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eig
 
   // return the result
   return result;
+}
+
+double PolynomialMap::LogDeterminant(Eigen::VectorXd const& evalPt) const {
+  assert(evalPt.size()==expansions.size());
+
+  double logdet = 1.0;
+  for( unsigned int i=0; i<expansions.size(); ++i ) {
+    logdet += std::log(std::fabs(expansions[i]->Derivative(i, (Eigen::VectorXd)evalPt.head(i+1)) (0)));
+  }
+
+  return logdet;
 }

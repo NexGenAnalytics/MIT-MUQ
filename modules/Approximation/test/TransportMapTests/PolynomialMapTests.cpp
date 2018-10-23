@@ -69,7 +69,7 @@ TEST_F(PolynomialMapTests, InverseEvaluation) {
   const Eigen::VectorXd rpnt = Eigen::VectorXd::Random(dim);
 
   // an initial guess
-  const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Random(dim);
+  const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Zero(dim);
 
   // evaluate the transport map
   const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xpnt0);
@@ -79,4 +79,13 @@ TEST_F(PolynomialMapTests, InverseEvaluation) {
   const Eigen::VectorXd result = map->EvaluateForward(xpnt);
   EXPECT_EQ(result.size(), dim);
   EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-14);
+}
+
+TEST_F(PolynomialMapTests, LogDeterminate) {
+  // an initial guess
+  const Eigen::VectorXd xpnt = Eigen::VectorXd::Random(dim);
+
+  // evaluate the log determinate
+  const double logdet = map->LogDeterminant(xpnt);
+  EXPECT_TRUE(logdet>0.0);
 }
