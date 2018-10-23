@@ -81,13 +81,13 @@ endmacro(PrintRequired)
 FILE(APPEND ${_log_summary}
 "#  Required dependencies: \n"
 )
-PrintRequired(EIGEN3 " --")
-PrintRequired(BOOST " ---")
-PrintRequired(HDF5 " ----")
-PrintRequired(NANOFLANN " ---")
-PrintRequired(SUNDIALS " ")
-PrintRequired(NLOPT " ---")
-PrintRequired(PARCER " --")
+PrintRequired(EIGEN3 " ---")
+PrintRequired(BOOST " ----")
+PrintRequired(HDF5 " -----")
+PrintRequired(NANOFLANN " ")
+PrintRequired(SUNDIALS " -")
+PrintRequired(NLOPT " ----")
+PrintRequired(PARCER " ---")
 
 FILE(APPEND ${_log_summary} "#\n")
 
