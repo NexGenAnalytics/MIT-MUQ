@@ -31,7 +31,9 @@ namespace muq{
     {
     public:
 
-      ConditionableMap();
+      ConditionableMap(unsigned int const totSize);
+
+      virtual ~ConditionableMap() = default;
 
       //virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const = 0;
 

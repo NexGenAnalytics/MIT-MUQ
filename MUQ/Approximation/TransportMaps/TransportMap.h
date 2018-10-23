@@ -28,12 +28,18 @@ namespace muq{
 
     public:
 
-      TransportMap();
+      TransportMap(unsigned int const totSize);
 
-      //virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
-      //                                        Eigen::VectorXd const& tgtPt0) const = 0;
+      virtual ~TransportMap() = default;
 
-      //virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const = 0;
+      /**
+      @param[in] refPt A point in reference space
+      @param[in] tgtPt0 An initial guess for Newton's method
+      \return The corresponding point in target space
+      */
+      virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt, Eigen::VectorXd const& tgtPt0) const = 0;
+
+      virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const = 0;
 
       //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const = 0;
 
@@ -43,7 +49,7 @@ namespace muq{
     private:
 
       // Implemented in "TransportMap" base class by calling EvaluateForward
-      virtual void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override {}
+      virtual void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override;
 
     }; // class TransportMapBase
 

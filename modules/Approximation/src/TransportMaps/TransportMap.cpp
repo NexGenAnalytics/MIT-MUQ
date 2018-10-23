@@ -2,4 +2,10 @@
 
 using namespace muq::Approximation;
 
-TransportMap::TransportMap() : ModPiece(Eigen::VectorXi::Ones(1), Eigen::VectorXi::Ones(1)) {}
+TransportMap::TransportMap(unsigned int const totSize) : ModPiece(Eigen::VectorXi::Constant(1, totSize), Eigen::VectorXi::Constant(1, totSize)) {}
+
+void TransportMap::EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
+  outputs.resize(1);
+
+  outputs[0] = EvaluateForward(inputs[0]);  
+}

@@ -2,4 +2,4 @@
 
 using namespace muq::Approximation;
 
-ConditionableMap::ConditionableMap() : TransportMap() {}
+ConditionableMap::ConditionableMap(unsigned int const totSize) : TransportMap(totSize) {}

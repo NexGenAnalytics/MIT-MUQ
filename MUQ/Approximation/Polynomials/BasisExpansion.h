@@ -101,6 +101,14 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       */
       Eigen::MatrixXd BuildVandermonde(Eigen::MatrixXd const& evalPts) const;
 
+      /**
+      This is equivalent to extracting the \f$d\f$'s column of the Jacobian
+      @param[in] dim The dimension that we are taking the derivative with respect to
+      @param[in] x The point where we are evaluating the derivative
+      \return The derivative of dimenion dim
+      */
+      //Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
+
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,
                                        unsigned                                     wrtDim1,
                                        unsigned                                     wrtDim2,

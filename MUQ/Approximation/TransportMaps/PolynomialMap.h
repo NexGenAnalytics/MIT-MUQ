@@ -18,12 +18,13 @@ namespace muq{
     {
     public:
 
-      PolynomialMap();
+      PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const& expansions);
 
-      //virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt,
-      //                                        Eigen::VectorXd const& tgtPt0) const override;
+      virtual ~PolynomialMap() = default;
 
-      //virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const override;
+      virtual Eigen::VectorXd EvaluateInverse(Eigen::VectorXd const& refPt, Eigen::VectorXd const& tgtPt0) const override;
+
+      virtual Eigen::VectorXd EvaluateForward(Eigen::VectorXd const& x) const override;
 
       //virtual double LogDeterminant(Eigen::VectorXd const& evalPt) const override;
 
@@ -31,8 +32,10 @@ namespace muq{
 
     private:
 
-      std::vector<BasisExpansion> expansions;
+      std::vector<std::shared_ptr<BasisExpansion> > expansions;
 
+      // tolerance for Newton's method
+      const double tol = 1.0e-12;
 
     }; // class PolynomialMap
 
