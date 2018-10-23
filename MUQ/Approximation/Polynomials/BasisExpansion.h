@@ -107,7 +107,7 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       @param[in] x The point where we are evaluating the derivative
       \return The derivative of dimenion dim
       */
-      //Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
+      Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
 
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,
                                        unsigned                                     wrtDim1,

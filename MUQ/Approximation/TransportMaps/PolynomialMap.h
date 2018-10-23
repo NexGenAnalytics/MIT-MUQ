@@ -34,8 +34,11 @@ namespace muq{
 
       std::vector<std::shared_ptr<BasisExpansion> > expansions;
 
-      // tolerance for Newton's method
+      /// Tolerance for Newton's method
       const double tol = 1.0e-12;
+
+      /// Maximum number of iterations for Newton's method
+      const unsigned int maxit = 100;
 
     }; // class PolynomialMap
 

@@ -201,52 +201,49 @@ void BasisExpansion::ProcessCoeffs(Eigen::VectorXd const& newCoeffs)
   coeffs = coeffMap;
 }
 
-/*Eigen::MatrixXd BasisExpansion::Derivative(unsigned int const dim, Eigen::VectorXd const& x) const {
+Eigen::MatrixXd BasisExpansion::Derivative(unsigned int const dim, Eigen::VectorXd const& x) const {
   // Get the maximum orders
   Eigen::VectorXi maxOrders = multis->GetMaxOrders();
 
   // Evaluate each dimension up to the maximum order
   std::vector<std::vector<double>> uniEvals(basisComps.size());
-  std::vector<std::vector<double>> uniDerivs(basisComps.size());
+  std::vector<double> uniDerivs(maxOrders(dim)+1);
   assert(uniEvals.size() == maxOrders.size());
 
   for(int i=0; i<uniEvals.size(); ++i){
     uniEvals.at(i).resize(maxOrders(i)+1);
-    uniDerivs.at(i).resize(maxOrders(i)+1);
 
     for(int j=0; j<=maxOrders(i); ++j){
       uniEvals.at(i).at(j) = basisComps.at(i)->BasisEvaluate(j, x(i));
-      uniDerivs.at(i).at(j) = basisComps.at(i)->DerivativeEvaluate(j, 1, x(i));
     }
   }
 
+  for(int i=0; i<=maxOrders(dim); ++i){
+    uniDerivs.at(i) = basisComps.at(dim)->DerivativeEvaluate(i, 1, x(dim));
+  }
+
   // Now that we have all the univariate terms evaluated, evaluate the expansion
-  Eigen::MatrixXd allDerivs = Eigen::MatrixXd::Ones(multis->Size(),x.size());
+  Eigen::VectorXd derivs = Eigen::VectorXd::Ones(multis->Size());
   for(int i=0; i<multis->Size(); ++i){
 
     // Loop over each dimension
-    //for(int j=0; j<x.size(); ++j){
       if(multis->at(i)->GetValue(dim)==0){
-        allDerivs(i,dim) = 0;
+        derivs(i) = 0;
       }else{
         for(auto it = multis->at(i)->GetNzBegin(); it != multis->at(i)->GetNzEnd(); ++it){
 
           if(it->first == dim){
-            allDerivs(i,dim) *= uniDerivs.at(it->first).at(it->second);
+            derivs(i) *= uniDerivs.at(it->second);
           }else{
-            allDerivs(i,dim) *= uniEvals.at(it->first).at(it->second);
+            derivs(i) *= uniEvals.at(it->first).at(it->second);
           }
 
         }
       }
-    //}
   }
 
-  //std::cout << coeffs << std::endl << std::endl;
-  //std::cout << allDerivs << std::endl;
-
-  return coeffs*allDerivs;
-}*/
+  return coeffs*derivs;
+}
 
 void BasisExpansion::EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
 

@@ -17,25 +17,21 @@ Eigen::VectorXd PolynomialMap::EvaluateForward(Eigen::VectorXd const& x) const {
 }
 
 Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eigen::VectorXd const& tgtPt0) const {
-  // evaluate each expansion
+  // set initial guess
   Eigen::VectorXd result = tgtPt0;
+
   for( unsigned int i=0; i<expansions.size(); ++i ) {
-    std::cout << std::endl;
-    std::cout << expansions[i]->Jacobian(0, 0, (Eigen::VectorXd)result.head(i+1)) << std::endl;
-    std::cout << std::endl;
-    //std::cout << expansions[i]->Derivative(i, (Eigen::VectorXd)result.head(i+1)).transpose() << std::endl;
-    std::cout << std::endl;
+    // initialize counter and a large error
     unsigned int cnt = 0;
     double eval = 1.0;
-    while( std::fabs(eval)>tol && cnt++<100 ) {
+
+    // Newton's method
+    while( std::fabs(eval)>tol && cnt++<maxit ) {
       eval = boost::any_cast<Eigen::VectorXd>(expansions[i]->Evaluate((Eigen::VectorXd)result.head(i+1)) [0]) (0) - refPt(i);
-      const double deriv = expansions[i]->Jacobian(0, 0, (Eigen::VectorXd)result.head(i+1)) (i);
+      const double deriv = expansions[i]->Derivative(i, (Eigen::VectorXd)result.head(i+1)) (0);
       assert(std::fabs(deriv)>tol);
       result(i) -= eval/deriv;
-      std::cout << eval << std::endl;
     }
-    std::cout << std::endl << std::endl;
-    //result(i) = boost::any_cast<Eigen::VectorXd>(expansions[i]->Evaluate((Eigen::VectorXd)x.head(i+1)) [0]) (0);
   }
 
   // return the result

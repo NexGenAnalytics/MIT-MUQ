@@ -73,4 +73,10 @@ TEST_F(PolynomialMapTests, InverseEvaluation) {
 
   // evaluate the transport map
   const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xpnt0);
+  EXPECT_EQ(xpnt.size(), dim);
+
+  // the inverse should be equal to the reference
+  const Eigen::VectorXd result = map->EvaluateForward(xpnt);
+  EXPECT_EQ(result.size(), dim);
+  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-14);
 }
