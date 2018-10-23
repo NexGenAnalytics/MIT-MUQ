@@ -66,6 +66,17 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
       virtual double Normalization(unsigned int polyOrder) const;
 
 
+      /** An orthogonal polynomial of order \f$n\f$ can be represented as
+          the sum of one or more monomials.  This function returns the coefficients
+          in that monomial expansion.  The expansion takes the form:
+          \f$
+          \phi_n(x) = \sum_{i=0}^n c_i x^i
+          \f$
+          @param[in] polyOrder Order of the orthogonal polynomial in question.
+          @return Coefficients in the expansion.
+      */
+      virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
+
     private:
 
       /// Implement \f$a_k(x)\f$

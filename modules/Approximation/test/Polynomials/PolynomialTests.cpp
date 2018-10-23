@@ -91,6 +91,31 @@ TEST(Polynomial, PhysicistHermite) {
   EXPECT_DOUBLE_EQ(sqrt(M_PI)*8.0, hermite->Normalization(2));
   EXPECT_DOUBLE_EQ(sqrt(M_PI)*48.0, hermite->Normalization(3));
 
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = hermite->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(2.0, monoCoeffs(1));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(-2.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(4.0, monoCoeffs(2));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(120.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-160.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(32.0, monoCoeffs(5));
+
 }
 
 TEST(Polynomial, ProbabilistHermite) {
@@ -132,6 +157,30 @@ TEST(Polynomial, ProbabilistHermite) {
   EXPECT_DOUBLE_EQ(sqrt(2.0*M_PI)*2.0, hermite->Normalization(2));
   EXPECT_DOUBLE_EQ(sqrt(2.0*M_PI)*6.0, hermite->Normalization(3));
 
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = hermite->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(1));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(-1.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(2.0, monoCoeffs(2));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(15.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-10.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(5));
 }
 
 TEST(Polynomial, Legendre) {
@@ -176,6 +225,31 @@ TEST(Polynomial, Legendre) {
   EXPECT_DOUBLE_EQ(2.0/3.0, legendre->Normalization(1));
   EXPECT_DOUBLE_EQ(2.0/5.0, legendre->Normalization(2));
   EXPECT_DOUBLE_EQ(2.0/7.0, legendre->Normalization(3));
+
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = legendre->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(1));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.5, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(1.5, monoCoeffs(2));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(15.0/8.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-70.0/8.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(63.0/8.0, monoCoeffs(5));
 }
 
 

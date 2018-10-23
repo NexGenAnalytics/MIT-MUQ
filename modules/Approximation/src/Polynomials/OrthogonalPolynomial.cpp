@@ -71,3 +71,40 @@ Eigen::VectorXd OrthogonalPolynomial::EvaluateAllTerms(int    const maxOrder,
 
   return output;
 }
+
+Eigen::VectorXd OrthogonalPolynomial::GetMonomialCoeffs(unsigned int polyOrder) const {
+
+  Eigen::VectorXd oldCoeffs, oldOldCoeffs;
+
+  oldOldCoeffs = Eigen::VectorXd::Zero(polyOrder+1);
+  oldOldCoeffs(0) = phi0(0);
+
+  if(polyOrder>=1){
+    oldCoeffs = Eigen::VectorXd::Zero(polyOrder+1);
+    double slope = (phi1(0.9)-phi1(0.1))/0.8;
+    double intercept = phi1(0.5) - slope*0.5;
+    oldCoeffs(0) = intercept;
+    oldCoeffs(1) = slope;
+  }
+
+  if(polyOrder==0){
+    return oldOldCoeffs;
+  }else if(polyOrder==1){
+    return oldCoeffs;
+  }else{
+    Eigen::VectorXd monoCoeffs = Eigen::VectorXd::Zero(polyOrder+1);
+
+    for(int p=2; p<=polyOrder; ++p){
+      monoCoeffs = Eigen::VectorXd::Zero(polyOrder+1);
+      monoCoeffs.tail(polyOrder) = ak(p)*oldCoeffs.head(polyOrder);
+      monoCoeffs += bk(p)*oldCoeffs;
+      monoCoeffs -= ck(p)*oldOldCoeffs;
+
+      oldOldCoeffs = oldCoeffs;
+      oldCoeffs = monoCoeffs;
+    }
+
+    return monoCoeffs;
+  }
+
+}
