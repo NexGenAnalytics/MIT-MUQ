@@ -77,6 +77,7 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
       */
       virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
 
+
     private:
 
       /// Implement \f$a_k(x)\f$

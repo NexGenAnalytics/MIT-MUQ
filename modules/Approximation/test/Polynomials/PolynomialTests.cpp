@@ -339,3 +339,92 @@ TEST(Polynomial, Factory)
     EXPECT_THROW(IndexedScalarBasis::Construct("CowPoly"), muq::NotRegisteredError);
 
 }
+
+TEST(Polynomial, MonomialRoots_SturmSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(4);
+  poly << 0.0656667, 1.00199, -0.0010416, -0.000209811;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+}
+
+TEST(Polynomial, MonomialRoots_QuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << -4.003227006346633e-01, -6.691129953727359e-01, 6.736986965417775e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-4.203681731663730e-01,roots(0),1e-8);
+  EXPECT_NEAR(1.413561419357021e+00,roots(1),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << 0, 0, 1;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_EQ(1,roots.size());
+  EXPECT_NEAR(0.0,roots(0),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << 1, 0, 1;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_EQ(0,roots.size());
+}
+
+TEST(Polynomial, MonomialRoots_LinSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(2);
+  poly << 5.756290165831505e-01, -6.718024272190579e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(8.568427163414405e-01,roots(0),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_SturmSolve2){
+
+  // create a nasty high order monomial approximation to sin(x)
+  const int maxOrder = 19;
+  Eigen::VectorXd poly = Eigen::VectorXd::Zero(maxOrder+1);
+  double sign = 1;
+  for(int i=1; i<=maxOrder; i+=2){
+    poly(i) = sign/std::tgamma(i+1);
+    sign *= -1;
+  }
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-7);
+
+  // compare the polynomial roots to the roots of sin(x)
+  int zeroRootInd = floor(0.5*roots.size());
+  for(int i=0; i<roots.size(); ++i)
+    EXPECT_NEAR((i-zeroRootInd)*3.14159, roots(i), 1e-3*pow(10,abs(i-zeroRootInd)));
+}

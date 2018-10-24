@@ -11,7 +11,6 @@ using namespace muq::Modeling;
 using namespace muq::Approximation;
 
 
-
 double OrthogonalPolynomial::Normalization(unsigned int polyOrder) const {
 
     std::string rawName = typeid(*this).name();
