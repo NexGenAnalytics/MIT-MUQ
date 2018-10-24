@@ -78,7 +78,15 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
       virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
 
       /** Computes the roots of a 1d polynomial expansion. */
-      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, double tol) const;
+      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, std::string const& method) const;
+
+      /** Computes the roots of a 1d polynomial expansion by forming the Comrade matrix. */
+      virtual Eigen::VectorXd GetRootsComrade(Eigen::VectorXd const& coeffs) const;
+
+      /** Computes the roots of a 1d polynomial using a Sturm sequence to identify intervals
+          containing the roots and then a bisection solver.
+      */
+      virtual Eigen::VectorXd GetRootsSturm(Eigen::VectorXd const& coeffs, double tol) const;
 
     private:
 

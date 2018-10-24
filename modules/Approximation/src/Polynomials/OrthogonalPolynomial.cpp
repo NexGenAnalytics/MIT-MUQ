@@ -32,15 +32,6 @@ double OrthogonalPolynomial::Normalization(unsigned int polyOrder) const {
     return std::numeric_limits<double>::quiet_NaN();
 };
 
-Eigen::VectorXd OrthogonalPolynomial::GetRoots(Eigen::VectorXd const& coeffs, double tol) const {
-
-  Eigen::VectorXd monoCoeffs = Eigen::VectorXd::Zero(coeffs.size());
-  for(int order=0; order<coeffs.size(); ++order)
-    monoCoeffs.head(order+1) += coeffs(order)*GetMonomialCoeffs(order);
-
-  return Monomial::MonomialRoots(monoCoeffs,tol);
-}
-
 double OrthogonalPolynomial::BasisEvaluate(int const order, double const x) const {
 
     if(order==0){
@@ -116,5 +107,57 @@ Eigen::VectorXd OrthogonalPolynomial::GetMonomialCoeffs(unsigned int polyOrder) 
 
     return monoCoeffs;
   }
+
+}
+
+
+Eigen::VectorXd OrthogonalPolynomial::GetRoots(Eigen::VectorXd const& coeffs, std::string const& method) const {
+
+  if(method == "Sturm"){
+    return GetRootsSturm(coeffs, 1e-10);
+  }else if(method=="Comrade"){
+    return GetRootsComrade(coeffs);
+  }else{
+    throw std::invalid_argument("Invalid option to OrthogonalPolynomial::GetRoots.  Valid methods are \"Sturm\" and \"Comrade\".");
+  }
+}
+
+Eigen::VectorXd OrthogonalPolynomial::GetRootsSturm(Eigen::VectorXd const& coeffs, double tol) const
+{
+  Eigen::VectorXd monoCoeffs = Eigen::VectorXd::Zero(coeffs.size());
+  for(int order=0; order<coeffs.size(); ++order)
+    monoCoeffs.head(order+1) += coeffs(order)*GetMonomialCoeffs(order);
+
+  return Monomial::MonomialRoots(monoCoeffs,tol);
+}
+
+
+Eigen::VectorXd OrthogonalPolynomial::GetRootsComrade(Eigen::VectorXd const& coeffs) const
+{
+  const int N = coeffs.size()-1;
+
+  // Normalize the coefficients
+  Eigen::VectorXd normCoeffs = coeffs/coeffs(N);
+
+  // Use the three term recurrence relationship to build the Comrade matrix
+  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(N,N);
+
+  C(0,0) = -bk(1)/ak(1);
+  C(0,1) = 1.0/ak(1);
+  for(int i=1; i<N-1; ++i){
+    C(i,i-1) = ck(i+1)/ak(i+1);
+    C(i,i) = -bk(i+1)/ak(i+1);
+    C(i,i+1) = 1.0/ak(i+1);
+  }
+
+  for(int i=0; i<N; ++i)
+    C(N-1,i) = -normCoeffs(i)/ak(N);
+
+  C(N-1,N-2) += ck(N)/ak(N);
+  C(N-1,N-1) -= bk(N)/ak(N);
+
+  Eigen::VectorXd eigs = C.eigenvalues().real();
+  std::sort(&eigs[0], &eigs[eigs.size()-1]);
+  return eigs;
 
 }
