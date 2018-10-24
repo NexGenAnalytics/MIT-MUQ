@@ -75,7 +75,7 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
           @param[in] polyOrder Order of the orthogonal polynomial in question.
           @return Coefficients in the expansion.
       */
-      virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
+      virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const override;
 
       /** Computes the roots of a 1d polynomial expansion. */
       virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, std::string const& method) const;

@@ -4,8 +4,10 @@
 #include <functional>
 #include <string>
 
-#include "MUQ/Modeling/WorkPiece.h"
 #include "MUQ/Utilities/RegisterClassName.h"
+#include "MUQ/Utilities/Exceptions.h"
+
+#include "MUQ/Modeling/WorkPiece.h"
 
 namespace muq {
   namespace Approximation {
@@ -65,6 +67,9 @@ namespace muq {
                                         int    const derivOrder,
                                         double const x) const = 0;
 
+      virtual inline Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const {
+        throw muq::NotImplementedError("ERROR in IndexedScalarBasis::GetMonomialCoeffs().  The GetMonomialCoeffs() function has not been implemented.");
+      }
 
     private:
 

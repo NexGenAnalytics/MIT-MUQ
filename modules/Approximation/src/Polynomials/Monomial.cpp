@@ -335,3 +335,9 @@ Eigen::VectorXd Monomial::MonomialRoots(Eigen::VectorXd const& Pin, double tol) 
   // at this point, we have intervals containing all of our roots
   return rootLocs;
 }
+
+Eigen::VectorXd Monomial::GetMonomialCoeffs(unsigned int polyOrder) const {
+  Eigen::VectorXd coeffs = Eigen::VectorXd::Zero(polyOrder+1);
+  coeffs(polyOrder) = 1.0;
+  return coeffs;
+}

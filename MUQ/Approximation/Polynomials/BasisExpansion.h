@@ -126,6 +126,8 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
       const std::shared_ptr<muq::Utilities::MultiIndexSet> Multis() const{return multis;};
 
+      const std::vector<std::shared_ptr<IndexedScalarBasis> > BasisComponents() const { return basisComps; }
+
     protected:
 
       static Eigen::VectorXi GetInputSizes(std::shared_ptr<muq::Utilities::MultiIndexSet> multisIn,

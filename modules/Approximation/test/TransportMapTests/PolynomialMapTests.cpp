@@ -3,6 +3,7 @@
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
 #include "MUQ/Approximation/Polynomials/Legendre.h"
+#include "MUQ/Approximation/Polynomials/Monomial.h"
 
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
 
@@ -20,17 +21,11 @@ public:
       // create the bases, multi index, and coefficents
       std::vector<std::shared_ptr<IndexedScalarBasis> > bases(i, legendre);
       std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i, 3);
-      Eigen::MatrixXd coeffs = Eigen::MatrixXd::Ones(1, multis->Size());
+      Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size());
 
       // the basis expansion for component i
       expansion[i-1] = std::make_shared<BasisExpansion>(bases, multis, coeffs);
     }
-
-    map = std::make_shared<PolynomialMap>(expansion);
-    EXPECT_TRUE(map->inputSizes.size()==1);
-    EXPECT_TRUE(map->outputSizes.size()==1);
-    EXPECT_TRUE(map->inputSizes(0)==dim);
-    EXPECT_TRUE(map->outputSizes(0)==dim);
   }
 
   virtual ~PolynomialMapTests() = default;
@@ -48,6 +43,12 @@ protected:
 };
 
 TEST_F(PolynomialMapTests, ForwardEvaluation) {
+  map = std::make_shared<PolynomialMap>(expansion);
+  EXPECT_TRUE(map->inputSizes.size()==1);
+  EXPECT_TRUE(map->outputSizes.size()==1);
+  EXPECT_TRUE(map->inputSizes(0)==dim);
+  EXPECT_TRUE(map->outputSizes(0)==dim);
+
   // choose a random point to evaluate the function
   const Eigen::VectorXd xpnt = Eigen::VectorXd::Random(dim);
 
@@ -64,7 +65,13 @@ TEST_F(PolynomialMapTests, ForwardEvaluation) {
   EXPECT_DOUBLE_EQ((rpnteval-rpnt).norm(), 0.0);
 }
 
-TEST_F(PolynomialMapTests, InverseEvaluation) {
+TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Newton);
+  EXPECT_TRUE(map->inputSizes.size()==1);
+  EXPECT_TRUE(map->outputSizes.size()==1);
+  EXPECT_TRUE(map->inputSizes(0)==dim);
+  EXPECT_TRUE(map->outputSizes(0)==dim);
+
   // choose a random point to evaluate the function
   const Eigen::VectorXd rpnt = Eigen::VectorXd::Random(dim);
 
@@ -81,7 +88,36 @@ TEST_F(PolynomialMapTests, InverseEvaluation) {
   EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-14);
 }
 
+TEST_F(PolynomialMapTests, StrumInverseEvaluation) {
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Sturm); // this is also the default
+  EXPECT_TRUE(map->inputSizes.size()==1);
+  EXPECT_TRUE(map->outputSizes.size()==1);
+  EXPECT_TRUE(map->inputSizes(0)==dim);
+  EXPECT_TRUE(map->outputSizes(0)==dim);
+
+  // choose a random point to evaluate the function
+  const Eigen::VectorXd rpnt = Eigen::VectorXd::Random(dim);
+
+  // an initial guess
+  const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Zero(dim);
+
+  // evaluate the transport map
+  const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xpnt0);
+  EXPECT_EQ(xpnt.size(), dim);
+
+  // the inverse should be equal to the reference
+  const Eigen::VectorXd result = map->EvaluateForward(xpnt);
+  EXPECT_EQ(result.size(), dim);
+  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-10);
+}
+
 TEST_F(PolynomialMapTests, LogDeterminate) {
+  map = std::make_shared<PolynomialMap>(expansion);
+  EXPECT_TRUE(map->inputSizes.size()==1);
+  EXPECT_TRUE(map->outputSizes.size()==1);
+  EXPECT_TRUE(map->inputSizes(0)==dim);
+  EXPECT_TRUE(map->outputSizes(0)==dim);
+
   // an initial guess
   const Eigen::VectorXd xpnt = Eigen::VectorXd::Random(dim);
 

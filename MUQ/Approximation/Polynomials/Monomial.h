@@ -35,6 +35,8 @@ namespace muq {
       */
       static Eigen::VectorXd MonomialRoots(Eigen::VectorXd const& Pin, double tol);
 
+      virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const override;
+
 
     protected:
       static void MonomialDivision(Eigen::VectorXd const& A,
