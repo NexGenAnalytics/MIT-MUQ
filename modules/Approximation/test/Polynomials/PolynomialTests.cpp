@@ -342,7 +342,7 @@ TEST(Polynomial, Factory)
 
 TEST(Polynomial, MonomialRoots_SturmSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(4);
   poly << 0.0656667, 1.00199, -0.0010416, -0.000209811;
 
@@ -357,7 +357,7 @@ TEST(Polynomial, MonomialRoots_SturmSolve){
 
 TEST(Polynomial, MonomialRoots_QuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << -4.003227006346633e-01, -6.691129953727359e-01, 6.736986965417775e-01;
 
@@ -371,7 +371,7 @@ TEST(Polynomial, MonomialRoots_QuadSolve){
 
 TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << 0, 0, 1;
 
@@ -385,7 +385,7 @@ TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
 
 TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << 1, 0, 1;
 
@@ -398,7 +398,7 @@ TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
 
 TEST(Polynomial, MonomialRoots_LinSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(2);
   poly << 5.756290165831505e-01, -6.718024272190579e-01;
 
@@ -433,7 +433,7 @@ TEST(Polynomial, ProbHermiteRoots_SturmSolve){
 
   auto hermite = std::make_shared<ProbabilistHermite>();
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(5);
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
@@ -460,7 +460,7 @@ TEST(Polynomial, PhysHermiteRoots_SturmSolve){
 
   auto hermite = std::make_shared<PhysicistHermite>();
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(5);
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
