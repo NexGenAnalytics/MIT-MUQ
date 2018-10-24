@@ -91,6 +91,31 @@ TEST(Polynomial, PhysicistHermite) {
   EXPECT_DOUBLE_EQ(sqrt(M_PI)*8.0, hermite->Normalization(2));
   EXPECT_DOUBLE_EQ(sqrt(M_PI)*48.0, hermite->Normalization(3));
 
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = hermite->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(2.0, monoCoeffs(1));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(-2.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(4.0, monoCoeffs(2));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(120.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-160.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(32.0, monoCoeffs(5));
+
 }
 
 TEST(Polynomial, ProbabilistHermite) {
@@ -132,6 +157,30 @@ TEST(Polynomial, ProbabilistHermite) {
   EXPECT_DOUBLE_EQ(sqrt(2.0*M_PI)*2.0, hermite->Normalization(2));
   EXPECT_DOUBLE_EQ(sqrt(2.0*M_PI)*6.0, hermite->Normalization(3));
 
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = hermite->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(1));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(-1.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(2));
+
+  monoCoeffs = hermite->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(15.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-10.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(5));
 }
 
 TEST(Polynomial, Legendre) {
@@ -176,6 +225,31 @@ TEST(Polynomial, Legendre) {
   EXPECT_DOUBLE_EQ(2.0/3.0, legendre->Normalization(1));
   EXPECT_DOUBLE_EQ(2.0/5.0, legendre->Normalization(2));
   EXPECT_DOUBLE_EQ(2.0/7.0, legendre->Normalization(3));
+
+  // Check the monomial coeffiencients
+  Eigen::VectorXd monoCoeffs = legendre->GetMonomialCoeffs(0);
+  EXPECT_EQ(1,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(0));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(1);
+  EXPECT_EQ(2,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(1));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(2);
+  EXPECT_EQ(3,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(-0.5, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(1.5, monoCoeffs(2));
+
+  monoCoeffs = legendre->GetMonomialCoeffs(5);
+  EXPECT_EQ(6,monoCoeffs.size());
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(15.0/8.0, monoCoeffs(1));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(-70.0/8.0, monoCoeffs(3));
+  EXPECT_DOUBLE_EQ(0.0, monoCoeffs(4));
+  EXPECT_DOUBLE_EQ(63.0/8.0, monoCoeffs(5));
 }
 
 
@@ -264,4 +338,146 @@ TEST(Polynomial, Factory)
 
     EXPECT_THROW(IndexedScalarBasis::Construct("CowPoly"), muq::NotRegisteredError);
 
+}
+
+TEST(Polynomial, MonomialRoots_SturmSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(4);
+  poly << 0.0656667, 1.00199, -0.0010416, -0.000209811;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+}
+
+TEST(Polynomial, MonomialRoots_QuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << -4.003227006346633e-01, -6.691129953727359e-01, 6.736986965417775e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-4.203681731663730e-01,roots(0),1e-8);
+  EXPECT_NEAR(1.413561419357021e+00,roots(1),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << 0, 0, 1;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_EQ(1,roots.size());
+  EXPECT_NEAR(0.0,roots(0),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(3);
+  poly << 1, 0, 1;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_EQ(0,roots.size());
+}
+
+TEST(Polynomial, MonomialRoots_LinSolve){
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(2);
+  poly << 5.756290165831505e-01, -6.718024272190579e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(8.568427163414405e-01,roots(0),1e-8);
+}
+
+TEST(Polynomial, MonomialRoots_SturmSolve2){
+
+  // create a nasty high order monomial approximation to sin(x)
+  const int maxOrder = 19;
+  Eigen::VectorXd poly = Eigen::VectorXd::Zero(maxOrder+1);
+  double sign = 1;
+  for(int i=1; i<=maxOrder; i+=2){
+    poly(i) = sign/std::tgamma(i+1);
+    sign *= -1;
+  }
+
+  // compute the roots
+  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-7);
+
+  // compare the polynomial roots to the roots of sin(x)
+  int zeroRootInd = floor(0.5*roots.size());
+  for(int i=0; i<roots.size(); ++i)
+    EXPECT_NEAR((i-zeroRootInd)*3.14159, roots(i), 1e-3*pow(10,abs(i-zeroRootInd)));
+}
+
+TEST(Polynomial, ProbHermiteRoots_SturmSolve){
+
+  auto hermite = std::make_shared<ProbabilistHermite>();
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(5);
+  poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = hermite->GetRoots(poly, "Sturm");
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-2.924713468970414e+00,roots(0),1e-4);
+  EXPECT_NEAR(-1.079711083256760e+00,roots(1),1e-4);
+  EXPECT_NEAR(6.934823585835934e-01,roots(2),1e-4);
+  EXPECT_NEAR(1.866548264732107e+00,roots(3),1e-4);
+
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, "Comrade");
+  // compare the roots to the truth
+  EXPECT_NEAR(-2.924713468970414e+00,comradeRoots(0),1e-4);
+  EXPECT_NEAR(-1.079711083256760e+00,comradeRoots(1),1e-4);
+  EXPECT_NEAR(6.934823585835934e-01,comradeRoots(2),1e-4);
+  EXPECT_NEAR(1.866548264732107e+00,comradeRoots(3),1e-4);
+
+
+}
+
+TEST(Polynomial, PhysHermiteRoots_SturmSolve){
+
+  auto hermite = std::make_shared<PhysicistHermite>();
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(5);
+  poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = hermite->GetRoots(poly, "Sturm");
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-1.904980078887119e+00,roots(0),1e-4);
+  EXPECT_NEAR(-6.949715242251162e-01,roots(1),1e-4);
+  EXPECT_NEAR(4.162658411042948e-01,roots(2),1e-4);
+  EXPECT_NEAR(1.461488797552201e+00,roots(3),1e-4);
+
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, "Comrade");
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-1.904980078887119e+00,comradeRoots(0),1e-4);
+  EXPECT_NEAR(-6.949715242251162e-01,comradeRoots(1),1e-4);
+  EXPECT_NEAR(4.162658411042948e-01,comradeRoots(2),1e-4);
+  EXPECT_NEAR(1.461488797552201e+00,comradeRoots(3),1e-4);
 }
