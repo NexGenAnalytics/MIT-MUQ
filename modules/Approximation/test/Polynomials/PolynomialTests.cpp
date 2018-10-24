@@ -171,7 +171,7 @@ TEST(Polynomial, ProbabilistHermite) {
   EXPECT_EQ(3,monoCoeffs.size());
   EXPECT_DOUBLE_EQ(-1.0, monoCoeffs(0));
   EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
-  EXPECT_DOUBLE_EQ(2.0, monoCoeffs(2));
+  EXPECT_DOUBLE_EQ(1.0, monoCoeffs(2));
 
   monoCoeffs = hermite->GetMonomialCoeffs(5);
   EXPECT_EQ(6,monoCoeffs.size());
@@ -238,7 +238,7 @@ TEST(Polynomial, Legendre) {
 
   monoCoeffs = legendre->GetMonomialCoeffs(2);
   EXPECT_EQ(3,monoCoeffs.size());
-  EXPECT_DOUBLE_EQ(0.5, monoCoeffs(0));
+  EXPECT_DOUBLE_EQ(-0.5, monoCoeffs(0));
   EXPECT_DOUBLE_EQ(0.0, monoCoeffs(1));
   EXPECT_DOUBLE_EQ(1.5, monoCoeffs(2));
 
@@ -427,4 +427,40 @@ TEST(Polynomial, MonomialRoots_SturmSolve2){
   int zeroRootInd = floor(0.5*roots.size());
   for(int i=0; i<roots.size(); ++i)
     EXPECT_NEAR((i-zeroRootInd)*3.14159, roots(i), 1e-3*pow(10,abs(i-zeroRootInd)));
+}
+
+TEST(Polynomial, ProbHermiteRoots_SturmSolve){
+
+  auto hermite = std::make_shared<ProbabilistHermite>();
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(5);
+  poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = hermite->GetRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-2.924713468970414e+00,roots(0),1e-4);
+  EXPECT_NEAR(-1.079711083256760e+00,roots(1),1e-4);
+  EXPECT_NEAR(6.934823585835934e-01,roots(2),1e-4);
+  EXPECT_NEAR(1.866548264732107e+00,roots(3),1e-4);
+}
+
+TEST(Polynomial, PhysHermiteRoots_SturmSolve){
+
+  auto hermite = std::make_shared<PhysicistHermite>();
+
+  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  Eigen::VectorXd poly(5);
+  poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
+
+  // compute the roots
+  Eigen::VectorXd roots = hermite->GetRoots(poly, 1e-6);
+
+  // compare the roots to the truth
+  EXPECT_NEAR(-1.904980078887119e+00,roots(0),1e-4);
+  EXPECT_NEAR(-6.949715242251162e-01,roots(1),1e-4);
+  EXPECT_NEAR(4.162658411042948e-01,roots(2),1e-4);
+  EXPECT_NEAR(1.461488797552201e+00,roots(3),1e-4);
 }

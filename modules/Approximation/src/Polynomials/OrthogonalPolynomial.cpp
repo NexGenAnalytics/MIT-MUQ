@@ -1,5 +1,7 @@
 #include "MUQ/Approximation/Polynomials/OrthogonalPolynomial.h"
 
+#include "MUQ/Approximation/Polynomials/Monomial.h"
+
 #include "MUQ/Utilities/Exceptions.h"
 
 #include <cstdlib>
@@ -29,6 +31,15 @@ double OrthogonalPolynomial::Normalization(unsigned int polyOrder) const {
 
     return std::numeric_limits<double>::quiet_NaN();
 };
+
+Eigen::VectorXd OrthogonalPolynomial::GetRoots(Eigen::VectorXd const& coeffs, double tol) const {
+
+  Eigen::VectorXd monoCoeffs = Eigen::VectorXd::Zero(coeffs.size());
+  for(int order=0; order<coeffs.size(); ++order)
+    monoCoeffs.head(order+1) += coeffs(order)*GetMonomialCoeffs(order);
+
+  return Monomial::MonomialRoots(monoCoeffs,tol);
+}
 
 double OrthogonalPolynomial::BasisEvaluate(int const order, double const x) const {
 
