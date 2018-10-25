@@ -31,6 +31,7 @@ CreateCompileGroup(
 	""
 	""
 	Polynomials/IndexedScalarBasis.cpp
+	Polynomials/Polynomial.cpp
 	Polynomials/OrthogonalPolynomial.cpp
 	Polynomials/Monomial.cpp
 	Polynomials/PhysicistHermite.cpp
@@ -42,6 +43,7 @@ CreateCompileGroup(
   Polynomials/BasisExpansion.cpp
   Polynomials/MonotoneExpansion.cpp
   Quadrature/GaussQuadrature.cpp
+	Polynomials/SturmSolver.cpp
 )
 
 CreateCompileGroup(
