@@ -115,7 +115,7 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
           with the derivatives of a basis function with respect to a particular input.
           @seealso BuildVandermonde
       */
-      Eigen::MatrixXd BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const;
+      Eigen::MatrixXd BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const;
 
 
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,

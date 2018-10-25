@@ -322,7 +322,7 @@ Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts)
 }
 
 
-Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const
+Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const
 {
   Eigen::MatrixXd output(evalPts.cols(), NumTerms());
 
