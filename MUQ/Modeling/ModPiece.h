@@ -186,7 +186,7 @@ namespace muq{
     virtual std::vector<Eigen::VectorXd> const& Evaluate(ref_vector<Eigen::VectorXd> const& input);
     VARIADIC_TO_REFVECTOR(Evaluate, Eigen::VectorXd, std::vector<Eigen::VectorXd> const&);
 
-    /** @brief Compute the Gradient $J^Tv$.
+    /** @brief Compute the Gradient \f$J^Tv\f$.
       @details Consider some scalar-valued function \f$h(f_i) : \mathbb{R}^{N_{fi}} \rightarrow \mathbb{R}\f$ and let
       \f$v = \nabla_{f_i} h\f$ denote the gradient of \f$h\f$ with respect to \f$f_i\f$.
       Let \f$[x_1, \ldots, x_{M_x}]\f$ be the inputs to \f$f_i\f$, i.e.,
@@ -221,13 +221,19 @@ namespace muq{
                                             ref_vector<Eigen::VectorXd> const& input,
                                             Eigen::VectorXd             const& sensitivity);
 
-    inline Eigen::VectorXd const& Gradient(unsigned int outWrt, unsigned int inWrt, Eigen::VectorXd const& last, Eigen::VectorXd const& sens) {     \
+    inline Eigen::VectorXd const& Gradient(unsigned int outWrt,
+                                           unsigned int inWrt,
+                                           Eigen::VectorXd const& last,
+                                           Eigen::VectorXd const& sens) {    
       ref_vector<Eigen::VectorXd> vec;
-      vec.push_back(std::cref(last));                                                                                               \
-      return Gradient(outWrt, inWrt, vec, sens);                                                                              \
+      vec.push_back(std::cref(last)); 
+      return Gradient(outWrt, inWrt, vec, sens);                                                                              
     }
+
     template<typename... Args>
-    inline Eigen::VectorXd  const& Gradient(unsigned int wrtOut, unsigned int wrtIn, Args const&... args) {
+    inline Eigen::VectorXd  const& Gradient(unsigned int wrtOut,
+                                            unsigned int wrtIn,
+                                            Args const&... args) {
       ref_vector<Eigen::VectorXd> vec;
       return GradientRecurse(wrtOut, wrtIn, vec, args...);
     }
@@ -263,11 +269,13 @@ namespace muq{
       ref_vector<Eigen::VectorXd> vec;
       return Jacobian(outWrt, inWrt, vec, args...);
     }
+
     template<typename... Args>
     inline Eigen::MatrixXd JacobianByFD(unsigned int outWrt, unsigned int inWrt, Args const&... args) {
       ref_vector<Eigen::VectorXd> vec;
       return JacobianByFD(outWrt, inWrt, vec, args...);
     }
+
     template<typename... Args>
     inline Eigen::MatrixXd ApplyJacobianByFD(unsigned int outWrt, unsigned int inWrt, Args const&... args) {
       ref_vector<Eigen::VectorXd> vec;
@@ -413,21 +421,34 @@ namespace muq{
     //                       Eigen::VectorXd             const& vec);
 
   private:
-    template<typename NextType, typename... Args>                                                                                               \
-    inline Eigen::VectorXd const& GradientRecurse(unsigned int outWrt, unsigned int inWrt, ref_vector<Eigen::VectorXd>& vec, NextType const& ith, Args const&... args) {     \
-        static_assert(std::is_same<Eigen::VectorXd, NextType>::value, "In ModPiece::Gradient, cannot cast input to Eigen::VectorXd."); \
-        vec.push_back(std::cref((NextType&)ith));                                                                                               \
-        return GradientRecurse(outWrt, inWrt, vec, args...);                                                                              \
+    template<typename NextType, typename... Args>                     
+    inline Eigen::VectorXd const& GradientRecurse(unsigned int outWrt,
+                                                  unsigned int inWrt,
+                                                  ref_vector<Eigen::VectorXd>& vec,
+                                                  NextType const& ith,
+                                                  Args const&... args) { 
+
+      static_assert(std::is_same<Eigen::VectorXd,
+                    NextType>::value,
+                    "In ModPiece::Gradient, cannot cast input to Eigen::VectorXd."); 
+
+        vec.push_back(std::cref((NextType&)ith));                                                                                      
+        return GradientRecurse(outWrt, inWrt, vec, args...);                                                                           
+
     }
 
-    template<typename NextType>                                                                                               \
-    inline Eigen::VectorXd const& GradientRecurse(unsigned int outWrt, unsigned int inWrt, ref_vector<Eigen::VectorXd>& vec, NextType const& last, Eigen::VectorXd const& sens) {     \
-        static_assert(std::is_same<Eigen::VectorXd, NextType>::value, "In ModPiece::Gradient, cannot cast input to Eigen::VectorXd."); \
-        vec.push_back(std::cref((NextType&)last));                                                                                               \
-        return Gradient(outWrt, inWrt, vec, sens);                                                                              \
+    template<typename NextType>                                                   
+    inline Eigen::VectorXd const& GradientRecurse(unsigned int outWrt,
+                                                  unsigned int inWrt,
+                                                  ref_vector<Eigen::VectorXd>& vec,
+                                                  NextType const& last,
+                                                  Eigen::VectorXd const& sens) { 
+        static_assert(std::is_same<Eigen::VectorXd, NextType>::value, "In ModPiece::Gradient, cannot cast input to Eigen::VectorXd."); 
+        vec.push_back(std::cref((NextType&)last));                                                                                     
+        return Gradient(outWrt, inWrt, vec, sens);                                                                              
     }
 
-    template<typename... Args>                                                                                               \
+    template<typename... Args>                                                                                               
     inline Eigen::MatrixXd const& Jacobian(unsigned int outWrt, unsigned int inWrt, ref_vector<Eigen::VectorXd>& vec, Eigen::VectorXd const& ith, Args const&... args) {     \
         vec.push_back(std::cref(ith));                                                                                               \
         return Jacobian(outWrt, inWrt, vec, args...);                                                                              \

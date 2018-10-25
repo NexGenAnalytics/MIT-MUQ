@@ -96,10 +96,11 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
 
       /** Constructs a Vandermonde matrix by evaluating the $M$ basis functions at
-          $N$ points stored in the evalPts matrix.  Each column of evalPts
+          $N$ points stored in the evalPts matrix.  Each column of the evalPts input
           contains a single point.  The returned matrix is size $N\times M$.
       */
       Eigen::MatrixXd BuildVandermonde(Eigen::MatrixXd const& evalPts) const;
+
 
       /**
       This is equivalent to extracting the \f$d\f$'s column of the Jacobian
@@ -108,6 +109,14 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       \return The derivative of dimenion dim
       */
       Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
+
+      /** Constructs a Vandermonde-like matrix but instead of filling each column
+          with evaluations of the basis function, this function fill each column
+          with the derivatives of a basis function with respect to a particular input.
+          @seealso BuildVandermonde
+      */
+      Eigen::MatrixXd BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const;
+
 
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,
                                        unsigned                                     wrtDim1,
