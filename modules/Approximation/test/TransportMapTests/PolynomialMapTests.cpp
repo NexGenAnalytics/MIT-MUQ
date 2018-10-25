@@ -85,7 +85,7 @@ TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
   // the inverse should be equal to the reference
   const Eigen::VectorXd result = map->EvaluateForward(xpnt);
   EXPECT_EQ(result.size(), dim);
-  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-14);
+  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-10);
 }
 
 TEST_F(PolynomialMapTests, StrumInverseEvaluation) {
@@ -131,7 +131,7 @@ TEST_F(PolynomialMapTests, ComradeInverseEvaluation) {
   // the inverse should be equal to the reference
   const Eigen::VectorXd result = map->EvaluateForward(xpnt);
   EXPECT_EQ(result.size(), dim);
-  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-10);
+  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-14);
 }
 
 TEST_F(PolynomialMapTests, LogDeterminate) {

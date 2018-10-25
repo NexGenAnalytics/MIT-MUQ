@@ -46,9 +46,7 @@ namespace muq{
 
       void NewtonsMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
 
-      void SturmMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
-
-      void ComradeMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
+      void PolynomialRootFinding(Eigen::VectorXd& result, double const refPt, unsigned int const component, PolynomialMap::InverseMethod const& invMethod) const;
 
       std::vector<std::shared_ptr<BasisExpansion> > expansions;
 

@@ -29,22 +29,10 @@ Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eig
   Eigen::VectorXd result = tgtPt0;
 
   for( unsigned int i=0; i<expansions.size(); ++i ) {
-    switch( invMethod ) {
-      case InverseMethod::Newton: {
-        NewtonsMethod(result, refPt(i), i);
-        break;
-      }
-      case InverseMethod::Sturm: {
-        SturmMethod(result, refPt(i), i);
-        break;
-      }
-      case InverseMethod::Comrade: {
-        ComradeMethod(result, refPt(i), i);
-        break;
-      }
-      default: {
-        ComradeMethod(result, refPt(i), i);
-      }
+    if( invMethod==InverseMethod::Newton ) {
+      NewtonsMethod(result, refPt(i), i);
+    } else {
+      PolynomialRootFinding(result, refPt(i), i, invMethod);
     }
   }
 
@@ -52,46 +40,7 @@ Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eig
   return result;
 }
 
-void PolynomialMap::SturmMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const {
-  const Eigen::MatrixXd& coeff = expansions[component]->GetCoeffs();
-  const std::vector<std::shared_ptr<IndexedScalarBasis> >& basisComps = expansions[component]->BasisComponents();
-  Eigen::VectorXd monoCoeff = Eigen::VectorXd::Zero(expansions[component]->Multis()->GetMaxOrders() (component)+1);
-  for( unsigned int term=0; term<expansions[component]->NumTerms(); ++term ) {
-    double scale = coeff(term);
-
-    // if the total order is zero
-    if( expansions[component]->Multis()->at(term)->Sum()==0 ) { scale *= basisComps[component]->BasisEvaluate(0, 0.0); }
-
-    Eigen::VectorXd basisCoeff = Eigen::VectorXd::Zero(monoCoeff.size());
-    basisCoeff(0) = 1.0; // default to a constant basis
-
-    // get the coefficients for non costant terms
-    for( auto it=expansions[component]->Multis()->at(term)->GetNzBegin(); it!=expansions[component]->Multis()->at(term)->GetNzEnd(); ++it ) {
-      if( it->first==component ) { // get the monomial coeffs for this basis
-        basisCoeff = basisComps[it->first]->GetMonomialCoeffs(it->second);
-      } else {
-        assert(it->first<component);
-        scale *= basisComps[it->first]->BasisEvaluate(it->second, result(it->first));
-      }
-    }
-
-    assert(basisCoeff.size()<=monoCoeff.size());
-    monoCoeff.head(basisCoeff.size()) += scale*basisCoeff;
-  }
-
-  // scale the cosntant coeff. by the reference point
-  monoCoeff(0) -= refPt/basisComps[component]->BasisEvaluate(0, 0.0);
-
-  // choose the closest root to the input point
-  const Eigen::VectorXd& roots = Monomial::MonomialRoots(monoCoeff, tol);
-  assert(roots.size()>0); // make sure that we have at least one root
-  const Eigen::VectorXd diff = (roots-Eigen::VectorXd::Constant(roots.size(), result(component))).array().abs();
-  int rt;
-  diff.minCoeff(&rt);
-  result(component) = roots(rt);
-}
-
-void PolynomialMap::ComradeMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const {
+void PolynomialMap::PolynomialRootFinding(Eigen::VectorXd& result, double const refPt, unsigned int const component, PolynomialMap::InverseMethod const& invMethod) const {
   const Eigen::MatrixXd& coeff = expansions[component]->GetCoeffs();
   const std::vector<std::shared_ptr<IndexedScalarBasis> >& basisComps = expansions[component]->BasisComponents();
   Eigen::VectorXd polyCoeff = Eigen::VectorXd::Zero(expansions[component]->Multis()->GetMaxOrders() (component)+1);
@@ -118,7 +67,7 @@ void PolynomialMap::ComradeMethod(Eigen::VectorXd& result, double const refPt, u
   // choose the closest root to the input point
   auto basis = std::dynamic_pointer_cast<OrthogonalPolynomial>(basisComps[component]);
   assert(basis);
-  const Eigen::VectorXd& roots = basis->GetRootsComrade(polyCoeff);
+  const Eigen::VectorXd& roots = invMethod==InverseMethod::Comrade? basis->GetRootsComrade(polyCoeff) : basis->GetRootsSturm(polyCoeff, tol);
   assert(roots.size()>0); // make sure that we have at least one root
   const Eigen::VectorXd diff = (roots-Eigen::VectorXd::Constant(roots.size(), result(component))).array().abs();
   int rt;
