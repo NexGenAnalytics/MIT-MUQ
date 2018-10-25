@@ -117,6 +117,19 @@ Eigen::VectorXd Polynomial::GetRootsComrade(Eigen::VectorXd const& coeffs) const
 {
   const int N = coeffs.size()-1;
 
+  // If we're constant, we assume there are no roots (could be an infinite number though)
+  if(N==0){
+    return Eigen::VectorXd();
+
+  // If linear, compute the roots
+  }else if(N==1){
+    if(coeffs(1)==0){
+      return Eigen::VectorXd();
+    }else{
+      return -coeffs(0)/(coeffs(1)*BasisEvaluate(1,1.0)) * Eigen::VectorXd::Ones(1);
+    }
+  }
+
   // Normalize the coefficients
   Eigen::VectorXd normCoeffs = coeffs/coeffs(N);
 
@@ -137,8 +150,18 @@ Eigen::VectorXd Polynomial::GetRootsComrade(Eigen::VectorXd const& coeffs) const
   C(N-1,N-2) += ck(N)/ak(N);
   C(N-1,N-1) -= bk(N)/ak(N);
 
-  Eigen::VectorXd eigs = C.eigenvalues().real();
-  std::sort(&eigs[0], &eigs[eigs.size()-1]);
-  return eigs;
+  // get the real eigenvalues
+  const auto& eigens = C.eigenvalues();
+  const auto isReal = eigens.imag().array().abs() < 1.0e-14;
+  Eigen::VectorXd eigs(isReal.count());
+  
+  int cnt = 0;
+  for( unsigned int i=0; i<eigens.size(); ++i ) {
+    if( isReal(i) )
+      eigs(cnt++) = eigens(i).real();
+  }
 
+  std::sort(&eigs[0], &eigs[eigs.size()-1]);
+
+  return eigs;
 }
