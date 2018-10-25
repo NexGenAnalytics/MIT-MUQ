@@ -42,6 +42,7 @@ CreateCompileGroup(
   Polynomials/BasisExpansion.cpp
   Polynomials/MonotoneExpansion.cpp
   Quadrature/GaussQuadrature.cpp
+	Polynomials/SturmSolver.cpp
 )
 
 CreateCompileGroup(

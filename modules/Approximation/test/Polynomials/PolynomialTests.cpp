@@ -6,6 +6,7 @@
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Laguerre.h"
 #include "MUQ/Approximation/Polynomials/Jacobi.h"
+#include "MUQ/Approximation/Polynomials/SturmSolver.h"
 
 #include "MUQ/Utilities/Exceptions.h"
 
@@ -347,7 +348,7 @@ TEST(Polynomial, MonomialRoots_SturmSolve){
   poly << 0.0656667, 1.00199, -0.0010416, -0.000209811;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
@@ -362,7 +363,7 @@ TEST(Polynomial, MonomialRoots_QuadSolve){
   poly << -4.003227006346633e-01, -6.691129953727359e-01, 6.736986965417775e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_NEAR(-4.203681731663730e-01,roots(0),1e-8);
@@ -376,7 +377,7 @@ TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
   poly << 0, 0, 1;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_EQ(1,roots.size());
@@ -390,7 +391,7 @@ TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
   poly << 1, 0, 1;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_EQ(0,roots.size());
@@ -403,7 +404,7 @@ TEST(Polynomial, MonomialRoots_LinSolve){
   poly << 5.756290165831505e-01, -6.718024272190579e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_NEAR(8.568427163414405e-01,roots(0),1e-8);
@@ -421,7 +422,7 @@ TEST(Polynomial, MonomialRoots_SturmSolve2){
   }
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-7);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the polynomial roots to the roots of sin(x)
   int zeroRootInd = floor(0.5*roots.size());

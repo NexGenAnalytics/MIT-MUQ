@@ -1,6 +1,6 @@
 #include "MUQ/Approximation/Polynomials/OrthogonalPolynomial.h"
 
-#include "MUQ/Approximation/Polynomials/Monomial.h"
+#include "MUQ/Approximation/Polynomials/SturmSolver.h"
 
 #include "MUQ/Utilities/Exceptions.h"
 
@@ -128,7 +128,7 @@ Eigen::VectorXd OrthogonalPolynomial::GetRootsSturm(Eigen::VectorXd const& coeff
   for(int order=0; order<coeffs.size(); ++order)
     monoCoeffs.head(order+1) += coeffs(order)*GetMonomialCoeffs(order);
 
-  return Monomial::MonomialRoots(monoCoeffs,tol);
+  return SturmSolver(monoCoeffs,tol).Roots();
 }
 
 
