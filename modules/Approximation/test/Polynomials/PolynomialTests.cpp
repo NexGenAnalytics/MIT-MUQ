@@ -354,6 +354,20 @@ TEST(Polynomial, MonomialRoots_SturmSolve){
   EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
   EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
   EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+
+  auto mono = std::make_shared<Monomial>();
+
+  roots = mono->GetRoots(poly, Polynomial::Sturm);
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+
+  roots = mono->GetRoots(poly, Polynomial::Comrade);
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
 }
 
 TEST(Polynomial, MonomialRoots_QuadSolve){
@@ -439,7 +453,7 @@ TEST(Polynomial, ProbHermiteRoots_SturmSolve){
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = hermite->GetRoots(poly, OrthogonalPolynomial::Sturm);
+  Eigen::VectorXd roots = hermite->GetRoots(poly, Polynomial::Sturm);
 
   // compare the roots to the truth
   EXPECT_NEAR(-2.924713468970414e+00,roots(0),1e-4);
@@ -447,7 +461,7 @@ TEST(Polynomial, ProbHermiteRoots_SturmSolve){
   EXPECT_NEAR(6.934823585835934e-01,roots(2),1e-4);
   EXPECT_NEAR(1.866548264732107e+00,roots(3),1e-4);
 
-  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, OrthogonalPolynomial::Comrade);
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, Polynomial::Comrade);
   // compare the roots to the truth
   EXPECT_NEAR(-2.924713468970414e+00,comradeRoots(0),1e-4);
   EXPECT_NEAR(-1.079711083256760e+00,comradeRoots(1),1e-4);
@@ -465,7 +479,7 @@ TEST(Polynomial, PhysHermiteRoots_SturmSolve){
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = hermite->GetRoots(poly, OrthogonalPolynomial::Sturm);
+  Eigen::VectorXd roots = hermite->GetRoots(poly, Polynomial::Sturm);
 
   // compare the roots to the truth
   EXPECT_NEAR(-1.904980078887119e+00,roots(0),1e-4);
@@ -473,7 +487,7 @@ TEST(Polynomial, PhysHermiteRoots_SturmSolve){
   EXPECT_NEAR(4.162658411042948e-01,roots(2),1e-4);
   EXPECT_NEAR(1.461488797552201e+00,roots(3),1e-4);
 
-  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, OrthogonalPolynomial::Comrade);
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, Polynomial::Comrade);
 
   // compare the roots to the truth
   EXPECT_NEAR(-1.904980078887119e+00,comradeRoots(0),1e-4);

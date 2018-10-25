@@ -2,7 +2,7 @@
 
 using namespace muq::Approximation;
 
-Monomial::Monomial() : IndexedScalarBasis() {}
+Monomial::Monomial() : Polynomial() {}
 
 Monomial::~Monomial() {}
 
@@ -21,6 +21,12 @@ double Monomial::DerivativeEvaluate(int const polyOrder, int const derivOrder, d
 
 double Monomial::BasisEvaluate(int const order, double const x) const {
     return std::pow(x, order);
+}
+
+Eigen::VectorXd Monomial::GetMonomialCoeffs(unsigned int polyOrder) const{
+  Eigen::VectorXd coeffs = Eigen::VectorXd::Zero(polyOrder+1);
+  coeffs(polyOrder) = 1.0;
+  return coeffs;
 }
 
 REGISTER_SCALARBASIS_FAMILY(Monomial)
