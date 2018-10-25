@@ -5,7 +5,7 @@
 
 #include "MUQ/Utilities/RandomGenerator.h"
 
-#include "MUQ/Optimization/Optimization.h"
+#include "MUQ/Optimization/NLoptOptimizer.h"
 
 #include "MUQ/Approximation/Polynomials/IndexedScalarBasis.h"
 
@@ -220,10 +220,15 @@ std::pair<Eigen::VectorXd, double> Regression::PoisednessConstant(std::vector<Ei
   auto cost = std::make_shared<PoisednessCost>(shared_from_this(), lagrangeCoeff, inputDim);
   auto constraint = std::make_shared<PoisednessConstraint>(inputDim);
 
-  auto opt = std::make_shared<muq::Optimization::Optimization>(cost, optPt);
+  auto opt =
+    std::make_shared<muq::Optimization::NLoptOptimizer>(cost, optPt);
   opt->AddInequalityConstraint(constraint);
 
-  const std::pair<Eigen::VectorXd, double>& soln = opt->Solve((Eigen::VectorXd)Eigen::VectorXd::Zero(inputDim));
+  std::vector<Eigen::VectorXd> inputs;
+  inputs.push_back((Eigen::VectorXd)Eigen::VectorXd::Zero(inputDim));
+  
+  const std::pair<Eigen::VectorXd, double>& soln =
+    opt->Solve(inputs);
   assert(soln.second<=0.0); // we are minimizing a negative inner product so the optimal solution should be negative
 
   return std::pair<Eigen::VectorXd, double>(radius*soln.first+center, -soln.second);
@@ -305,20 +310,25 @@ void Regression::PoisednessCost::GradientImpl(unsigned int const inputDimWrt, mu
     }*/
 }
 
-Regression::PoisednessConstraint::PoisednessConstraint(unsigned int const inDim) : CostFunction(Eigen::VectorXi::Constant(1, inDim)) {}
+Regression::PoisednessConstraint::PoisednessConstraint(unsigned int const inDim) :
+  ModPiece(Eigen::VectorXi::Constant(1, inDim), Eigen::VectorXi::Ones(1)) {}
 
-double Regression::PoisednessConstraint::CostImpl(ref_vector<Eigen::VectorXd> const& input) {
+void Regression::PoisednessConstraint::EvaluateImpl(ref_vector<Eigen::VectorXd> const& input) {
   const Eigen::VectorXd& x = input[0];
-  return x.dot(x)-1.0;
+  outputs.resize(outputSizes[0]);
+  outputs[0] = (x.dot(x)-1.0)*Eigen::VectorXd::Ones(1);
 }
 
-void Regression::PoisednessConstraint::GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) {
+void Regression::PoisednessConstraint::JacobianImpl(unsigned int const outputDimWrt,
+                                                    unsigned int const inputDimWrt,
+                                                    muq::Modeling::ref_vector<Eigen::VectorXd> const& input) { 
+
   assert(inputDimWrt==0);
   const Eigen::VectorXd& x = input[0];
-  gradient = 2.0*x;///x.norm();
 
-  gradient *= sensitivity(0);
-
+  jacobian.resize(inputSizes[0], outputSizes[0]);
+  jacobian = 2.0*x;
+  
   /*{ // sanity check ...
     std::cout << std::endl;
     Eigen::VectorXd gradFD = GradientByFD(0, 0, input, sensitivity);
