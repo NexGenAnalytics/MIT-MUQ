@@ -21,14 +21,16 @@ namespace muq{
       enum InverseMethod {
         Newton,
 
-        Sturm
+        Sturm,
+
+        Comrade
       };
 
       /**
         @param[in] expansions The basis expensions for each component of the transport map
         @param[in] invMethod The method used to compute the inverse transport map
       */
-      PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const& expansions, PolynomialMap::InverseMethod const& invMethod = InverseMethod::Sturm);
+      PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const& expansions, PolynomialMap::InverseMethod const& invMethod = InverseMethod::Comrade);
 
       virtual ~PolynomialMap() = default;
 
@@ -45,6 +47,8 @@ namespace muq{
       void NewtonsMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
 
       void SturmMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
+
+      void ComradeMethod(Eigen::VectorXd& result, double const refPt, unsigned int const component) const;
 
       std::vector<std::shared_ptr<BasisExpansion> > expansions;
 

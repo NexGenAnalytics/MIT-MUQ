@@ -143,7 +143,7 @@ Eigen::VectorXd OrthogonalPolynomial::GetRootsComrade(Eigen::VectorXd const& coe
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(N,N);
 
   C(0,0) = -bk(1)/ak(1);
-  C(0,1) = 1.0/ak(1);
+  if( N>1 ) { C(0,1) = 1.0/ak(1); }
   for(int i=1; i<N-1; ++i){
     C(i,i-1) = ck(i+1)/ak(i+1);
     C(i,i) = -bk(i+1)/ak(i+1);
@@ -153,7 +153,7 @@ Eigen::VectorXd OrthogonalPolynomial::GetRootsComrade(Eigen::VectorXd const& coe
   for(int i=0; i<N; ++i)
     C(N-1,i) = -normCoeffs(i)/ak(N);
 
-  C(N-1,N-2) += ck(N)/ak(N);
+  if( N>1 ) { C(N-1,N-2) += ck(N)/ak(N); }
   C(N-1,N-1) -= bk(N)/ak(N);
 
   Eigen::VectorXd eigs = C.eigenvalues().real();

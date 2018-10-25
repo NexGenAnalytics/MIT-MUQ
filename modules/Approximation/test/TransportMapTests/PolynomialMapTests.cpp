@@ -89,7 +89,30 @@ TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, StrumInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Sturm); // this is also the default
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Sturm);
+  EXPECT_TRUE(map->inputSizes.size()==1);
+  EXPECT_TRUE(map->outputSizes.size()==1);
+  EXPECT_TRUE(map->inputSizes(0)==dim);
+  EXPECT_TRUE(map->outputSizes(0)==dim);
+
+  // choose a random point to evaluate the function
+  const Eigen::VectorXd rpnt = Eigen::VectorXd::Random(dim);
+
+  // an initial guess
+  const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Zero(dim);
+
+  // evaluate the transport map
+  const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xpnt0);
+  EXPECT_EQ(xpnt.size(), dim);
+
+  // the inverse should be equal to the reference
+  const Eigen::VectorXd result = map->EvaluateForward(xpnt);
+  EXPECT_EQ(result.size(), dim);
+  EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-10);
+}
+
+TEST_F(PolynomialMapTests, ComradeInverseEvaluation) {
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Comrade); // this is also the default
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
