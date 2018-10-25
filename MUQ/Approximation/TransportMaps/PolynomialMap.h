@@ -20,9 +20,7 @@ namespace muq{
 
       enum InverseMethod {
         Newton,
-
         Sturm,
-
         Comrade
       };
 
@@ -53,7 +51,7 @@ namespace muq{
       /// The method we are using to compute the inverse
       InverseMethod invMethod;
 
-      /// Tolerance for Newton's method
+      /// Tolerance for Sturm's and Newton's method
       const double tol = 1.0e-12;
 
       /// Maximum number of iterations for Newton's method

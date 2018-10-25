@@ -66,7 +66,7 @@ TEST_F(PolynomialMapTests, ForwardEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Newton);
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Newton);
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
@@ -88,8 +88,8 @@ TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
   EXPECT_NEAR((result-rpnt).norm(), 0.0, 1.0e-10);
 }
 
-TEST_F(PolynomialMapTests, StrumInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Sturm);
+TEST_F(PolynomialMapTests, SturmInverseEvaluation) {
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Sturm);
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
@@ -112,7 +112,7 @@ TEST_F(PolynomialMapTests, StrumInverseEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, ComradeInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Comrade); // this is also the default
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Comrade); // this is also the default
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);

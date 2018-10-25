@@ -105,7 +105,7 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       This is equivalent to extracting the \f$d\f$'s column of the Jacobian
       @param[in] dim The dimension that we are taking the derivative with respect to
       @param[in] x The point where we are evaluating the derivative
-      \return The derivative of dimenion dim
+      \return The derivative with respect to dimension dim
       */
       Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
 
@@ -126,7 +126,7 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
       const std::shared_ptr<muq::Utilities::MultiIndexSet> Multis() const{return multis;};
 
-      const std::vector<std::shared_ptr<IndexedScalarBasis> > BasisComponents() const { return basisComps; }
+      const std::vector<std::shared_ptr<IndexedScalarBasis> >& BasisComponents() const { return basisComps; }
 
     protected:
 
