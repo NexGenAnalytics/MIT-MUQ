@@ -156,8 +156,15 @@ Eigen::VectorXd OrthogonalPolynomial::GetRootsComrade(Eigen::VectorXd const& coe
   if( N>1 ) { C(N-1,N-2) += ck(N)/ak(N); }
   C(N-1,N-1) -= bk(N)/ak(N);
 
-  Eigen::VectorXd eigs = C.eigenvalues().real();
-  std::sort(&eigs[0], &eigs[eigs.size()-1]);
+  // get the real eigenvalues
+  const auto& eigens = C.eigenvalues();
+  auto ims = eigens.imag().array().abs()<1.0e-14;
+  Eigen::VectorXd eigs(ims.count());
+  int cnt = 0;
+  for( unsigned int i=0; i<eigens.size(); ++i ) {
+    if( ims(i) ) { eigs(cnt++) = eigens(i).real(); }
+  }
+
   return eigs;
 
 }

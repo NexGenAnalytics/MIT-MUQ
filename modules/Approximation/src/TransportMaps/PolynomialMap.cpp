@@ -84,9 +84,8 @@ void PolynomialMap::SturmMethod(Eigen::VectorXd& result, double const refPt, uns
 
   // choose the closest root to the input point
   const Eigen::VectorXd& roots = Monomial::MonomialRoots(monoCoeff, tol);
-  std::cout << "roots: " << roots.transpose() << std::endl;
   assert(roots.size()>0); // make sure that we have at least one root
-  const Eigen::VectorXd diff = roots-Eigen::VectorXd::Constant(roots.size(), result(component));
+  const Eigen::VectorXd diff = (roots-Eigen::VectorXd::Constant(roots.size(), result(component))).array().abs();
   int rt;
   diff.minCoeff(&rt);
   result(component) = roots(rt);
@@ -110,24 +109,18 @@ void PolynomialMap::ComradeMethod(Eigen::VectorXd& result, double const refPt, u
       }
     }
 
-    // if the total order is not zero, but it is a constant term
-    //if( expansions[component]->Multis()->at(term)->Sum()!=0 && p==0 ) { scale /= basisComps[component]->BasisEvaluate(0, 0.0); }
-
     polyCoeff(p) += scale;
   }
 
   // scale the constant coeff. by the reference point
   polyCoeff(0) -= refPt/basisComps[component]->BasisEvaluate(0, 0.0);
 
-  std::cout << "poly coeff: " << polyCoeff.transpose() << std::endl;
-
   // choose the closest root to the input point
   auto basis = std::dynamic_pointer_cast<OrthogonalPolynomial>(basisComps[component]);
   assert(basis);
-  const Eigen::VectorXd& roots = basis->GetRoots(polyCoeff, "Comrade");
-  std::cout << "roots: " << roots.transpose() << std::endl;
+  const Eigen::VectorXd& roots = basis->GetRootsComrade(polyCoeff);
   assert(roots.size()>0); // make sure that we have at least one root
-  const Eigen::VectorXd diff = roots-Eigen::VectorXd::Constant(roots.size(), result(component));
+  const Eigen::VectorXd diff = (roots-Eigen::VectorXd::Constant(roots.size(), result(component))).array().abs();
   int rt;
   diff.minCoeff(&rt);
   result(component) = roots(rt);

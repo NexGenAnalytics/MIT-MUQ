@@ -146,5 +146,5 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
 
   // evaluate the log determinate
   const double logdet = map->LogDeterminant(xpnt);
-  EXPECT_TRUE(logdet>0.0);
+  EXPECT_TRUE(!std::isnan(logdet));
 }

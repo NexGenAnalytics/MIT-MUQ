@@ -60,7 +60,6 @@ namespace muq{
 
       /// Maximum number of iterations for Newton's method
       const unsigned int maxit = 100;
-
     }; // class PolynomialMap
 
   }
