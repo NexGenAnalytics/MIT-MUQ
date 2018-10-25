@@ -111,11 +111,12 @@ Eigen::VectorXd OrthogonalPolynomial::GetMonomialCoeffs(unsigned int polyOrder) 
 }
 
 
-Eigen::VectorXd OrthogonalPolynomial::GetRoots(Eigen::VectorXd const& coeffs, std::string const& method) const {
+Eigen::VectorXd OrthogonalPolynomial::GetRoots(Eigen::VectorXd const& coeffs,
+                                               RootMethod             method) const {
 
-  if(method == "Sturm"){
+  if(method == RootMethod::Sturm){
     return GetRootsSturm(coeffs, 1e-10);
-  }else if(method=="Comrade"){
+  }else if(method == RootMethod::Comrade){
     return GetRootsComrade(coeffs);
   }else{
     throw std::invalid_argument("Invalid option to OrthogonalPolynomial::GetRoots.  Valid methods are \"Sturm\" and \"Comrade\".");

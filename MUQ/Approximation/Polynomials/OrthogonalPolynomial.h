@@ -34,6 +34,11 @@ namespace muq {
 
     public:
 
+      enum RootMethod {
+          Sturm,
+          Comrade
+      };
+
       /// Create a polynomial
       OrthogonalPolynomial() : IndexedScalarBasis(){};
 
@@ -78,7 +83,7 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
       virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
 
       /** Computes the roots of a 1d polynomial expansion. */
-      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, std::string const& method) const;
+      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, RootMethod method) const;
 
       /** Computes the roots of a 1d polynomial expansion by forming the Comrade matrix. */
       virtual Eigen::VectorXd GetRootsComrade(Eigen::VectorXd const& coeffs) const;
