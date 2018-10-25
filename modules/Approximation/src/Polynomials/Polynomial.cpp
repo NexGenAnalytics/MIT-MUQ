@@ -90,10 +90,11 @@ Eigen::VectorXd Polynomial::GetMonomialCoeffs(unsigned int polyOrder) const {
 
 
 Eigen::VectorXd Polynomial::GetRoots(Eigen::VectorXd const& coeffs,
-                                               RootMethod             method) const {
+                                     RootMethod             method,
+                                     double                 tol) const {
 
   if(method == RootMethod::Sturm){
-    return GetRootsSturm(coeffs, 1e-10);
+    return GetRootsSturm(coeffs, tol);
   }else if(method == RootMethod::Comrade){
     return GetRootsComrade(coeffs);
   }else{

@@ -11,7 +11,7 @@ namespace muq {
 
     class GaussQuadrature;
 
-    
+
     class Polynomial : public IndexedScalarBasis {
 
       friend class GaussQuadrature;
@@ -55,7 +55,9 @@ namespace muq {
       virtual Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const;
 
       /** Computes the roots of a 1d polynomial expansion. */
-      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs, RootMethod method) const;
+      virtual Eigen::VectorXd GetRoots(Eigen::VectorXd const& coeffs,
+                                       RootMethod             method,
+                                       double                 tol=1e-10) const;
 
       /** Computes the roots of a 1d polynomial expansion by forming the Comrade matrix. */
       virtual Eigen::VectorXd GetRootsComrade(Eigen::VectorXd const& coeffs) const;

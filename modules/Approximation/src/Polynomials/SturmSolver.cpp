@@ -7,8 +7,7 @@ using namespace muq::Approximation;
 
 SturmSolver::SturmSolver() : numRealRoots(-1) {};
 
-SturmSolver::SturmSolver(Eigen::VectorXd const& coeffs, double tol) : SturmSolver()
-{
+SturmSolver::SturmSolver(Eigen::VectorXd const& coeffs, double tol) : SturmSolver() {
   Compute(coeffs, tol);
 }
 
@@ -26,7 +25,7 @@ void SturmSolver::MonomialDivision(Eigen::VectorXd const& A,
   const int mMn = m - n;
   int i;
 
-  if ( mMn < 0 ){
+  if ( mMn < 0 ) {
     R = -1.0*A;
     return;
   }
@@ -37,8 +36,7 @@ void SturmSolver::MonomialDivision(Eigen::VectorXd const& A,
   const double iB0 = 1.0/B[n];
   int nj;
   Q.resize(mMn+1);
-  for ( i = 0; i <= mMn; ++ i )
-  {
+  for ( i = 0; i <= mMn; ++ i ) {
     nj = std::min<int>(i,n);//i > n ? n : i;
     Q[mMn-i] = A[m-i];
     for ( int j = 1; j <= nj; ++ j )
@@ -49,13 +47,11 @@ void SturmSolver::MonomialDivision(Eigen::VectorXd const& A,
 
   // now, compute the remainder
   R.resize(n);
-  for ( i = 1; i <= n; ++ i )
-  {
+  for ( i = 1; i <= n; ++ i ) {
     R[i-1] = A[i - 1];
     nj = std::min<int>(i, mMn + 1);//mMn + 1 > i ? i : mMn + 1;
     for ( int j = 0; j < nj; ++ j )
       R[i-1] -= B[i - 1 - j] * Q[j];
-
   }
 }
 
@@ -63,14 +59,15 @@ double SturmSolver::MonomialEvaluate(Eigen::VectorXd const& P, double x) {
 
   const int Psize = P.size();
   double val = P(Psize-1);
+
   for (int i = Psize-2; i >=0; --i)
     val = val * x + P(i);
 
   return val;
 }
 
-std::vector<Eigen::VectorXd> SturmSolver::BuildSturmSeq(Eigen::VectorXd const& P) const
-{
+std::vector<Eigen::VectorXd> SturmSolver::BuildSturmSeq(Eigen::VectorXd const& P) const {
+
   const int polyOrder = P.size()-1;
 
   // each term in the sturm sequence is a polynomial, this vector stores the coefficients
@@ -84,7 +81,7 @@ std::vector<Eigen::VectorXd> SturmSolver::BuildSturmSeq(Eigen::VectorXd const& P
 
   // now use polynomial division to fill in the rest of the sturm sequence with remainders
   Eigen::VectorXd Q;
-  for(int i=2; i<polyOrder+1; ++i){
+  for(int i=2; i<polyOrder+1; ++i) {
     MonomialDivision(sturmSeq.at(i-2), sturmSeq.at(i-1), Q, sturmSeq.at(i));
     sturmSeq.at(i) *= -1.0;
   }
@@ -92,8 +89,8 @@ std::vector<Eigen::VectorXd> SturmSolver::BuildSturmSeq(Eigen::VectorXd const& P
   return sturmSeq;
 }
 
-std::pair<int, std::pair<int,int>> SturmSolver::ComputeNumRoots(std::vector<Eigen::VectorXd> const& sturmSeq) const
-{
+std::pair<int, std::pair<int,int>> SturmSolver::ComputeNumRoots(std::vector<Eigen::VectorXd> const& sturmSeq) const {
+
   const int polyOrder = sturmSeq.size()-1;
 
   // compute the number of sign changes at -infty and +infty.  infSigns holds the signs of each polynomial in the Sturm sequence at +\infty
@@ -105,7 +102,7 @@ std::pair<int, std::pair<int,int>> SturmSolver::ComputeNumRoots(std::vector<Eige
 
   std::pair<int,int> numSignChanges = std::make_pair(0,0);
 
-  for(int i=1; i<polyOrder+1; ++i){
+  for(int i=1; i<polyOrder+1; ++i) {
 
     // the sign at +infty is just the sign of the largest coefficient
     infSigns.at(i) = sturmSeq.at(i)(sturmSeq.at(i).size()-1)>=0;
@@ -121,7 +118,7 @@ std::pair<int, std::pair<int,int>> SturmSolver::ComputeNumRoots(std::vector<Eige
   }
 
   int numRealRoots = numSignChanges.first-numSignChanges.second;
-  if(numRealRoots<=0){
+  if(numRealRoots<=0) {
     std::stringstream msg;
     msg << "No roots exist for specified coefficients." << std::endl;
     msg << "Sturm sequence is given by:\n";
@@ -149,13 +146,13 @@ Eigen::VectorXd SturmSolver::BoundRoots(std::vector<Eigen::VectorXd> const& stur
      double oldPolyVal = MonomialEvaluate(sturmSeq.at(0),lb);
 
      // there is a chance we landed on a root exactly! This is currently a hack to get things to work, we should instead store this location and use it later!
-     if(abs(oldPolyVal)<1e-13){
+     if(abs(oldPolyVal)<1e-13) {
        lb -= 1;
        oldPolyVal = MonomialEvaluate(sturmSeq.at(0),lb);
      }
 
      midSignChanges = 0;
-     for(int j=1; j<sturmSeq.size(); ++j){
+     for(int j=1; j<sturmSeq.size(); ++j) {
        double polyVal = MonomialEvaluate(sturmSeq.at(j),lb);
        if(std::signbit(oldPolyVal)!=std::signbit(polyVal))
          ++midSignChanges;
@@ -171,25 +168,25 @@ Eigen::VectorXd SturmSolver::BoundRoots(std::vector<Eigen::VectorXd> const& stur
 
 
    bool foundUB = false;
-   while(!foundUB){
+   while(!foundUB) {
 
      double oldPolyVal = MonomialEvaluate(sturmSeq.at(0),ub);
 
      // there is a chance we landed on a root exactly! This is currently a hack to get things to work, we should instead store this location and use it later!
-     if(abs(oldPolyVal)<1e-13){
+     if(abs(oldPolyVal)<1e-13) {
        ub += 1;
        oldPolyVal = MonomialEvaluate(sturmSeq.at(0),ub);
      }
 
      midSignChanges = 0;
-     for(int j=1; j<sturmSeq.size(); ++j){
+     for(int j=1; j<sturmSeq.size(); ++j) {
        double polyVal = MonomialEvaluate(sturmSeq.at(j),ub);
        if(std::signbit(oldPolyVal)!=std::signbit(polyVal))
          ++midSignChanges;
        oldPolyVal = polyVal;
      }
 
-     if(midSignChanges==numSignChanges.second){
+     if(midSignChanges==numSignChanges.second) {
        foundUB = true;
      }else{
        ub *= 2.0;
@@ -213,7 +210,7 @@ Eigen::VectorXd SturmSolver::BoundRoots(std::vector<Eigen::VectorXd> const& stur
    int numIntervals = 1; // how many intervals have we found that contain exactly one root
 
 
-   while(numIntervals<numRealRoots && localTol > tol){ // bisection width
+   while(numIntervals<numRealRoots && localTol > tol) { // bisection width
      localTol *= 0.5; // half the search interval
 
      int nloc = numIntervals;
