@@ -92,7 +92,7 @@ void PolynomialMap::NewtonsMethod(Eigen::VectorXd& result, double const refPt, u
 double PolynomialMap::LogDeterminant(Eigen::VectorXd const& evalPt) const {
   assert(evalPt.size()==expansions.size());
 
-  double logdet = 1.0;
+  double logdet = 0.0;
   for( unsigned int i=0; i<expansions.size(); ++i ) {
     logdet += std::log(std::fabs(expansions[i]->Derivative(i, (Eigen::VectorXd)evalPt.head(i+1)) (0)));
   }
