@@ -2,12 +2,15 @@
 
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
 
 using namespace muq::Utilities;
+using namespace muq::Modeling;
 using namespace muq::Approximation;
 
 class PolynomialMapTests : public::testing::Test {
@@ -175,63 +178,41 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
   EXPECT_DOUBLE_EQ(logdet0, logdet1);
 }
 
-
 TEST_F(PolynomialMapTests, Densities) {
-  
   Eigen::VectorXd c = Eigen::VectorXd::Zero(dim);
   Eigen::MatrixXd L = Eigen::MatrixXd::Zero(dim, dim);
 
   // create the basis, multi index, and coefficents
-  auto legendre = std::make_shared<Legendre>();
+  auto mono = std::make_shared<Monomial>();
 
   for (int i=1; i<=dim; ++i) {
-
-    std::vector<std::shared_ptr<IndexedScalarBasis> > basis(i, legendre);
+    std::vector<std::shared_ptr<IndexedScalarBasis> > basis(i, mono);
     std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i,1);
-    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size()).cwiseAbs();
+    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size());
 
     c(i-1) = coeffs(0,0);
-    
+
     for (int j=0; j<multis->Size()-1; ++j) {
-      L(i-1,j) = coeffs(0,j+1);
+      L(i-1,i-1-j) = coeffs(0,j+1);
     }
 
     expansion[i-1] = std::make_shared<BasisExpansion>(basis, multis, coeffs);
-
   }
 
-  auto densitymap = std::make_shared<PolynomialMap>(expansion);
+  map = std::make_shared<PolynomialMap>(expansion);
 
-  // choose a random point to evaluate the function
-  Eigen::VectorXd rpnt = Eigen::VectorXd::Random(dim);
-  Eigen::VectorXd rmu = Eigen::VectorXd::Zero(dim);  
-  Eigen::MatrixXd rcov = Eigen::MatrixXd::Zero(dim, dim);
-  for (int i=0; i<dim; ++i) 
-    rcov(i,i) = 1.0;
+  // reference density
+  auto stdnormal = std::make_shared<Gaussian>(dim);
 
-  const Eigen::VectorXd xpnt = densitymap->EvaluateForward(rpnt);
+  // make sure we get what we expect
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xpnt = map->EvaluateForward(rpnt);
+  const Eigen::VectorXd xexpect = L*rpnt + c;
+  EXPECT_NEAR((xpnt-xexpect).norm(), 0.0, 1.0e-10);
 
-  //  const Eigen::MatrixXd L = L_inv.inverse();
-  const Eigen::VectorXd xmu = L*rmu + c;
-  const Eigen::MatrixXd xcov = L*rcov*L.transpose();
+  // target density
+  auto target = std::make_shared<Gaussian>(c, L*L.transpose());
 
-  std::cout << "rpnt: " << rpnt << "\n" << std::endl;
-  std::cout << "rmu: " << rpnt << "\n" << std::endl;
-  std::cout << "xpnt: " << xpnt << "\n" << std::endl;
-  std::cout << "xmu: " << xmu << "\n" << std::endl;
-
-  std::cout << exp(map->LogDeterminant(rpnt)) << std::endl;
-
-  double  A = 1.0/std::sqrt((2.0*M_PI*xcov).determinant());
-  std::cout << A << std::endl;
-  std::cout << A*exp(-0.5*(xpnt-xmu).transpose()*xcov.inverse()*(xpnt-xmu)) << std::endl;
-
-  A = 1.0/std::sqrt((2.0*M_PI*rcov).determinant());
-  std::cout << exp(map->LogDeterminant(rpnt))*A*exp(-0.5*(rpnt-rmu).transpose()*rcov.inverse()*(rpnt-rmu)) << std::endl;
-
-  
+  // the target density should be defined by the reference denisty and the inverse transport map; note: \pi_X(x) = \pi_X(T(r)) = \pi_R(r) |\det{T^{-1}(r)}|
+  EXPECT_NEAR(target->LogDensity(xpnt), stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt), 1.0e-10);
 }
-    
-  
-  
-  
