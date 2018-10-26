@@ -2,12 +2,15 @@
 
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
 
 using namespace muq::Utilities;
+using namespace muq::Modeling;
 using namespace muq::Approximation;
 
 class PolynomialMapTests : public::testing::Test {
@@ -168,4 +171,44 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
 
   // linear determinates should be the same
   EXPECT_DOUBLE_EQ(logdet0, logdet1);
+}
+
+TEST_F(PolynomialMapTests, Densities) {
+  Eigen::VectorXd c = Eigen::VectorXd::Zero(dim);
+  Eigen::MatrixXd L = Eigen::MatrixXd::Zero(dim, dim);
+
+  // create the basis, multi index, and coefficents
+  auto mono = std::make_shared<Monomial>();
+
+  for (int i=1; i<=dim; ++i) {
+    std::vector<std::shared_ptr<IndexedScalarBasis> > basis(i, mono);
+    std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i,1);
+    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Ones(1, multis->Size());
+    coeffs(0,i) = 2.0;
+
+    c(i-1) = coeffs(0,0);
+
+    for (int j=0; j<multis->Size()-1; ++j) {
+      L(i-1,i-1-j) = coeffs(0,j+1);
+    }
+
+    expansion[i-1] = std::make_shared<BasisExpansion>(basis, multis, coeffs);
+  }
+
+  map = std::make_shared<PolynomialMap>(expansion);
+
+  // reference density
+  auto stdnormal = std::make_shared<Gaussian>(dim);
+
+  // make sure we get what we expect
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xpnt = map->EvaluateForward(rpnt);
+  const Eigen::VectorXd xexpect = L*rpnt + c;
+  EXPECT_NEAR((xpnt-xexpect).norm(), 0.0, 1.0e-10);
+
+  // target density
+  auto target = std::make_shared<Gaussian>(c, L*L.transpose());
+
+  // the target density should be defined by the reference denisty and the inverse transport map; note: \pi_X(x) = \pi_X(T(r)) = \pi_R(r) |\det{T^{-1}(r)}|
+  EXPECT_NEAR(target->LogDensity(xpnt), stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt), 1.0e-10);
 }
