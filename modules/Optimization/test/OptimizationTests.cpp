@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "MUQ/Optimization/Optimization.h"
+#include "MUQ/Optimization/NLoptOptimizer.h"
 
 #include "RosenbrockFunction.h"
 
@@ -25,33 +25,20 @@ public:
     auto cost = std::make_shared<RosenbrockFunction>();
     
     const Eigen::VectorXd x = Eigen::Vector2d(0.85, 1.2);
-    const Eigen::VectorXd a = Eigen::VectorXd::Constant(1, 5.0);
+
+    auto opt =
+      std::make_shared<NLoptOptimizer>(cost, pt.get_child("Optimization"));
+
+    std::vector<Eigen::VectorXd> inputs;
+    inputs.push_back(x);
+
+    std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);
     
-    auto opt = std::make_shared<Optimization>(cost, pt.get_child("Optimization"));
-    
-    std::vector<boost::any> soln0 = opt->Evaluate(x, a);
-    std::pair<Eigen::VectorXd, double> soln1 = opt->Solve(x, a);
-    const boost::any xany = x;
-    const boost::any aany = a;
-    std::pair<Eigen::VectorXd, double> soln2 = opt->Solve(ref_vector<boost::any>({std::cref(xany), std::cref(aany)}));
-    
-    const Eigen::VectorXd& xopt = boost::any_cast<Eigen::VectorXd const&>(soln0[0]);
-    const double minf = boost::any_cast<double const>(soln0[1]);
-    
-    EXPECT_EQ(xopt.size(), 2);
-    EXPECT_NEAR(xopt(0), 1.0, 1.0e-4);
-    EXPECT_NEAR(xopt(1), 1.0, 1.0e-4);
-    EXPECT_NEAR(minf, 0.0, 1.0e-10);
-    
-    EXPECT_EQ(soln1.first.size(), 2);
-    EXPECT_NEAR(soln1.first(0), 1.0, 1.0e-4);
-    EXPECT_NEAR(soln1.first(1), 1.0, 1.0e-4);
-    EXPECT_NEAR(soln1.second, 0.0, 1.0e-10);
-    
-    EXPECT_EQ(soln2.first.size(), 2);
-    EXPECT_NEAR(soln2.first(0), 1.0, 1.0e-4);
-    EXPECT_NEAR(soln2.first(1), 1.0, 1.0e-4);
-    EXPECT_NEAR(soln2.second, 0.0, 1.0e-10);
+    EXPECT_EQ(soln.first.size(), 2);
+    EXPECT_NEAR(soln.first(0), 1.0, 1.0e-4);
+    EXPECT_NEAR(soln.first(1), 1.0, 1.0e-4);
+    EXPECT_NEAR(soln.second, 0.0, 1.0e-10);
+
   }
   
   pt::ptree pt;
@@ -103,57 +90,84 @@ TEST_F(OptimizationTests, LMVM) {
   pt.put("Optimization.Algorithm", "LMVM");
 }
 
-class InequalityConstraint : public CostFunction {
+class InequalityConstraint : public muq::Modeling::ModPiece {
   public: 
-  inline InequalityConstraint() : CostFunction(Eigen::Vector2i(2, 1)) {}
+  inline InequalityConstraint() :
+    ModPiece(2*Eigen::VectorXi::Ones(1), Eigen::VectorXi::Ones(1)) {}
 
   virtual inline ~InequalityConstraint() {}
 
  private:
 
-  inline virtual double CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+  inline virtual
+  void
+  EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+
     const Eigen::VectorXd& xc = input[0];
-    const Eigen::VectorXd& b = input[1];
+    const Eigen::VectorXd b = Eigen::VectorXd::Constant(1, 2.0);
 
-    return b(0)-xc(0);
+    std::vector<Eigen::VectorXd> output;
+    outputs.resize(outputSizes[0]);
+    outputs[0] = ((b(0)-xc(0))*Eigen::VectorXd::Ones(1));
+
   }
 
-  inline virtual void GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) override {
+
+  inline virtual 
+  void
+  JacobianImpl(unsigned int const outputDimWrt,
+               unsigned int const inputDimWrt,
+               muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+
+
     assert(inputDimWrt==0);
-    
-    gradient = Eigen::Vector2d::Zero(2);
-    gradient(0) = -1.0;
 
-    gradient *= sensitivity(0);
+    jacobian = Eigen::MatrixXd::Zero(inputSizes[0], outputSizes[0]);
+    jacobian(0,0) = -1.0;
+    
   }
+  
 };
 
-class EqualityConstraint : public CostFunction {
+
+class EqualityConstraint : public ModPiece {
   public: 
-  inline EqualityConstraint() : CostFunction(Eigen::VectorXi::Constant(1, 2)) {}
+  inline EqualityConstraint() :
+    ModPiece(2*Eigen::VectorXi::Ones(1), Eigen::VectorXi::Ones(1)) {}
 
   virtual inline ~EqualityConstraint() {}
 
  private:
 
-  inline virtual double CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+  inline virtual
+  void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+
     const Eigen::VectorXd& xc = input[0];
 
-    return xc(1)-xc(0)*xc(0)-1.0;
+    outputs.resize(outputSizes[0]);
+    outputs[0] = (xc(1)-xc(0)*xc(0)-1.0)*Eigen::VectorXd::Ones(1);
+
   }
 
-  inline virtual void GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) override {
+
+  inline virtual
+  void JacobianImpl(unsigned int const outputDimWrt,
+                    unsigned int const inputDimWrt,
+                    muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override {
+
     assert(inputDimWrt==0);
     
     const Eigen::VectorXd& xc = input[0];
 
-    gradient = Eigen::Vector2d::Zero(2);
-    gradient(0) = -2.0*xc(0);
-    gradient(1) = 1.0;
+    jacobian.resize(inputSizes[0], outputSizes[0]);
+    jacobian(0,0) = -2.0*xc(0);
+    jacobian(1,0) = 1.0;
 
-    gradient *= sensitivity(0);
   }
+
 };
+
+
 
 class ConstrainedOptimizationTests : public::testing::Test {
 public:
@@ -176,36 +190,23 @@ public:
     
     const Eigen::VectorXd x = Eigen::Vector2d(2.0, 5.0);
     const Eigen::VectorXd a = Eigen::VectorXd::Constant(1, 5.0);
-    const Eigen::VectorXd b = Eigen::VectorXd::Constant(1, 2.0);
+
 	    
-    auto opt = std::make_shared<Optimization>(cost, pt.get_child("Optimization"));
+    auto opt = std::make_shared<NLoptOptimizer>(cost, pt.get_child("Optimization"));
+     
     opt->AddInequalityConstraint(ineqconstraint);
     opt->AddEqualityConstraint(eqconstraint);
     
-    std::vector<boost::any> soln0 = opt->Evaluate(x, a, b);
-    std::pair<Eigen::VectorXd, double> soln1 = opt->Solve(x, a, b);
-    const boost::any xany = x;
-    const boost::any aany = a;
-    const boost::any bany = b;
-    std::pair<Eigen::VectorXd, double> soln2 = opt->Solve(ref_vector<boost::any>({std::cref(xany), std::cref(aany), std::cref(bany)}));
+    std::vector<Eigen::VectorXd> inputs;
+    inputs.push_back(x);
     
-    const Eigen::VectorXd& xopt = boost::any_cast<Eigen::VectorXd const&>(soln0[0]);
-    const double minf = boost::any_cast<double const>(soln0[1]);
+    std::pair<Eigen::VectorXd, double> soln1 = opt->Solve(inputs);
 
-    EXPECT_EQ(xopt.size(), 2);
-    EXPECT_NEAR(xopt(0), 2.0, 1.0e-4);
-    EXPECT_NEAR(xopt(1), 5.0, 1.0e-4);
-    EXPECT_NEAR(minf, 6.0, 1.0e-10);
-    
     EXPECT_EQ(soln1.first.size(), 2);
     EXPECT_NEAR(soln1.first(0), 2.0, 1.0e-4);
     EXPECT_NEAR(soln1.first(1), 5.0, 1.0e-4);
     EXPECT_NEAR(soln1.second, 6.0, 1.0e-10);
-    
-    EXPECT_EQ(soln2.first.size(), 2);
-    EXPECT_NEAR(soln2.first(0), 2.0, 1.0e-4);
-    EXPECT_NEAR(soln2.first(1), 5.0, 1.0e-4);
-    EXPECT_NEAR(soln2.second, 6.0, 1.0e-10);
+
   }
   
   pt::ptree pt;

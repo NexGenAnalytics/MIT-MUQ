@@ -6,6 +6,7 @@
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Laguerre.h"
 #include "MUQ/Approximation/Polynomials/Jacobi.h"
+#include "MUQ/Approximation/Polynomials/SturmSolver.h"
 
 #include "MUQ/Utilities/Exceptions.h"
 
@@ -342,13 +343,27 @@ TEST(Polynomial, Factory)
 
 TEST(Polynomial, MonomialRoots_SturmSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(4);
   poly << 0.0656667, 1.00199, -0.0010416, -0.000209811;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+
+  auto mono = std::make_shared<Monomial>();
+
+  roots = mono->GetRoots(poly, Polynomial::Sturm);
+  // compare the roots to the truth
+  EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
+  EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
+  EXPECT_NEAR(66.70253836221926,roots(2),1e-4);
+
+  roots = mono->GetRoots(poly, Polynomial::Comrade);
   // compare the roots to the truth
   EXPECT_NEAR(-71.60147450590436,roots(0),1e-4);
   EXPECT_NEAR(-0.06553187753397455,roots(1),1e-4);
@@ -357,12 +372,12 @@ TEST(Polynomial, MonomialRoots_SturmSolve){
 
 TEST(Polynomial, MonomialRoots_QuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << -4.003227006346633e-01, -6.691129953727359e-01, 6.736986965417775e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_NEAR(-4.203681731663730e-01,roots(0),1e-8);
@@ -371,12 +386,12 @@ TEST(Polynomial, MonomialRoots_QuadSolve){
 
 TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << 0, 0, 1;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_EQ(1,roots.size());
@@ -385,12 +400,12 @@ TEST(Polynomial, MonomialRoots_RepeatedQuadSolve){
 
 TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(3);
   poly << 1, 0, 1;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_EQ(0,roots.size());
@@ -398,12 +413,12 @@ TEST(Polynomial, MonomialRoots_InfeasibleQuadSolve){
 
 TEST(Polynomial, MonomialRoots_LinSolve){
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(2);
   poly << 5.756290165831505e-01, -6.718024272190579e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-6);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the roots to the truth
   EXPECT_NEAR(8.568427163414405e-01,roots(0),1e-8);
@@ -421,7 +436,7 @@ TEST(Polynomial, MonomialRoots_SturmSolve2){
   }
 
   // compute the roots
-  Eigen::VectorXd roots = Monomial::MonomialRoots(poly, 1e-7);
+  Eigen::VectorXd roots = SturmSolver(poly, 1e-10).Roots();
 
   // compare the polynomial roots to the roots of sin(x)
   int zeroRootInd = floor(0.5*roots.size());
@@ -433,12 +448,12 @@ TEST(Polynomial, ProbHermiteRoots_SturmSolve){
 
   auto hermite = std::make_shared<ProbabilistHermite>();
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(5);
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = hermite->GetRoots(poly, "Sturm");
+  Eigen::VectorXd roots = hermite->GetRoots(poly, Polynomial::Sturm);
 
   // compare the roots to the truth
   EXPECT_NEAR(-2.924713468970414e+00,roots(0),1e-4);
@@ -446,13 +461,12 @@ TEST(Polynomial, ProbHermiteRoots_SturmSolve){
   EXPECT_NEAR(6.934823585835934e-01,roots(2),1e-4);
   EXPECT_NEAR(1.866548264732107e+00,roots(3),1e-4);
 
-  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, "Comrade");
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, Polynomial::Comrade);
   // compare the roots to the truth
   EXPECT_NEAR(-2.924713468970414e+00,comradeRoots(0),1e-4);
   EXPECT_NEAR(-1.079711083256760e+00,comradeRoots(1),1e-4);
   EXPECT_NEAR(6.934823585835934e-01,comradeRoots(2),1e-4);
   EXPECT_NEAR(1.866548264732107e+00,comradeRoots(3),1e-4);
-
 
 }
 
@@ -460,12 +474,12 @@ TEST(Polynomial, PhysHermiteRoots_SturmSolve){
 
   auto hermite = std::make_shared<PhysicistHermite>();
 
-  // create a cubic polynomial that caused us issues at one point, this is almost linear
+  // create a polynomial that caused us issues at one point, this is almost linear
   Eigen::VectorXd poly(5);
   poly << 8.147236863931789e-01,     9.057919370756192e-01,     1.269868162935061e-01,     9.133758561390194e-01,     6.323592462254095e-01;
 
   // compute the roots
-  Eigen::VectorXd roots = hermite->GetRoots(poly, "Sturm");
+  Eigen::VectorXd roots = hermite->GetRoots(poly, Polynomial::Sturm);
 
   // compare the roots to the truth
   EXPECT_NEAR(-1.904980078887119e+00,roots(0),1e-4);
@@ -473,7 +487,7 @@ TEST(Polynomial, PhysHermiteRoots_SturmSolve){
   EXPECT_NEAR(4.162658411042948e-01,roots(2),1e-4);
   EXPECT_NEAR(1.461488797552201e+00,roots(3),1e-4);
 
-  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, "Comrade");
+  Eigen::VectorXd comradeRoots = hermite->GetRoots(poly, Polynomial::Comrade);
 
   // compare the roots to the truth
   EXPECT_NEAR(-1.904980078887119e+00,comradeRoots(0),1e-4);
