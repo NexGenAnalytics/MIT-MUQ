@@ -183,8 +183,7 @@ TEST_F(PolynomialMapTests, Densities) {
   for (int i=1; i<=dim; ++i) {
     std::vector<std::shared_ptr<IndexedScalarBasis> > basis(i, mono);
     std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i,1);
-    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Ones(1, multis->Size());
-    coeffs(0,i) = 2.0;
+    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size());
 
     c(i-1) = coeffs(0,0);
 
