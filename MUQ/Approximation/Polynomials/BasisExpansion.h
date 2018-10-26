@@ -27,7 +27,7 @@ namespace muq{
                  is a coefficient, \f$\alpha\f$ is a multindex in the set of
                  indices \f$A\f$, and \f$\Phi_\alpha(x)\f$ is a multivariate
                  basis function defined by the multiindex, which takes the form
-                 \f[ \Phi_\alpha(x) = \Prod_{i=1}^N \phi_{i}(x_i,\alpha_i). \f]
+                 \f[ \Phi_\alpha(x) = \prod_{i=1}^N \phi_{i}(x_i,\alpha_i). \f]
                  The univariate functions \f$\phi_{i}(x_i,\alpha_i)\f$ can be
                  polynomials, Hermite functions, or some ther IndexScalarBasis.
                  For example, we could use Hermite polynomials for \f$i=0\f$ and
