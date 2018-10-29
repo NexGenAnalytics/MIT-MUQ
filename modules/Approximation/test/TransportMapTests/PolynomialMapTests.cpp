@@ -3,6 +3,8 @@
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 #include "MUQ/Utilities/RandomGenerator.h"
 
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 
@@ -11,13 +13,15 @@
 #include <boost/property_tree/ptree.hpp>
 
 using namespace muq::Utilities;
+using namespace muq::Modeling;
 using namespace muq::Approximation;
 
 class PolynomialMapTests : public::testing::Test {
 public:
 
   PolynomialMapTests() {
-    // create the basis expension for each component of the map
+
+    // create the basis expansion for each component of the map
     expansion.resize(dim);
     auto legendre = std::make_shared<Legendre>();
     std::vector<std::shared_ptr<MultiIndexSet>> multis = MultiIndexFactory::CreateTriTotalOrder(dim, 3);
@@ -45,7 +49,9 @@ protected:
 
   /// Polynomial transport map
   std::shared_ptr<PolynomialMap> map;
+
 };
+
 
 TEST_F(PolynomialMapTests, ForwardEvaluation) {
   map = std::make_shared<PolynomialMap>(expansion);
@@ -68,10 +74,11 @@ TEST_F(PolynomialMapTests, ForwardEvaluation) {
   const Eigen::VectorXd rpnteval = map->Evaluate(xpnt) [0];
   EXPECT_EQ(rpnteval.size(), dim);
   EXPECT_DOUBLE_EQ((rpnteval-rpnt).norm(), 0.0);
+
 }
 
 TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Newton);
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Newton);
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
@@ -94,7 +101,8 @@ TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, SturmInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Sturm);
+
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Sturm);
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
@@ -117,7 +125,7 @@ TEST_F(PolynomialMapTests, SturmInverseEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, ComradeInverseEvaluation) {
-  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::InverseMethod::Comrade); // this is also the default
+  map = std::make_shared<PolynomialMap>(expansion, PolynomialMap::Comrade); // this is also the default
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
   EXPECT_TRUE(map->inputSizes(0)==dim);
@@ -140,6 +148,19 @@ TEST_F(PolynomialMapTests, ComradeInverseEvaluation) {
 }
 
 TEST_F(PolynomialMapTests, LogDeterminate) {
+  // create the basis expension for each component of the map
+  expansion.resize(dim);
+  auto legendre = std::make_shared<Legendre>();
+  for( unsigned int i=1; i<=dim; ++i ) {
+    // create the bases, multi index, and coefficents
+    std::vector<std::shared_ptr<IndexedScalarBasis> > bases(i, legendre);
+    std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i, 1);
+    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size());
+
+    // the basis expansion for component i
+    expansion[i-1] = std::make_shared<BasisExpansion>(bases, multis, coeffs);
+  }
+
   map = std::make_shared<PolynomialMap>(expansion);
   EXPECT_TRUE(map->inputSizes.size()==1);
   EXPECT_TRUE(map->outputSizes.size()==1);
@@ -147,11 +168,122 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
   EXPECT_TRUE(map->outputSizes(0)==dim);
 
   // an initial guess
-  const Eigen::VectorXd xpnt = Eigen::VectorXd::Random(dim);
+  const Eigen::VectorXd rpnt0 = Eigen::VectorXd::Random(dim);
 
   // evaluate the log determinate
-  const double logdet = map->LogDeterminant(xpnt);
-  EXPECT_TRUE(!std::isnan(logdet));
+  const double logdet0 = map->LogDeterminant(rpnt0);
+
+  // an initial guess
+  const Eigen::VectorXd rpnt1 = Eigen::VectorXd::Random(dim);
+
+  // evaluate the log determinate
+  const double logdet1 = map->LogDeterminant(rpnt1);
+
+  // linear determinates should be the same
+  EXPECT_DOUBLE_EQ(logdet0, logdet1);
+}
+
+TEST_F(PolynomialMapTests, ScaledDensity) {
+
+  Eigen::VectorXd c = Eigen::VectorXd::Zero(dim);
+  Eigen::MatrixXd L = Eigen::MatrixXd::Zero(dim, dim);
+
+  // create the basis, multi index, and coefficents
+  auto mono = std::make_shared<Monomial>();
+
+  auto multis = MultiIndexFactory::CreateTriTotalOrder(dim,1);
+
+  for (int i=0; i<dim; ++i) {
+    std::vector<std::shared_ptr<IndexedScalarBasis> > basis(dim, mono);
+
+    Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis.at(i)->Size());
+
+    c(i) = coeffs(0,0);
+
+    for (int j=0; j<multis.at(i)->Size()-1; ++j) {
+      L(i,i-j) = coeffs(0,j+1);
+    }
+
+    expansion[i] = std::make_shared<BasisExpansion>(basis, multis.at(i), coeffs);
+  }
+
+  map = std::make_shared<PolynomialMap>(expansion);
+
+  // reference density
+  auto stdnormal = std::make_shared<Gaussian>(dim);
+
+  // make sure we get what we expect
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xpnt = map->EvaluateForward(rpnt);
+  const Eigen::VectorXd xexpect = L*rpnt + c;
+  EXPECT_NEAR((xpnt-xexpect).norm(), 0.0, 1.0e-10);
+
+  // target density
+  auto target = std::make_shared<Gaussian>(c, L*L.transpose());
+
+  // the target density should be defined by the reference denisty and the inverse transport map; note: \pi_X(x) = \pi_X(T(r)) = \pi_R(r) |\det{T^{-1}(r)}|
+  EXPECT_NEAR(target->LogDensity(xpnt), stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt), 1.0e-10);
+
+}
+
+
+TEST_F(PolynomialMapTests, NonlinearDensity) {
+
+  double a = 2.0;
+  double b = 0.5;
+
+  std::vector<std::shared_ptr<BasisExpansion> > expansions(2);
+
+  // create the basis, multi index, and coefficents
+  auto poly = std::make_shared<Legendre>();
+
+  // Create first map T(x_1)
+  std::vector<std::shared_ptr<IndexedScalarBasis> > basis0(2, poly);
+  auto multis = MultiIndexFactory::CreateTriTotalOrder(2,1);
+  Eigen::MatrixXd coeffs = Eigen::MatrixXd::Zero(1, multis.at(0)->Size());
+
+  coeffs(0,1) = a;
+  expansions[0] = std::make_shared<BasisExpansion>(basis0, multis.at(0), coeffs);
+
+
+  // Create second map T(x_1, x_2)
+  std::vector<std::shared_ptr<IndexedScalarBasis> > basis1(2, poly);
+  multis.at(1) = MultiIndexFactory::CreateTotalOrder(2,2);
+  coeffs = Eigen::MatrixXd::Zero(1, multis.at(1)->Size());
+
+  coeffs(0,0) = a*a*b+1.0/3.0*a*a*b;
+  coeffs(0,1) = 1.0/a;
+  coeffs(0,5) = 2.0/3.0*a*a*b;
+
+  expansions[1] = std::make_shared<BasisExpansion>(basis1, multis.at(1), coeffs);
+
+  // Create Polynomial map
+  map = std::make_shared<PolynomialMap>(expansions, PolynomialMap::Newton);
+
+  // Test push forward evaluation
+  auto stdnormal = std::make_shared<Gaussian>(2);
+
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xpnt = map->EvaluateForward(rpnt);
+
+  const Eigen::Vector2d xexpect(a*rpnt(0),
+                                1.0/a*rpnt(1)+a*a*b*(rpnt(0)*rpnt(0)+1.0));
+
+  EXPECT_NEAR((xpnt-xexpect).norm(), 0.0, 1.0e-10);
+
+  // Test pull back evaluation and density
+  const Eigen::VectorXd rpnt0 = Eigen::VectorXd::Zero(2);
+  const Eigen::VectorXd rmap = map->EvaluateInverse(xpnt, rpnt);
+
+  const Eigen::VectorXd rexpect =
+    Eigen::Vector2d(1.0/a*xpnt(0),
+                    a*xpnt(1) - a*b*(xpnt(0)*xpnt(0)+a*a));
+
+  EXPECT_NEAR((rmap-rexpect).norm(), 0.0, 1.0e-10);
+  EXPECT_NEAR(stdnormal->LogDensity(rexpect),
+              stdnormal->LogDensity(rmap), 1.0e-10);
+  EXPECT_NEAR(map->LogDeterminant(rmap), 0.0, 1.0e-10);
+
 }
 
 TEST_F(PolynomialMapTests, CreateIdentity) {
@@ -161,7 +293,7 @@ TEST_F(PolynomialMapTests, CreateIdentity) {
   options.put("Order",3);
 
   const int dim = 4;
-  auto id = PolynomialMap::BuildIdentity(dim, options);
+  auto id = PolynomialMap::Identity(dim, options);
 
   Eigen::VectorXd randInp = RandomGenerator::GetNormal(dim);
 

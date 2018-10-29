@@ -311,8 +311,7 @@ void BasisExpansion::SetCoeffs(Eigen::MatrixXd const& allCoeffs){
   coeffs = allCoeffs;
 }
 
-Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts) const
-{
+Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts) const {
   Eigen::MatrixXd vand(evalPts.cols(), NumTerms());
 
   for(int i=0; i<evalPts.cols(); ++i)
@@ -322,7 +321,7 @@ Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts)
 }
 
 
-Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const
+Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const
 {
   Eigen::MatrixXd output(evalPts.cols(), NumTerms());
 

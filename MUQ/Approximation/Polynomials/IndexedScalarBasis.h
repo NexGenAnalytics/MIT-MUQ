@@ -67,10 +67,6 @@ namespace muq {
                                         int    const derivOrder,
                                         double const x) const = 0;
 
-      virtual inline Eigen::VectorXd GetMonomialCoeffs(unsigned int polyOrder) const {
-        throw muq::NotImplementedError("ERROR in IndexedScalarBasis::GetMonomialCoeffs().  The GetMonomialCoeffs() function has not been implemented.");
-      }
-
     private:
 
       /// Evaluate the polynomial at a given point and order

@@ -3,6 +3,8 @@
 
 #include "MUQ/Modeling/ModPiece.h"
 
+#include <boost/property_tree/ptree_fwd.hpp>
+
 namespace muq{
   namespace Approximation{
 
@@ -27,6 +29,44 @@ namespace muq{
     class TransportMap : public muq::Modeling::ModPiece {
 
     public:
+
+      /**
+       Constructs an identity map in dim dimensions.  The options enable spaceification
+       of the type of map parameterization (e.g., layered, polynomial, monotone)
+
+       <h3>Options:</h3>
+       <table>
+       <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
+       <tr><td> Type <td> Required <td> string <td> Polynomial, Monotone, Layered <td> Specifies the type of map parameterization to use.
+       <tr><td> OptionsBlock <td> Required <td> string <td> Any string <td> Specifies another block in the ptree defining specific options for the parameterization type.  Options for this block are defined in class corresponding to the specified Type.
+       </table>
+
+      */
+      static std::shared_ptr<TransportMap> Identity(unsigned int dim,
+                                                    boost::property_tree::ptree& options);
+
+      /**
+      Constructs a transport map \f$S(x)\f$ that transforms a target random variable
+      \f$x\f$ into a standard normal reference random variable \f$r\f$.  In this
+      function, only samples of the target distribution are used to construct the map.
+
+      <h3>Options:</h3>
+      <table>
+      <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
+      <tr><td> Type <td> Required <td> string <td> Polynomial, Monotone, Layered <td> Specifies the type of map parameterization to use.
+      <tr><td> OptionsBlock <td> Required <td> string <td> Any string <td> Specifies another block in the ptree defining specific options for the parameterization type.  Options for this block are defined in class corresponding to the specified Type.
+      </table>
+      */
+      static std::shared_ptr<TransportMap> FromSamples(Eigen::MatrixXd const& samps,
+                                                       boost::property_tree::ptree& options);
+
+      /**
+      */
+      //static std::shared_ptr<TransportMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
+      //                                                 boost::property_tree::ptree& options);
+
+
+
 
       TransportMap(unsigned int const totSize);
 
