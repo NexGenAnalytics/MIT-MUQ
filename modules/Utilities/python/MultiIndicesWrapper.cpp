@@ -76,9 +76,9 @@ void muq::Utilities::PythonBindings::MultiIndicesWrapper(py::module &m)
   py::class_<MultiIndexFactory, std::shared_ptr<MultiIndexFactory>> multiIFac(m, "MultiIndexFactory");
   multiIFac
     .def_static("CreateTotalOrder", &MultiIndexFactory::CreateTotalOrder, py::arg("length"), py::arg("maxOrder"), py::arg("minOrder")=0, py::arg("limiter")=std::make_shared<NoLimiter>())
-    .def_static("CreateTriTotalOrder", &MultiIndexFactory::CreateTriTotalOrder)
-    .def_static("CreateHyperbolic", &MultiIndexFactory::CreateHyperbolic)
-    .def_static("CreateTriHyperbolic", &MultiIndexFactory::CreateTriHyperbolic)
+    .def_static("CreateTriTotalOrder", &MultiIndexFactory::CreateTriTotalOrder, py::arg("length"), py::arg("maxOrder"), py::arg("minOrder")=0, py::arg("limiter")=std::make_shared<NoLimiter>())
+    .def_static("CreateHyperbolic", &MultiIndexFactory::CreateHyperbolic, py::arg("length"), py::arg("maxOrder"), py::arg("q")=0, py::arg("limiter")=std::make_shared<NoLimiter>())
+    .def_static("CreateTriHyperbolic", &MultiIndexFactory::CreateTriHyperbolic, py::arg("length"), py::arg("maxOrder"), py::arg("q")=0, py::arg("limiter")=std::make_shared<NoLimiter>())
     //.def("CentralMoment", &SampleCollection::CentralMoment, py::arg("order"), py::arg("blockDim") = -1)
     //.def_static("CreateFullTensor", (std::shared_ptr<MultiIndexSet> (MultiIndexFactory::*)(unsigned int const, unsigned int const,  std::shared_ptr<MultiIndexLimiter>)) &MultiIndexFactory::CreateFullTensor)
     //.def_static("CreateFullTensor", (std::shared_ptr<MultiIndexSet> (MultiIndexFactory::*)(const Eigen::RowVectorXi&, std::shared_ptr<MultiIndexLimiter>)) &MultiIndexFactory::CreateFullTensor)

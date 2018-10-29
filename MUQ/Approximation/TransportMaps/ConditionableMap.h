@@ -1,7 +1,7 @@
 #ifndef CONDITIONABLEMAP_H
 #define CONDITIONABLEMAP_H
 
-#include "MUQ/Approximation/TransportMaps/TransportMapBase.h"
+#include "MUQ/Approximation/TransportMaps/TransportMap.h"
 
 namespace muq{
   namespace Approximation{
@@ -27,11 +27,15 @@ namespace muq{
                 function that accepts the value of \f$x_1\f$ and returns the
                 map \f$\bar{S}\f$.
     */
-    class ConditionableMap: public muq::Modeling:TransportMapBase
+    class ConditionableMap : public TransportMap
     {
     public:
 
-      virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const = 0;
+      ConditionableMap(unsigned int const totSize);
+
+      virtual ~ConditionableMap() = default;
+
+      //virtual std::shared_ptr<TransportMapBase> Condition(Eigen::VectorXd const& xHead) const = 0;
 
 
     }; // class ConditionableMap

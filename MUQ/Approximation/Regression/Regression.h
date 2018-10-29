@@ -108,7 +108,7 @@ namespace muq {
 	const std::vector<Eigen::RowVectorXd>& lagrangeCoeff;
       };
 
-      class PoisednessConstraint : public muq::Optimization::CostFunction {
+      class PoisednessConstraint : public muq::Modeling::ModPiece {
       public:
 
 	PoisednessConstraint(unsigned int const inDim);
@@ -117,9 +117,11 @@ namespace muq {
 	
       private:
 
-	virtual double CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override;
+	virtual void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override;
 	
-	virtual void GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) override;
+	virtual void JacobianImpl(unsigned int const outputDimWrt, 
+                                  unsigned int const inputDimWrt,
+                                  muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override;
       };
 
       /// The input dimension

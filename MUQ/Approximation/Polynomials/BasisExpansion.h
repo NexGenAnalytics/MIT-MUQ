@@ -27,7 +27,7 @@ namespace muq{
                  is a coefficient, \f$\alpha\f$ is a multindex in the set of
                  indices \f$A\f$, and \f$\Phi_\alpha(x)\f$ is a multivariate
                  basis function defined by the multiindex, which takes the form
-                 \f[ \Phi_\alpha(x) = \Prod_{i=1}^N \phi_{i}(x_i,\alpha_i). \f]
+                 \f[ \Phi_\alpha(x) = \prod_{i=1}^N \phi_{i}(x_i,\alpha_i). \f]
                  The univariate functions \f$\phi_{i}(x_i,\alpha_i)\f$ can be
                  polynomials, Hermite functions, or some ther IndexScalarBasis.
                  For example, we could use Hermite polynomials for \f$i=0\f$ and
@@ -96,10 +96,27 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
 
       /** Constructs a Vandermonde matrix by evaluating the $M$ basis functions at
-          $N$ points stored in the evalPts matrix.  Each column of evalPts
+          $N$ points stored in the evalPts matrix.  Each column of the evalPts input
           contains a single point.  The returned matrix is size $N\times M$.
       */
       Eigen::MatrixXd BuildVandermonde(Eigen::MatrixXd const& evalPts) const;
+
+
+      /**
+      This is equivalent to extracting the \f$d\f$'s column of the Jacobian
+      @param[in] dim The dimension that we are taking the derivative with respect to
+      @param[in] x The point where we are evaluating the derivative
+      \return The derivative with respect to dimension dim
+      */
+      Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
+
+      /** Constructs a Vandermonde-like matrix but instead of filling each column
+          with evaluations of the basis function, this function fill each column
+          with the derivatives of a basis function with respect to a particular input.
+          @seealso BuildVandermonde
+      */
+      Eigen::MatrixXd BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const;
+
 
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,
                                        unsigned                                     wrtDim1,
@@ -117,6 +134,8 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       void SetCoeffs(Eigen::MatrixXd const& allCoeffs);
 
       const std::shared_ptr<muq::Utilities::MultiIndexSet> Multis() const{return multis;};
+
+      const std::vector<std::shared_ptr<IndexedScalarBasis> >& BasisComponents() const { return basisComps; }
 
     protected:
 
