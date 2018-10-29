@@ -69,6 +69,7 @@ namespace muq{
 
           @param[in] samps The matrix of samples.  Each column of samps is a sample.
 
+          <h3>Options:</h3>
           <table>
           <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
           <tr><td> InverseMethod <td> Optional <td> string <td> Newton, Sturm, Comrade <td> Comrade <td> Specifies the type of solver used to compute polynomial roots when the EvaluateInverse is called.
@@ -86,9 +87,22 @@ namespace muq{
         map returned by this function is from reference->target, whereas the map
         constructed by the BuildFromSamples function is in the other direction,
         target->reference.
+
+        If a gradient-based optimizer is specified in the options, then gradients
+        of the target density will be needed.
+
+        <h3>Options:</h3>
+        <table>
+        <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
+        <tr><td> InverseMethod <td> Optional <td> string <td> Newton, Sturm, Comrade <td> Comrade <td> Specifies the type of solver used to compute polynomial roots when the EvaluateInverse is called.
+        <tr><td> IndexSetType <td> Optional <td> string <td> TotalOrder, Hyperbolic <td> Specifies the type of multiindex set to use.
+        <tr><td> Order <td> Required <td> int <td> Any nonnegative integer. <td> The maximum polynomial order allowed.  This is used with IndexSetType to define what cross terms are kept in the set.
+        <tr><td> NormScale <td> Optional <td> double <td> Any real number in \f$(0,1]\f$. <td> Used with the "Hyperbolic" IndexSetType.  For a multiindex \f$\alpha = \left[\alpha_0,\ldots, \alpha_D\right]\f$, the Hyperbolic index set keeps all multiindices satisfying \f$ \left( \sum_{d=1}^D \alpha_d^q\right)^{1/q}\leq a_{max}\f$.  This option specifies \f$q\f$.
+        <tr><td> OptBlock <td> Optional </td> string <td> <td> Specifies another block in the options ptree that specifies the optimization method to use.  See the muq::Optimization::Optimizer documentation for more details.
+        </table>
       */
-      // static std::shared_ptr<PolynomialMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
-      //                                                   boost::property_tree::ptree& options);
+      static std::shared_ptr<PolynomialMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
+                                                        boost::property_tree::ptree& options);
 
     protected:
 
