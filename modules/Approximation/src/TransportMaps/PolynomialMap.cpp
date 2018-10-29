@@ -15,7 +15,8 @@ Eigen::VectorXd PolynomialMap::EvaluateForward(Eigen::VectorXd const& x) const {
 
   // evaluate each expansion
   Eigen::VectorXd result(expansions.size());
-  for( unsigned int i=0; i<expansions.size(); ++i ) { result(i) = boost::any_cast<Eigen::VectorXd>(expansions[i]->Evaluate((Eigen::VectorXd)x.head(i+1)) [0]) (0); }
+  for( unsigned int i=0; i<expansions.size(); ++i )
+     result(i) = expansions[i]->Evaluate( x ).at(0)(0);
 
   // return the result
   return result;
@@ -67,11 +68,12 @@ void PolynomialMap::PolynomialRootFinding(Eigen::VectorXd& result, double const 
   // choose the closest root to the input point
   auto basis = std::dynamic_pointer_cast<OrthogonalPolynomial>(basisComps[component]);
   assert(basis);
-  const Eigen::VectorXd& roots = invMethod==InverseMethod::Comrade? basis->GetRootsComrade(polyCoeff) : basis->GetRootsSturm(polyCoeff, tol);
+  Eigen::VectorXd roots = invMethod==InverseMethod::Comrade? basis->GetRootsComrade(polyCoeff) : basis->GetRootsSturm(polyCoeff, tol);
   assert(roots.size()>0); // make sure that we have at least one root
   const Eigen::VectorXd diff = (roots-Eigen::VectorXd::Constant(roots.size(), result(component))).array().abs();
   int rt;
   diff.minCoeff(&rt);
+
   result(component) = roots(rt);
 }
 
@@ -82,8 +84,8 @@ void PolynomialMap::NewtonsMethod(Eigen::VectorXd& result, double const refPt, u
 
   // Newton's method
   while( std::fabs(eval)>tol && cnt++<maxit ) {
-    eval = boost::any_cast<Eigen::VectorXd>(expansions[component]->Evaluate((Eigen::VectorXd)result.head(component+1)) [0]) (0) - refPt;
-    const double deriv = expansions[component]->Derivative(component, (Eigen::VectorXd)result.head(component+1)) (0);
+    eval = expansions[component]->Evaluate( result ).at(0)(0) - refPt;
+    const double deriv = expansions[component]->Derivative(component, result) (0);
     assert(std::fabs(deriv)>tol);
     result(component) -= eval/deriv;
   }
@@ -94,7 +96,7 @@ double PolynomialMap::LogDeterminant(Eigen::VectorXd const& evalPt) const {
 
   double logdet = 1.0;
   for( unsigned int i=0; i<expansions.size(); ++i ) {
-    logdet += std::log(std::fabs(expansions[i]->Derivative(i, (Eigen::VectorXd)evalPt.head(i+1)) (0)));
+    logdet += std::log(std::fabs(expansions[i]->Derivative(i, evalPt )(0)));
   }
 
   return logdet;
