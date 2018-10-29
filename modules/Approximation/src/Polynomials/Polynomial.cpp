@@ -154,14 +154,15 @@ Eigen::VectorXd Polynomial::GetRootsComrade(Eigen::VectorXd const& coeffs) const
   const auto& eigens = C.eigenvalues();
   const auto isReal = eigens.imag().array().abs() < 1.0e-14;
   Eigen::VectorXd eigs(isReal.count());
-  
+
   int cnt = 0;
   for( unsigned int i=0; i<eigens.size(); ++i ) {
     if( isReal(i) )
       eigs(cnt++) = eigens(i).real();
   }
 
-  std::sort(&eigs[0], &eigs[eigs.size()-1]);
+  if(eigs.size()>1)
+    std::sort(&eigs[0], &eigs[eigs.size()-1]);
 
   return eigs;
 }
