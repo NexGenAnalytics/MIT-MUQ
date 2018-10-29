@@ -32,7 +32,7 @@ namespace Optimization {
         <h3>Options:</h3>
         <table>
         <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
-        <tr><td> Method <td> Required <td> string <td> Many.  Typically the name of the Optimizer child, but run Optimizer::ListMethod() for a complete list. <td> -- <td> Specifies the optimization method to use.
+        <tr><td> Method <td> Required <td> string <td> Many.  Typically the name of the Optimizer child or the name of an NLOPT algorithm, but run Optimizer::ListMethod() for a complete list. <td> -- <td> Specifies the optimization method to use.
         </table>
     */
     static std::shared_ptr<Optimizer> Construct(std::shared_ptr<CostFunction> cost,
@@ -114,7 +114,7 @@ namespace Optimization {
 } // namespace Optimization
 } // namespace muq
 
-#define REGISTER_OPTIMIZER(OPTNAME, CLASSNAME) static auto optReg ##CLASSNAME = muq::Optimization::Optimizer::GetOptimizerMap()->insert(std::make_pair(#OPTNAME, muq::Utilities::shared_factory<CLASSNAME>()));
+#define REGISTER_OPTIMIZER(OPTNAME, CLASSNAME) static auto optReg ##OPTNAME = muq::Optimization::Optimizer::GetOptimizerMap()->insert(std::make_pair(#OPTNAME, muq::Utilities::shared_factory<CLASSNAME>()));
 
 
 

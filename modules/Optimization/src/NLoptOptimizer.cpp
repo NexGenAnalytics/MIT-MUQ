@@ -6,7 +6,22 @@ namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::Optimization;
 
-REGISTER_OPTIMIZER(NLOPT, NLoptOptimizer)
+REGISTER_OPTIMIZER(DIRECT, NLoptOptimizer)
+REGISTER_OPTIMIZER(DIRECTL, NLoptOptimizer)
+REGISTER_OPTIMIZER(CRS, NLoptOptimizer)
+REGISTER_OPTIMIZER(MLSL, NLoptOptimizer)
+REGISTER_OPTIMIZER(ISRES, NLoptOptimizer)
+REGISTER_OPTIMIZER(COBYLA, NLoptOptimizer)
+REGISTER_OPTIMIZER(BOBYQA, NLoptOptimizer)
+REGISTER_OPTIMIZER(NEWUOA, NLoptOptimizer)
+REGISTER_OPTIMIZER(PRAXIS, NLoptOptimizer)
+REGISTER_OPTIMIZER(NM, NLoptOptimizer)
+REGISTER_OPTIMIZER(SBPLX, NLoptOptimizer)
+REGISTER_OPTIMIZER(MMA, NLoptOptimizer)
+REGISTER_OPTIMIZER(SLSQP, NLoptOptimizer)
+REGISTER_OPTIMIZER(LBFGS, NLoptOptimizer)
+REGISTER_OPTIMIZER(PreTN, NLoptOptimizer)
+REGISTER_OPTIMIZER(LMVM, NLoptOptimizer)
 
 NLoptOptimizer::NLoptOptimizer(std::shared_ptr<CostFunction> cost,
                                pt::ptree const& pt) :

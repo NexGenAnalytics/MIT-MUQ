@@ -3,6 +3,7 @@
 
 #include "MUQ/Modeling/ModPiece.h"
 #include "MUQ/Modeling/Distributions/Density.h"
+
 #include <boost/property_tree/ptree_fwd.hpp>
 
 namespace muq{
