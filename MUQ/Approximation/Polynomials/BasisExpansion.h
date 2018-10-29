@@ -133,6 +133,9 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
       void SetCoeffs(Eigen::MatrixXd const& allCoeffs);
 
+      // Set a single coefficient
+      void SetCoeff(int outInd, int termInd, double val){coeffs(outInd,termInd)=val;};
+
       const std::shared_ptr<muq::Utilities::MultiIndexSet> Multis() const{return multis;};
 
       const std::vector<std::shared_ptr<IndexedScalarBasis> > BasisComponents() const { return basisComps; }

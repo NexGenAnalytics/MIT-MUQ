@@ -1,11 +1,14 @@
 #include <gtest/gtest.h>
 
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
+
+#include <boost/property_tree/ptree.hpp>
 
 using namespace muq::Utilities;
 using namespace muq::Approximation;
@@ -149,4 +152,26 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
   // evaluate the log determinate
   const double logdet = map->LogDeterminant(xpnt);
   EXPECT_TRUE(!std::isnan(logdet));
+}
+
+TEST_F(PolynomialMapTests, CreateIdentity) {
+
+  boost::property_tree::ptree options;
+  options.put("IndexSetType","TotalOrder");
+  options.put("Order",3);
+
+  const int dim = 4;
+  auto id = PolynomialMap::BuildIdentity(dim, options);
+
+  Eigen::VectorXd randInp = RandomGenerator::GetNormal(dim);
+
+  Eigen::VectorXd output = id->EvaluateForward(randInp);
+
+  for(int i=0; i<dim; ++i)
+    EXPECT_DOUBLE_EQ(randInp(i), output(i));
+
+  output = id->EvaluateInverse(randInp, randInp);
+
+  for(int i=0; i<dim; ++i)
+    EXPECT_DOUBLE_EQ(randInp(i), output(i));
 }

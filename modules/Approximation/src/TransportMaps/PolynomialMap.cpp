@@ -3,7 +3,13 @@
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 #include "MUQ/Approximation/Polynomials/OrthogonalPolynomial.h"
 
+#include "MUQ/Utilities/MultiIndices/MultiIndexSet.h"
+#include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
+
+#include <boost/property_tree/ptree.hpp>
+
 using namespace muq::Approximation;
+using namespace muq::Utilities;
 
 PolynomialMap::PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const& expansions, PolynomialMap::InverseMethod const& invMethod) : ConditionableMap(expansions.size()), expansions(expansions), invMethod(invMethod) {
   // make sure the output of each expansion is size 1
@@ -42,6 +48,7 @@ Eigen::VectorXd PolynomialMap::EvaluateInverse(Eigen::VectorXd const& refPt, Eig
 }
 
 void PolynomialMap::PolynomialRootFinding(Eigen::VectorXd& result, double const refPt, unsigned int const component, PolynomialMap::InverseMethod const& invMethod) const {
+
   const Eigen::MatrixXd& coeff = expansions[component]->GetCoeffs();
   const std::vector<std::shared_ptr<IndexedScalarBasis> >& basisComps = expansions[component]->BasisComponents();
   Eigen::VectorXd polyCoeff = Eigen::VectorXd::Zero(expansions[component]->Multis()->GetMaxOrders() (component)+1);
@@ -100,4 +107,73 @@ double PolynomialMap::LogDeterminant(Eigen::VectorXd const& evalPt) const {
   }
 
   return logdet;
+}
+
+
+std::shared_ptr<PolynomialMap> PolynomialMap::BuildIdentity(unsigned int dim,
+                                                            boost::property_tree::ptree& options) {
+
+  const std::string setType = options.get("IndexSetType","TotalOrder");
+  const unsigned int order = options.get<int>("Order");
+
+  // Set up the multiIndices
+  std::vector<std::shared_ptr<MultiIndexSet>> multis;
+  if(setType == "TotalOrder"){
+    multis = MultiIndexFactory::CreateTriTotalOrder(dim, order);
+
+  }else if(setType=="Hyperbolic"){
+    const double q = options.get("NormScale", 0.5);
+    multis = MultiIndexFactory::CreateTriHyperbolic(dim, order, q);
+
+  } else {
+    std::stringstream msg;
+    msg << "In PolynomialMap::BuildIdentity, invalid value for option \"IndexSetType\".";
+    msg << "Received \"" << setType << "\", but valid options are either \"TotalOrder\" or \"Hyperbolic\".";
+    throw std::invalid_argument(msg.str());
+  }
+
+  // Set up the basis functions
+  const std::string basisType = options.get("BasisType", "ProbabilistHermite");
+  std::shared_ptr<IndexedScalarBasis> basis = IndexedScalarBasis::Construct(basisType);
+
+  // Construct the expansions by putting together the basis and multiindices
+  std::vector<std::shared_ptr<IndexedScalarBasis>> basisVec = std::vector<std::shared_ptr<IndexedScalarBasis>>(dim,basis);
+  std::vector<std::shared_ptr<BasisExpansion>> expansions(dim);
+
+  for(int d=0; d<dim; ++d){
+    expansions.at(d) = std::make_shared<BasisExpansion>(basisVec, multis.at(d));
+
+    // find the linear component
+    std::shared_ptr<MultiIndex> idMulti = std::make_shared<MultiIndex>(dim);
+    idMulti->SetValue(d,1);
+    int idInd = expansions.at(d)->Multis()->MultiToIndex(idMulti);
+    expansions.at(d)->SetCoeff(0,idInd,1.0/basis->BasisEvaluate(1,1.0));
+  }
+
+  return std::make_shared<PolynomialMap>(expansions, InverseMethod::Comrade);
+}
+
+std::shared_ptr<PolynomialMap> PolynomialMap::BuildFromSamples(Eigen::MatrixXd const& samps,
+                                                               boost::property_tree::ptree& options) {
+
+  const unsigned int mapDim = samps.rows();
+  const unsigned int numSamps = samps.cols();
+
+  // Initialize all the dimensions to  with the Identity map.
+  std::shared_ptr<PolynomialMap> map = BuildIdentity(mapDim, options);
+
+  // Loop over each dimension of the map -- the map coefficients can be computed independently for each output
+  for(int d=0; d<mapDim; ++d){
+
+    // Set up Vandermonde and Derivative matrices
+
+    // Set up optimization problem
+
+    // Call Optimizer to compute the coefficients
+
+  }
+
+  // return the map
+  return map;
+
 }
