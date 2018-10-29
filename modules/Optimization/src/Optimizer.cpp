@@ -44,3 +44,22 @@ void Optimizer::AddEqualityConstraint(std::shared_ptr<ModPiece> const& eq) {
 void Optimizer::ClearEqualityConstraint() {
   eqConstraints.clear();
 }
+
+
+void Optimizer::ListMethods(std::string prefix)
+{
+  auto map = GetOptimizerMap();
+  for(auto pair : *map)
+    std::cout << prefix << pair.first << std::endl;
+}
+
+
+std::shared_ptr<Optimizer::OptimizerMap> Optimizer::GetOptimizerMap()
+{
+  static std::shared_ptr<Optimizer::OptimizerMap> map;
+
+  if( !map )
+    map = std::make_shared<Optimizer::OptimizerMap>();
+
+  return map;
+}

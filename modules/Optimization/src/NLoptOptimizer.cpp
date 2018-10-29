@@ -6,6 +6,7 @@ namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::Optimization;
 
+REGISTER_OPTIMIZER(NLOPT, NLoptOptimizer)
 
 NLoptOptimizer::NLoptOptimizer(std::shared_ptr<CostFunction> cost,
                                pt::ptree const& pt) :
@@ -47,7 +48,7 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
   if (!ineqConstraints.empty()) {
 
     for (int i; i<ineqConstraints.size(); ++i) {
-    
+
       double ineqTol[ineqConstraints[i]->numOutputs];
       Eigen::Map<const Eigen::VectorXd> ineqTolmap(ineqTol, ineqConstraints[i]->numOutputs);
       const Eigen::VectorXd ineqTolEig = constraint_tol*Eigen::VectorXd::Ones(ineqConstraints[i]->numOutputs);
@@ -63,11 +64,11 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
   if (!eqConstraints.empty()) {
 
     for (int i; i<eqConstraints.size(); ++i) {
-    
+
       double eqTol[eqConstraints[i]->numOutputs];
       Eigen::Map<const Eigen::VectorXd> eqTolmap(eqTol, eqConstraints[i]->numOutputs);
       const Eigen::VectorXd eqTolEig = constraint_tol*Eigen::VectorXd::Ones(eqConstraints[i]->numOutputs);
-      
+
       nlopt_add_equality_mconstraint(solver,
                                      eqConstraints[i]->numOutputs,
                                      Constraint,
@@ -97,16 +98,16 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
     muq::ExternalLibraryError("NLOPT has failed with flag " + std::to_string(check));
 
   outputs[1] = minf;
-  
+
 }
-      
+
 std::pair<Eigen::VectorXd, double>
 NLoptOptimizer::Solve(std::vector<Eigen::VectorXd> const& input) {
 
   std::vector<boost::any> ins;
   for (auto i : input)
     ins.push_back(i);
-    
+
   Evaluate(ins);
 
   return std::pair<Eigen::VectorXd, double>(boost::any_cast<Eigen::VectorXd const&>(outputs[0]),
@@ -124,7 +125,7 @@ double NLoptOptimizer::Cost(unsigned int n,
 
   Eigen::Map<const Eigen::VectorXd> xmap(x, n);
   const Eigen::VectorXd& xeig = xmap;
-  
+
   if (grad) {
 
     Eigen::Map<Eigen::VectorXd> gradmap(grad, n);
@@ -168,4 +169,3 @@ void NLoptOptimizer::Constraint(unsigned int m,
   resultmap = resulteig.at(0);
 
 }
-
