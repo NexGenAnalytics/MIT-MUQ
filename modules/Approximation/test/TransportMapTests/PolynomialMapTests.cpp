@@ -17,17 +17,19 @@ class PolynomialMapTests : public::testing::Test {
 public:
 
   PolynomialMapTests() {
-    // create the basis expension for each component of the map
+
+    // create the basis expansion for each component of the map
     expansion.resize(dim);
     auto legendre = std::make_shared<Legendre>();
+
     for( unsigned int i=1; i<=dim; ++i ) {
-      // create the bases, multi index, and coefficents
-      std::vector<std::shared_ptr<IndexedScalarBasis> > bases(i, legendre);
+      // create the basis, multi index, and coefficents
+      std::vector<std::shared_ptr<IndexedScalarBasis> > basis(i, legendre);
       std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(i, 3);
       Eigen::MatrixXd coeffs = Eigen::MatrixXd::Random(1, multis->Size());
 
       // the basis expansion for component i
-      expansion[i-1] = std::make_shared<BasisExpansion>(bases, multis, coeffs);
+      expansion[i-1] = std::make_shared<BasisExpansion>(basis, multis, coeffs);
     }
   }
 
@@ -43,7 +45,9 @@ protected:
 
   /// Polynomial transport map
   std::shared_ptr<PolynomialMap> map;
+
 };
+
 
 TEST_F(PolynomialMapTests, ForwardEvaluation) {
   map = std::make_shared<PolynomialMap>(expansion);
@@ -66,6 +70,7 @@ TEST_F(PolynomialMapTests, ForwardEvaluation) {
   const Eigen::VectorXd rpnteval = map->Evaluate(xpnt) [0];
   EXPECT_EQ(rpnteval.size(), dim);
   EXPECT_DOUBLE_EQ((rpnteval-rpnt).norm(), 0.0);
+
 }
 
 TEST_F(PolynomialMapTests, NewtonInverseEvaluation) {
@@ -173,7 +178,8 @@ TEST_F(PolynomialMapTests, LogDeterminate) {
   EXPECT_DOUBLE_EQ(logdet0, logdet1);
 }
 
-TEST_F(PolynomialMapTests, Densities) {
+TEST_F(PolynomialMapTests, ScaledDensity) {
+
   Eigen::VectorXd c = Eigen::VectorXd::Zero(dim);
   Eigen::MatrixXd L = Eigen::MatrixXd::Zero(dim, dim);
 
@@ -210,4 +216,65 @@ TEST_F(PolynomialMapTests, Densities) {
 
   // the target density should be defined by the reference denisty and the inverse transport map; note: \pi_X(x) = \pi_X(T(r)) = \pi_R(r) |\det{T^{-1}(r)}|
   EXPECT_NEAR(target->LogDensity(xpnt), stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt), 1.0e-10);
+
+}
+
+
+TEST_F(PolynomialMapTests, NonlinearDensity) {
+
+  double a = 2.0;
+  double b = 0.5;
+  
+  std::vector<std::shared_ptr<BasisExpansion> > expansions(2);
+  
+  // create the basis, multi index, and coefficents
+  auto poly = std::make_shared<Legendre>();
+
+  // Create first map T(x_1)
+  std::vector<std::shared_ptr<IndexedScalarBasis> > basis0(1, poly);
+  std::shared_ptr<MultiIndexSet> multis = MultiIndexFactory::CreateTotalOrder(1,1);
+  Eigen::MatrixXd coeffs = Eigen::MatrixXd::Zero(1, multis->Size());
+  
+  coeffs(0,1) = a;
+  expansions[0] = std::make_shared<BasisExpansion>(basis0, multis, coeffs);
+
+
+  // Create second map T(x_1, x_2)
+  std::vector<std::shared_ptr<IndexedScalarBasis> > basis1(2, poly);
+  multis = MultiIndexFactory::CreateTotalOrder(2,2);
+  coeffs = Eigen::MatrixXd::Zero(1, multis->Size());
+
+  coeffs(0,0) = a*a*b+1.0/3.0*a*a*b;
+  coeffs(0,1) = 1.0/a;
+  coeffs(0,5) = 2.0/3.0*a*a*b;
+
+  expansions[1] = std::make_shared<BasisExpansion>(basis1, multis, coeffs);
+
+  // Create Polynomial map
+  map = std::make_shared<PolynomialMap>(expansions, PolynomialMap::Newton);
+
+  // Test push forward evaluation
+  auto stdnormal = std::make_shared<Gaussian>(2);
+
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xpnt = map->EvaluateForward(rpnt);
+
+  const Eigen::Vector2d xexpect(a*rpnt(0),
+                                1.0/a*rpnt(1)+a*a*b*(rpnt(0)*rpnt(0)+1.0));
+
+  EXPECT_NEAR((xpnt-xexpect).norm(), 0.0, 1.0e-10);
+
+  // Test pull back evaluation and density
+  const Eigen::VectorXd rpnt0 = Eigen::VectorXd::Zero(2);
+  const Eigen::VectorXd rmap = map->EvaluateInverse(xpnt, rpnt);
+
+  const Eigen::VectorXd rexpect =
+    Eigen::Vector2d(1.0/a*xpnt(0),
+                    a*xpnt(1) - a*b*(xpnt(0)*xpnt(0)+a*a));
+
+  EXPECT_NEAR((rmap-rexpect).norm(), 0.0, 1.0e-10);
+  EXPECT_NEAR(stdnormal->LogDensity(rexpect),
+              stdnormal->LogDensity(rmap), 1.0e-10);
+  EXPECT_NEAR(map->LogDeterminant(rmap), 0.0, 1.0e-10);
+  
 }
