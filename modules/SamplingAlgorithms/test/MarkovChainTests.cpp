@@ -16,7 +16,7 @@ protected:
 
       L.resize(2,2);
       L << 1.0, 0.0,
-	1.0, 2.0;
+	   1.0, 2.0;
 
       samps = L * RandomGenerator::GetNormal(2,numWeightedSamps);
       //weights = (maxRepeat*RandomGenerator::GetUniform(numWeightedSamps)).array().ceil();
@@ -25,6 +25,7 @@ protected:
 
       for(int i=0; i<numWeightedSamps; ++i)
         collection.Add(std::make_shared<SamplingState>(Eigen::VectorXd(samps.col(i)), weights(i)));
+
     }
 
     virtual void TearDown() override {
@@ -100,11 +101,12 @@ TEST_F(MarkovChainTest, ToWeights)
 
 TEST_F(MarkovChainTest, ESS)
 {
+
   int totalSteps = collection.size();
   Eigen::VectorXd ess = collection.ESS();
 
-  EXPECT_LT(ess(0), totalSteps);
-  EXPECT_LT(ess(1), totalSteps);
+  EXPECT_LE(ess(0), totalSteps);
+  EXPECT_LE(ess(1), totalSteps);
 
   int numWhite = 1e3;
   Eigen::VectorXd whiteNoise = RandomGenerator::GetNormal(numWhite);
