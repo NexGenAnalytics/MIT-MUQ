@@ -1,5 +1,7 @@
 #include <boost/any.hpp>
 
+#include "MUQ/config.h"
+
 namespace muq
 {
     namespace Utilities
@@ -52,9 +54,11 @@ NOTE: This class stores a reference to the boost::any in question and errors may
           template<typename T>
           operator T const&(){ return boost::any_cast<T const&>(obj);};
 
-          /*template<typename T>
-	    operator T(){ return boost::any_cast<T const&>(obj);};*/
-          
+#if MUQ_ANYCAST_COMPILES==0
+          template<typename T>
+	        operator T(){ return boost::any_cast<T const&>(obj);};
+#endif
+
         private:
           boost::any const& obj;
         };

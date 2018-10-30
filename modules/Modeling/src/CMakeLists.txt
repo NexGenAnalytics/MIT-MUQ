@@ -86,6 +86,7 @@ CreateCompileGroup(
     Distributions/InverseGamma.cpp
     Distributions/DensityProduct.cpp
     Distributions/Density.cpp
+    Distributions/BananaDistribution.cpp
     Distributions/RandomVariable.cpp
 )
 

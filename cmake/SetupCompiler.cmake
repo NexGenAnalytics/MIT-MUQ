@@ -76,6 +76,9 @@ else()
 
 endif()
 
+# Check to see if const& and by value need to be treated separately in AnyConstCast
+INCLUDE(AnyCastCheck)
+
 IF(MUQ_USE_OPENMP)
 	CHECK_CXX_COMPILER_FLAG("-fopenmp" HAS_FOPENMP)
 	CHECK_CXX_COMPILER_FLAG("-pthread" HAS_PTHREAD)
