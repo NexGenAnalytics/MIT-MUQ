@@ -7,6 +7,10 @@
 
 namespace muq {
   namespace Modeling {
+
+    /** @class Gaussian
+        @ingroup Distributions
+    */
     class Gaussian : public Distribution {
     public:
 
