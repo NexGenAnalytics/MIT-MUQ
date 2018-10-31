@@ -12,6 +12,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+namespace pt = boost::property_tree;
 using namespace muq::Utilities;
 using namespace muq::Modeling;
 using namespace muq::Approximation;
@@ -306,4 +307,64 @@ TEST_F(PolynomialMapTests, CreateIdentity) {
 
   for(int i=0; i<dim; ++i)
     EXPECT_DOUBLE_EQ(randInp(i), output(i));
+}
+
+TEST(PolynomialMapConstruct, FromSamples) {
+  // the number of samples used to build the map
+  const unsigned int n = 100000;
+
+  // parameters for the banana
+  //double a = 2.0;
+  double a = 2.0;
+  double b = 0.5;
+
+  // generate samples from the target distribution
+  auto stdnormal = std::make_shared<Gaussian>(2);
+  Eigen::MatrixXd samps(2, n);
+  for( unsigned int i=0; i<n; ++i ) {
+    samps.col(i) = stdnormal->Sample();
+    samps(0, i) = a*samps(0, i);
+    //samps(1, i) = samps(1, i)/a + b*(samps(0, i)*samps(0, i) + a*a);
+  }
+
+  pt::ptree pt;
+  pt.put<unsigned int>("Order", 1);
+  //pt.put<std::string>("InverseMethod", "Newton");
+  pt.put<std::string>("Optimization", "MyOpt");
+  pt.put("MyOpt.Ftol.AbsoluteTolerance", 1.0e-14);
+  pt.put("MyOpt.Ftol.RelativeTolerance", 1.0e-14);
+  pt.put("MyOpt.Xtol.AbsoluteTolerance", 1.0e-14);
+  pt.put("MyOpt.Xtol.RelativeTolerance", 1.0e-14);
+  pt.put("MyOpt.ConstraintTolerance", 1.0e-10);
+  pt.put("MyOpt.MaxEvaluations", 10000); // max number of cost function evaluations
+  pt.put("MyOpt.Algorithm", "COBYLA");
+  auto map = PolynomialMap::FromSamples(samps, pt);
+
+  // Test pull back evaluation and density
+  //const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Zero(2);
+  const Eigen::VectorXd rpnt = stdnormal->Sample();
+  const Eigen::VectorXd xexpect = Eigen::Vector2d(a*rpnt(0), /*rpnt(1)/a + b*(a*a*rpnt(0)*rpnt(0) + a*a)*/ rpnt(1));
+  //const Eigen::VectorXd xexpect = rpnt;
+  const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xexpect);
+
+  std::cout << "reval " << map->EvaluateForward(xpnt).transpose() << std::endl;
+  std::cout << "rpnt: " << rpnt.transpose() << std::endl;
+  std::cout << "xpnt: " << xpnt.transpose() << std::endl;
+
+  const Eigen::VectorXd rexpect = Eigen::Vector2d(xpnt(0)/a, /*a*xpnt(1) - a*b*(xpnt(0)*xpnt(0) + a*a)*/ xpnt(1));
+  //const Eigen::VectorXd rexpect = rpnt;
+  //const Eigen::VectorXd xexpect = Eigen::Vector2d(a*rpnt(0), rpnt(1)/a + b*(a*a*rpnt(0)*rpnt(0) + a*a));
+
+  std::cout << "xexpect: " << xexpect.transpose() << std::endl;
+  std::cout << "rexpect: " << rexpect.transpose() << std::endl;
+
+  std::cout << "log det: " << map->LogDeterminant(rpnt) << std::endl;
+
+  std::cout << "expected log density: " << stdnormal->LogDensity(rexpect) << std::endl;
+  std::cout << "map log density: " << stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt) << std::endl;
+
+  /*EXPECT_NEAR((rmap-rexpect).norm(), 0.0, 1.0e-10);
+  EXPECT_NEAR(stdnormal->LogDensity(rexpect),
+              stdnormal->LogDensity(rmap), 1.0e-10);
+  EXPECT_NEAR(map->LogDeterminant(rmap), 0.0, 1.0e-10);*/
 }

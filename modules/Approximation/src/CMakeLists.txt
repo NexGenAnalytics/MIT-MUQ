@@ -79,7 +79,7 @@ CreateCompileGroup(
     APPROXIMATION_TRANSPORT_MAP
     "Tools for constructing transport maps."
     muqApproximation
-    "MODELING_CORE"
+    "MODELING_CORE;OPTIMIZATION_CORE"
     "EIGEN3;BOOST"
     ""
 
@@ -87,4 +87,5 @@ CreateCompileGroup(
 		TransportMaps/ConditionableMap.cpp
 		TransportMaps/PolynomialMap.cpp
 
+		TransportMaps/KLSamplesCost.cpp
 )

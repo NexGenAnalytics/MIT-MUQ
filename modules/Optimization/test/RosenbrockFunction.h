@@ -1,7 +1,7 @@
 #include "MUQ/Optimization/CostFunction.h"
 
 class RosenbrockFunction : public muq::Optimization::CostFunction {
-public: 
+public:
   inline RosenbrockFunction() : CostFunction(2*Eigen::VectorXi::Ones(1)) {}
 
   virtual inline ~RosenbrockFunction() {}
@@ -18,12 +18,12 @@ public:
   }
 
   inline virtual
-   void GradientImpl(unsigned int const inputDimWrt,
-                     muq::Modeling::ref_vector<Eigen::VectorXd> const& input,
-                     Eigen::VectorXd const& sensitivity) override {
+  void GradientImpl(unsigned int const inputDimWrt,
+                    muq::Modeling::ref_vector<Eigen::VectorXd> const& input,
+                    Eigen::VectorXd const& sensitivity) override {
 
     assert(inputDimWrt==0);
-    
+
     const Eigen::VectorXd& xc = input[0];
     const Eigen::VectorXd a = Eigen::VectorXd::Constant(1, 5.0);
 
@@ -34,4 +34,3 @@ public:
     gradient *= sensitivity(0);
   }
 };
-

@@ -44,36 +44,25 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
   auto solver = nlopt_create(algorithm, opt->inputSizes(0));
   nlopt_set_min_objective(solver, Cost, &opt);
 
-  if (!ineqConstraints.empty()) {
-
-    for (int i; i<ineqConstraints.size(); ++i) {
-    
-      double ineqTol[ineqConstraints[i]->numOutputs];
-      Eigen::Map<const Eigen::VectorXd> ineqTolmap(ineqTol, ineqConstraints[i]->numOutputs);
-      const Eigen::VectorXd ineqTolEig = constraint_tol*Eigen::VectorXd::Ones(ineqConstraints[i]->numOutputs);
-
-      nlopt_add_inequality_mconstraint(solver,
-                                       ineqConstraints[i]->numOutputs,
-                                       Constraint,
-                                       &ineqConstraints[i],
-                                       ineqTol);
-    }
+  for(int i=0; i<ineqConstraints.size(); ++i) {
+    double ineqTol[ineqConstraints[i]->outputSizes(0)];
+    Eigen::Map<const Eigen::VectorXd> ineqTolmap(ineqTol, ineqConstraints[i]->outputSizes(0));
+    const Eigen::VectorXd ineqTolEig = Eigen::VectorXd::Constant(ineqConstraints[i]->outputSizes(0), constraint_tol);
+    std::cout << "ADDOING THE CONSTRAINT " << ineqConstraints[i]->outputSizes(0) << " tol: " << constraint_tol << std::endl;
+    nlopt_add_inequality_mconstraint(solver, ineqConstraints[i]->outputSizes(0), Constraint, &ineqConstraints[i], ineqTol);
+    std::cout << "DONE ADDING THE CONSTRAINT" << std::endl;
   }
 
-  if (!eqConstraints.empty()) {
+  for (int i=0; i<eqConstraints.size(); ++i) {
+    double eqTol[eqConstraints[i]->outputSizes(0)];
+    Eigen::Map<const Eigen::VectorXd> eqTolmap(eqTol, eqConstraints[i]->outputSizes(0));
+    const Eigen::VectorXd eqTolEig = constraint_tol*Eigen::VectorXd::Ones(eqConstraints[i]->outputSizes(0));
 
-    for (int i; i<eqConstraints.size(); ++i) {
-    
-      double eqTol[eqConstraints[i]->numOutputs];
-      Eigen::Map<const Eigen::VectorXd> eqTolmap(eqTol, eqConstraints[i]->numOutputs);
-      const Eigen::VectorXd eqTolEig = constraint_tol*Eigen::VectorXd::Ones(eqConstraints[i]->numOutputs);
-      
-      nlopt_add_equality_mconstraint(solver,
-                                     eqConstraints[i]->numOutputs,
-                                     Constraint,
-                                     &eqConstraints[i],
-                                     eqTol);
-    }
+    nlopt_add_equality_mconstraint(solver,
+                                   eqConstraints[i]->outputSizes(0),
+                                   Constraint,
+                                   &eqConstraints[i],
+                                   eqTol);
   }
 
   // set the tolerances
@@ -92,21 +81,22 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
   double minf;
 
   const nlopt_result check = nlopt_optimize(solver, xopt.data(), &minf);
+  std::cout << "OPT CHECK: " << check << std::endl;
 
   if( check<0 )
     muq::ExternalLibraryError("NLOPT has failed with flag " + std::to_string(check));
 
   outputs[1] = minf;
-  
+
 }
-      
+
 std::pair<Eigen::VectorXd, double>
 NLoptOptimizer::Solve(std::vector<Eigen::VectorXd> const& input) {
 
   std::vector<boost::any> ins;
   for (auto i : input)
     ins.push_back(i);
-    
+
   Evaluate(ins);
 
   return std::pair<Eigen::VectorXd, double>(boost::any_cast<Eigen::VectorXd const&>(outputs[0]),
@@ -124,7 +114,7 @@ double NLoptOptimizer::Cost(unsigned int n,
 
   Eigen::Map<const Eigen::VectorXd> xmap(x, n);
   const Eigen::VectorXd& xeig = xmap;
-  
+
   if (grad) {
 
     Eigen::Map<Eigen::VectorXd> gradmap(grad, n);
@@ -145,13 +135,14 @@ void NLoptOptimizer::Constraint(unsigned int m,
                                 const double* x,
                                 double* grad,
                                 void* f_data) {
-
+  std::cout << "EVALAUTING THE NLOPT CONSTRAINT FUNCTION" << std::endl;
   // The constraint
-  std::shared_ptr<ModPiece> opt =
-    *((std::shared_ptr<ModPiece>*) f_data);
+  std::shared_ptr<ModPiece> opt = *((std::shared_ptr<ModPiece>*) f_data);
 
   Eigen::Map<const Eigen::VectorXd> xmap(x, n);
   const Eigen::VectorXd& xeig = xmap;
+
+  std::cout << "num con: " << m << std::endl;
 
   if( grad ) {
 
@@ -166,6 +157,4 @@ void NLoptOptimizer::Constraint(unsigned int m,
   Eigen::Map<Eigen::VectorXd> resultmap(result, m);
   std::vector<Eigen::VectorXd> resulteig = opt->Evaluate(xeig);
   resultmap = resulteig.at(0);
-
 }
-

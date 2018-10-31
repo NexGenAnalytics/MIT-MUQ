@@ -1,13 +1,18 @@
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
 
-#include "MUQ/Approximation/Polynomials/Monomial.h"
-#include "MUQ/Approximation/Polynomials/OrthogonalPolynomial.h"
-
 #include "MUQ/Utilities/MultiIndices/MultiIndexSet.h"
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
+#include "MUQ/Optimization/NLoptOptimizer.h"
+
+#include "MUQ/Approximation/TransportMaps/KLSamplesCost.h"
+
+#include "MUQ/Approximation/Polynomials/Monomial.h"
+#include "MUQ/Approximation/Polynomials/OrthogonalPolynomial.h"
+
 #include <boost/property_tree/ptree.hpp>
 
+using namespace muq::Optimization;
 using namespace muq::Approximation;
 using namespace muq::Utilities;
 
@@ -92,20 +97,47 @@ PolynomialMap::PolynomialMap(unsigned int dim,
 
 
 // Construct the polynomial map from samples.  Starts by constructing the identity map
-PolynomialMap::PolynomialMap(Eigen::MatrixXd const& samps,
-                             boost::property_tree::ptree & options) : PolynomialMap(samps.rows(), options)
-{
-  const unsigned int mapDim = samps.rows();
+PolynomialMap::PolynomialMap(Eigen::MatrixXd const& samps, boost::property_tree::ptree& options) : PolynomialMap(samps.rows(), options) {
+  const unsigned int dim = samps.rows();
 
   // Loop over each dimension of the map -- the map coefficients can be computed independently for each output
-  for(int d=0; d<mapDim; ++d){
+  assert(expansions.size()==dim);
+  for( unsigned int d=0; d<dim; ++d ) {
+    std::cout << "dim: " << d << std::endl;
 
-    // Set up Vandermonde and Derivative matrices
+    // get the Vandermonde matrix
+    const Eigen::MatrixXd& vand = expansions.at(d)->BuildVandermonde(samps);
 
-    // Set up optimization problem
+    // get the derivatives
+    const Eigen::MatrixXd& deriv = expansions.at(d)->BuildDerivMatrix(d, samps);
 
-    // Call Optimizer to compute the coefficients
+    // create the cost function
+    auto cost = std::make_shared<KLSamplesCost>(vand, deriv);
+    auto con = std::make_shared<KLSamplesConstraint>(deriv);
 
+    // an initial guess
+    const Eigen::VectorXd& cguess = expansions.at(d)->GetCoeffs().transpose();
+    /*Eigen::VectorXd cguess = expansions.at(d)->GetCoeffs().transpose();
+    cguess = Eigen::VectorXd::Random(cguess.size());
+    cguess(1) = 2.0;*/
+    std::cout << "initial cost: " << cost->Cost(cguess) << std::endl << std::endl << std::endl;
+
+    Eigen::VectorXd sens = Eigen::VectorXd::Ones(1);
+    std::cout << "grad FD: " << cost->GradientByFD(0, 0, muq::Modeling::ref_vector<Eigen::VectorXd>(1, cguess), sens).transpose() << std::endl;
+    std::cout << "grad: " << cost->Gradient(0, muq::Modeling::ref_vector<Eigen::VectorXd>(1, cguess), sens).transpose() << std::endl;
+
+    auto opt = std::make_shared<NLoptOptimizer>(cost, options.get_child(options.get<std::string>("Optimization")));
+    opt->AddInequalityConstraint(con);
+
+    const std::pair<Eigen::VectorXd, double>& soln = opt->Solve(std::vector<Eigen::VectorXd>(1, cguess));
+
+    std::cout << "final cost: " << soln.second << std::endl;
+    std::cout << "final grad: " << cost->Gradient(0, muq::Modeling::ref_vector<Eigen::VectorXd>(1, soln.first), sens).transpose() << std::endl;
+    std::cout << "final min dSdz: " << (deriv*soln.first).minCoeff() << std::endl;
+    std::cout << "final coef: " << soln.first.transpose() << std::endl;
+
+    // set the coeff.
+    expansions.at(d)->SetCoeffs(soln.first.transpose());
   }
 }
 
