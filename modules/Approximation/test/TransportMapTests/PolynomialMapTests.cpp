@@ -358,9 +358,10 @@ TEST(PolynomialMapConstruct, FromSamples) {
   std::cout << "xexpect: " << xexpect.transpose() << std::endl;
   std::cout << "rexpect: " << rexpect.transpose() << std::endl;
 
-  std::cout << "log det: " << map->LogDeterminant(rpnt) << std::endl;
+  std::cout << "log det: " << map->LogDeterminant(xpnt) << std::endl;
+  std::cout << std::log(0.5) << std::endl;
 
-  std::cout << "expected log density: " << stdnormal->LogDensity(rexpect) << std::endl;
+  std::cout << "expected log density: " << stdnormal->LogDensity(rexpect) - std::log(1.0/a) << std::endl;
   std::cout << "map log density: " << stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt) << std::endl;
 
   /*EXPECT_NEAR((rmap-rexpect).norm(), 0.0, 1.0e-10);
