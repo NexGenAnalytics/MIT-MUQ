@@ -44,3 +44,38 @@ void Optimizer::AddEqualityConstraint(std::shared_ptr<ModPiece> const& eq) {
 void Optimizer::ClearEqualityConstraint() {
   eqConstraints.clear();
 }
+
+
+void Optimizer::ListMethods(std::string prefix)
+{
+  auto map = GetOptimizerMap();
+  for(auto pair : *map)
+    std::cout << prefix << pair.first << std::endl;
+}
+
+std::shared_ptr<Optimizer> Optimizer::Construct(std::shared_ptr<CostFunction> cost,
+                                                boost::property_tree::ptree const& options) {
+
+  std::string method = options.get<std::string>("Algorithm");
+  Optimizer::OptimizerMap const& map = *GetOptimizerMap();
+  auto iter = map.find(method);
+  if(iter != map.end()) {
+    return iter->second(cost,options);
+  }else{
+    std::stringstream msg;
+    msg << "Invalid \"Algorithm\" passed to Optimizer::Construct.  A value of \"" << method << "\" was used, but valid options are:\n";
+    for(auto& part : map)
+      msg << "  " << part.first << "\n";
+    throw std::invalid_argument(msg.str());
+  }
+}
+
+std::shared_ptr<Optimizer::OptimizerMap> Optimizer::GetOptimizerMap()
+{
+  static std::shared_ptr<Optimizer::OptimizerMap> map;
+
+  if( !map )
+    map = std::make_shared<Optimizer::OptimizerMap>();
+
+  return map;
+}

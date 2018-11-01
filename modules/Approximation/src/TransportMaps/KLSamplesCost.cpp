@@ -12,17 +12,6 @@ double KLSamplesCost::CostImpl(ref_vector<Eigen::VectorXd> const& input) {
   // reference variables
   const Eigen::VectorXd r = vand*c;
 
-  /*std::cout << vand << std::endl;
-  std::cout << std::endl << std::endl;
-  std::cout << deriv << std::endl;*/
-
-  // the derivative
-  /*Eigen::VectorXd dSdz = (deriv*c).array().log();
-  for( unsigned int i=0; i<dSdz.size(); ++i ) {
-    if( std::isnan(dSdz(i)) ) { return RAND_MAX; }
-  }
-  return (0.5*r.dot(r)-dSdz.sum())/(double)vand.rows();*/
-
   // the cost function
   return (0.5*r.dot(r)-(deriv*c).array().abs().log().sum())/(double)vand.rows();
 }
@@ -30,17 +19,10 @@ double KLSamplesCost::CostImpl(ref_vector<Eigen::VectorXd> const& input) {
 void KLSamplesCost::GradientImpl(unsigned int const inputDimWrt, ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) {
   const Eigen::VectorXd& c = input[0];
 
-  // reference variables
-  gradient = vand.transpose()*vand*c;
+  Eigen::VectorXd fgamma = vand*c;
+  Eigen::VectorXd ggamma = deriv*c;
 
-  const Eigen::VectorXd dSdz = deriv*c;
-
-  for( unsigned int i=0; i<c.size(); ++i ) {
-    for( unsigned int j=0; j<deriv.rows(); ++j ) {
-      gradient(i) -= std::fabs(deriv(j,i))/dSdz(i);
-    }
-  }
-
+  gradient = (fgamma.transpose()*vand - ggamma.array().inverse().matrix().transpose() * deriv).transpose();
   gradient /= (double)vand.rows();
 }
 

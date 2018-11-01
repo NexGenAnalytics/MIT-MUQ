@@ -8,6 +8,7 @@
 #include "MUQ/Approximation/Polynomials/Legendre.h"
 #include "MUQ/Approximation/Polynomials/Monomial.h"
 
+#include "MUQ/Modeling/Distributions/BananaDistribution.h"
 #include "MUQ/Approximation/TransportMaps/PolynomialMap.h"
 
 #include <boost/property_tree/ptree.hpp>
@@ -311,61 +312,43 @@ TEST_F(PolynomialMapTests, CreateIdentity) {
 
 TEST(PolynomialMapConstruct, FromSamples) {
   // the number of samples used to build the map
-  const unsigned int n = 100000;
+  const unsigned int n = 50000;
 
   // parameters for the banana
   //double a = 2.0;
   double a = 2.0;
   double b = 0.5;
 
+  std::shared_ptr<Distribution> nanner = std::make_shared<BananaDistribution>(a,b);
+  std::shared_ptr<Distribution> gauss = std::make_shared<Gaussian>(2);
+
   // generate samples from the target distribution
-  auto stdnormal = std::make_shared<Gaussian>(2);
-  Eigen::MatrixXd samps(2, n);
-  for( unsigned int i=0; i<n; ++i ) {
-    samps.col(i) = stdnormal->Sample();
-    samps(0, i) = a*samps(0, i);
-    //samps(1, i) = samps(1, i)/a + b*(samps(0, i)*samps(0, i) + a*a);
-  }
+  Eigen::MatrixXd tgtSamps(2, n);
+  for( unsigned int i=0; i<n; ++i )
+    tgtSamps.col(i) = nanner->Sample();
 
   pt::ptree pt;
-  pt.put<unsigned int>("Order", 1);
+  pt.put<unsigned int>("Order", 2);
   //pt.put<std::string>("InverseMethod", "Newton");
   pt.put<std::string>("Optimization", "MyOpt");
-  pt.put("MyOpt.Ftol.AbsoluteTolerance", 1.0e-14);
-  pt.put("MyOpt.Ftol.RelativeTolerance", 1.0e-14);
+  pt.put("MyOpt.Ftol.AbsoluteTolerance", 0.0);
+  pt.put("MyOpt.Ftol.RelativeTolerance", 0.0);
   pt.put("MyOpt.Xtol.AbsoluteTolerance", 1.0e-14);
-  pt.put("MyOpt.Xtol.RelativeTolerance", 1.0e-14);
+  pt.put("MyOpt.Xtol.RelativeTolerance", 0.0);
   pt.put("MyOpt.ConstraintTolerance", 1.0e-10);
-  pt.put("MyOpt.MaxEvaluations", 10000); // max number of cost function evaluations
-  pt.put("MyOpt.Algorithm", "COBYLA");
-  auto map = PolynomialMap::FromSamples(samps, pt);
+  pt.put("MyOpt.MaxEvaluations", 1000); // max number of cost function evaluations
+  pt.put("MyOpt.Algorithm", "LBFGS");
+  auto map = PolynomialMap::FromSamples(tgtSamps, pt);
 
-  // Test pull back evaluation and density
-  //const Eigen::VectorXd xpnt0 = Eigen::VectorXd::Zero(2);
-  const Eigen::VectorXd rpnt = stdnormal->Sample();
-  const Eigen::VectorXd xexpect = Eigen::Vector2d(a*rpnt(0), /*rpnt(1)/a + b*(a*a*rpnt(0)*rpnt(0) + a*a)*/ rpnt(1));
-  //const Eigen::VectorXd xexpect = rpnt;
-  const Eigen::VectorXd xpnt = map->EvaluateInverse(rpnt, xexpect);
+  // Estimate the actual KL divergence between the map-induced and true distributions
+  double klDiv = 0.0;
+  for(int i=0; i<n; ++i){
+    double mapLogDens = gauss->LogDensity(map->EvaluateForward(tgtSamps.col(i))) + map->LogDeterminant(tgtSamps.col(i));
+    double trueLogDens = nanner->LogDensity(tgtSamps.col(i).eval());
+    klDiv += trueLogDens - mapLogDens;
+  }
+  klDiv /= double(n);
+  std::cout << "KL Divergence = " << klDiv << std::endl;
+  EXPECT_NEAR(0.0, klDiv, 1e-2);
 
-  std::cout << "reval " << map->EvaluateForward(xpnt).transpose() << std::endl;
-  std::cout << "rpnt: " << rpnt.transpose() << std::endl;
-  std::cout << "xpnt: " << xpnt.transpose() << std::endl;
-
-  const Eigen::VectorXd rexpect = Eigen::Vector2d(xpnt(0)/a, /*a*xpnt(1) - a*b*(xpnt(0)*xpnt(0) + a*a)*/ xpnt(1));
-  //const Eigen::VectorXd rexpect = rpnt;
-  //const Eigen::VectorXd xexpect = Eigen::Vector2d(a*rpnt(0), rpnt(1)/a + b*(a*a*rpnt(0)*rpnt(0) + a*a));
-
-  std::cout << "xexpect: " << xexpect.transpose() << std::endl;
-  std::cout << "rexpect: " << rexpect.transpose() << std::endl;
-
-  std::cout << "log det: " << map->LogDeterminant(xpnt) << std::endl;
-  std::cout << std::log(0.5) << std::endl;
-
-  std::cout << "expected log density: " << stdnormal->LogDensity(rexpect) - std::log(1.0/a) << std::endl;
-  std::cout << "map log density: " << stdnormal->LogDensity(rpnt) - map->LogDeterminant(rpnt) << std::endl;
-
-  /*EXPECT_NEAR((rmap-rexpect).norm(), 0.0, 1.0e-10);
-  EXPECT_NEAR(stdnormal->LogDensity(rexpect),
-              stdnormal->LogDensity(rmap), 1.0e-10);
-  EXPECT_NEAR(map->LogDeterminant(rmap), 0.0, 1.0e-10);*/
 }

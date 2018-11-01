@@ -2,8 +2,11 @@
 #define TRANSPORTMAP_H
 
 #include "MUQ/Modeling/ModPiece.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+#include "MUQ/Utilities/RegisterClassName.h"
 
 #include <boost/property_tree/ptree_fwd.hpp>
+
 
 namespace muq{
   namespace Approximation{
@@ -29,6 +32,16 @@ namespace muq{
     class TransportMap : public muq::Modeling::ModPiece {
 
     public:
+      typedef std::function<std::shared_ptr<TransportMap>(unsigned int, boost::property_tree::ptree&)> MapConstructorIdentity;
+      typedef std::function<std::shared_ptr<TransportMap>(Eigen::MatrixXd const&, boost::property_tree::ptree&)> MapConstructorSamples;
+      typedef std::function<std::shared_ptr<TransportMap>(std::shared_ptr<muq::Modeling::Density> const&, boost::property_tree::ptree&)> MapConstructorDensity;
+
+      typedef std::map<std::string, MapConstructorIdentity> IdentityMethodMap;
+      typedef std::map<std::string, MapConstructorSamples> SamplesMethodMap;
+      typedef std::map<std::string, MapConstructorDensity> DensityMethodMap;
+      static std::shared_ptr<IdentityMethodMap> GetIdentityMethodMap();
+      static std::shared_ptr<SamplesMethodMap> GetSamplesMethodMap();
+      static std::shared_ptr<DensityMethodMap> GetDensityMethodMap();
 
       /**
        Constructs an identity map in dim dimensions.  The options enable spaceification
@@ -61,11 +74,21 @@ namespace muq{
                                                        boost::property_tree::ptree& options);
 
       /**
+        Constructs a transport map \f$T(r)\f$ that transforms a standard normal
+        random variable \f$r\f$ into a (non-Gaussian) target density defined by
+        the "dens" input variable.  Note that if a gradient-based optimizer is
+        specified in the options, then gradients of the target density will be
+        needed.
+
+        <h3>Options:</h3>
+        <table>
+        <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
+        <tr><td> Type <td> Required <td> string <td> Polynomial, Monotone, Layered <td> Specifies the type of map parameterization to use.
+        <tr><td> OptionsBlock <td> Required <td> string <td> Any string <td> Specifies another block in the ptree defining specific options for the parameterization type.  Options for this block are defined in class corresponding to the specified Type.
+        </table>
       */
-      //static std::shared_ptr<TransportMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
-      //                                                 boost::property_tree::ptree& options);
-
-
+      static std::shared_ptr<TransportMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
+                                                       boost::property_tree::ptree& options);
 
 
       TransportMap(unsigned int const totSize);
@@ -92,7 +115,10 @@ namespace muq{
 
     }; // class TransportMapBase
 
-
+    //#define REGISTER_TRANSPORTMAP_ALL(OPTNAME, CLASSNAME)
+    #define REGISTER_TRANSPORTMAP_IDENTITY(OPTNAME, CLASSNAME) static auto optIdentityReg ##OPTNAME = muq::Approximation::TransportMap::GetIdentityMethodMap()->insert(std::make_pair(#OPTNAME, CLASSNAME::Identity));
+    #define REGISTER_TRANSPORTMAP_SAMPLES(OPTNAME, CLASSNAME) static auto optSamplesReg ##OPTNAME = muq::Approximation::TransportMap::GetSamplesMethodMap()->insert(std::make_pair(#OPTNAME, CLASSNAME::FromSamples));
+    #define REGISTER_TRANSPORTMAP_DENSITY(OPTNAME, CLASSNAME) static auto optDensityReg ##OPTNAME = muq::Approximation::TransportMap::GetDensityMethodMap()->insert(std::make_pair(#OPTNAME, CLASSNAME::FromDensity));
 
   }
 }

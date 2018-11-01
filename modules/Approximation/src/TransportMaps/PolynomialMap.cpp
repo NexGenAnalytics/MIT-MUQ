@@ -16,6 +16,10 @@ using namespace muq::Optimization;
 using namespace muq::Approximation;
 using namespace muq::Utilities;
 
+REGISTER_TRANSPORTMAP_IDENTITY(PolynomialMap, PolynomialMap) // <- Register that PolynomiamMap has a "Identity" function
+REGISTER_TRANSPORTMAP_SAMPLES(PolynomialMap, PolynomialMap) // <- Register that PolynomiamMap has a "FromSamples" function
+REGISTER_TRANSPORTMAP_DENSITY(PolynomialMap, PolynomialMap) // <- Register that PolynomiamMap has a "FromDensity" function
+
 PolynomialMap::PolynomialMap(std::vector<std::shared_ptr<BasisExpansion> > const& expansions,
                              PolynomialMap::InverseMethod const& invMethod) : ConditionableMap(expansions.size()), expansions(expansions), invMethod(invMethod) {
   // make sure the output of each expansion is size 1
@@ -142,6 +146,12 @@ PolynomialMap::PolynomialMap(Eigen::MatrixXd const& samps, boost::property_tree:
 }
 
 
+PolynomialMap::PolynomialMap(std::shared_ptr<muq::Modeling::Density> const& dens,
+                             boost::property_tree::ptree & options) : PolynomialMap(dens->inputSizes(0), options)
+{
+  const unsigned int mapDim = dens->inputSizes(0);
+}
+
 Eigen::VectorXd PolynomialMap::EvaluateForward(Eigen::VectorXd const& x) const {
   assert(x.size()==expansions.size());
 
@@ -244,4 +254,9 @@ std::shared_ptr<PolynomialMap> PolynomialMap::Identity(unsigned int dim,
 std::shared_ptr<PolynomialMap> PolynomialMap::FromSamples(Eigen::MatrixXd const& samps,
                                                           boost::property_tree::ptree& options) {
   return std::shared_ptr<PolynomialMap>(new PolynomialMap(samps, options));
+}
+
+std::shared_ptr<PolynomialMap> PolynomialMap::FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
+                                                          boost::property_tree::ptree& options) {
+  return std::shared_ptr<PolynomialMap>(new PolynomialMap(dens, options));
 }

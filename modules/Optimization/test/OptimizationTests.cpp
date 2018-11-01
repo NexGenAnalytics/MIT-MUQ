@@ -17,17 +17,17 @@ public:
     pt.put("Optimization.Xtol.AbsoluteTolerance", 1.0e-14);
     pt.put("Optimization.Xtol.RelativeTolerance", 1.0e-14);
     pt.put("Optimization.MaxEvaluations", 1000); // max number of cost function evaluations
+
+    cost = std::make_shared<RosenbrockFunction>();
   }
 
   inline virtual ~OptimizationTests() {}
 
   inline void TearDown() {
-    auto cost = std::make_shared<RosenbrockFunction>();
-
+    
     const Eigen::VectorXd x = Eigen::Vector2d(0.85, 1.2);
 
-    auto opt =
-      std::make_shared<NLoptOptimizer>(cost, pt.get_child("Optimization"));
+    auto opt = Optimizer::Construct(cost, pt.get_child("Optimization"));
 
     std::vector<Eigen::VectorXd> inputs;
     inputs.push_back(x);
@@ -42,11 +42,19 @@ public:
   }
 
   pt::ptree pt;
+  std::shared_ptr<CostFunction> cost;
 
 private:
 };
 
 TEST_F(OptimizationTests, COBYLA) {
+  pt.put("Optimization.Algorithm", "COBYLA");
+}
+
+TEST_F(OptimizationTests, UnknownMethod) {
+  pt.put("Optimization.Algorithm", "BlahBlahSpecial");
+  EXPECT_THROW(Optimizer::Construct(cost, pt.get_child("Optimization")), std::invalid_argument);
+
   pt.put("Optimization.Algorithm", "COBYLA");
 }
 
