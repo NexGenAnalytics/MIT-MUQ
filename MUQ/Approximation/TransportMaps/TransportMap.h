@@ -91,7 +91,6 @@ namespace muq{
                                                        boost::property_tree::ptree& options);
 
 
-
       TransportMap(unsigned int const totSize);
 
       virtual ~TransportMap() = default;
