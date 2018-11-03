@@ -25,4 +25,5 @@ CreateCompileGroup(
     PolynomialsWrapper.cpp
     KLWrapper.cpp
     QuadratureWrapper.cpp
+    TransportMapsWrapper.cpp
 )

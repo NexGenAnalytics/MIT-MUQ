@@ -56,7 +56,7 @@ namespace muq{
 
       */
       static std::shared_ptr<TransportMap> Identity(unsigned int dim,
-                                                    boost::property_tree::ptree& options);
+                                                    boost::property_tree::ptree options);
 
       /**
       Constructs a transport map \f$S(x)\f$ that transforms a target random variable
@@ -71,7 +71,7 @@ namespace muq{
       </table>
       */
       static std::shared_ptr<TransportMap> FromSamples(Eigen::MatrixXd const& samps,
-                                                       boost::property_tree::ptree& options);
+                                                       boost::property_tree::ptree options);
 
       /**
         Constructs a transport map \f$T(r)\f$ that transforms a standard normal
@@ -88,7 +88,7 @@ namespace muq{
         </table>
       */
       static std::shared_ptr<TransportMap> FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
-                                                       boost::property_tree::ptree& options);
+                                                       boost::property_tree::ptree options);
 
 
       TransportMap(unsigned int const totSize);

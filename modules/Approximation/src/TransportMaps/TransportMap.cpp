@@ -13,7 +13,7 @@ void TransportMap::EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const
 }
 
 std::shared_ptr<TransportMap> TransportMap::Identity(unsigned int dim,
-                                                     boost::property_tree::ptree& options) {
+                                                     boost::property_tree::ptree options) {
 
   std::string typeStr = options.get<std::string>("Type");
   TransportMap::IdentityMethodMap const& map = *GetIdentityMethodMap();
@@ -31,7 +31,7 @@ std::shared_ptr<TransportMap> TransportMap::Identity(unsigned int dim,
 }
 
 std::shared_ptr<TransportMap> TransportMap::FromSamples(Eigen::MatrixXd const& samps,
-                                                        boost::property_tree::ptree& options) {
+                                                        boost::property_tree::ptree options) {
 
   std::string typeStr = options.get<std::string>("Type");
   TransportMap::SamplesMethodMap const& map = *GetSamplesMethodMap();
@@ -50,7 +50,7 @@ std::shared_ptr<TransportMap> TransportMap::FromSamples(Eigen::MatrixXd const& s
 
 
 std::shared_ptr<TransportMap> TransportMap::FromDensity(std::shared_ptr<muq::Modeling::Density> const& dens,
-                                                        boost::property_tree::ptree& options) {
+                                                        boost::property_tree::ptree options) {
 
   std::string typeStr = options.get<std::string>("Type");
   TransportMap::DensityMethodMap const& map = *GetDensityMethodMap();

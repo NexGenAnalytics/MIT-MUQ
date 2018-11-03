@@ -14,4 +14,5 @@ PYBIND11_MODULE(pymuqApproximation, m) {
     PolynomialsWrapper(m);
     KLWrapper(m);
     QuadratureWrapper(m);
+    TransportMapWrapper(m);
 }
