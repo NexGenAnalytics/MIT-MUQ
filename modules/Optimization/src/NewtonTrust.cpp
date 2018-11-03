@@ -28,12 +28,6 @@ std::pair<Eigen::VectorXd, double> NewtonTrust::Solve(std::vector<Eigen::VectorX
 
   Eigen::VectorXd const& x0 = inputs.at(0);
   Eigen::VectorXd x = x0;
-
-
-  double fval = opt->Cost(x);
-  Eigen::VectorXd sens = Eigen::VectorXd::Ones(1);
-  Eigen::VectorXd grad = opt->Gradient(0,x,sens);
-
   Eigen::VectorXd step;
 
   if(printLevel>0){
@@ -41,20 +35,40 @@ std::pair<Eigen::VectorXd, double> NewtonTrust::Solve(std::vector<Eigen::VectorX
     std::cout << "  Iteration, TrustRadius,       fval,      ||g||" << std::endl;
   }
 
+  double fval;
+
   for(int it=0; it<maxEvals; ++it) {
+
+    opt->SetPoint(x);
+    fval = opt->Cost();
+    Eigen::VectorXd const& grad = opt->Gradient();
 
     if(printLevel>0)
       std::printf("  %9d, %11.3f,  %4.3e,  %5.3e\n", it, trustRadius, fval, grad.norm());
-
-    grad = opt->Gradient(0,x,sens);
 
     if(grad.norm() < xtol_abs)
         return std::make_pair(x,fval);
 
     step = SolveSub(fval, x, grad);
 
-    double newf = opt->Cost((x+step).eval());
-    double rho = (newf-fval)/(grad.dot(step)+0.5*step.dot(opt->ApplyHessian(0, std::vector<Eigen::VectorXd>(1,x), step)));
+    double modDelta = grad.dot(step)+0.5*step.dot(opt->ApplyHessian(step));
+    Eigen::VectorXd newX = x+step;
+
+    double newf = opt->Cost(newX);
+    double rho = (newf-fval)/modDelta;
+
+    // Update the position.  If the model is really bad, we'll just stay put
+    if(rho>acceptRatio){
+
+      if(step.norm() < xtol_abs)
+        return std::make_pair(newX,newf);
+
+      if((fval-newf)<ftol_abs)
+        return std::make_pair(newX,newf);
+
+      x = newX;
+      fval = newf;
+    }
 
     // Update the trust region size
     if(rho<shrinkRatio){
@@ -63,19 +77,6 @@ std::pair<Eigen::VectorXd, double> NewtonTrust::Solve(std::vector<Eigen::VectorX
       trustRadius = std::min(growRate*trustRadius, maxRadius);
     }
 
-    // Update the position.  If the model is really bad, we'll just stay put
-    if(rho>acceptRatio){
-      x += step;
-
-      if(step.norm() < xtol_abs)
-        return std::make_pair(x,fval);
-
-      if((fval-newf)<ftol_abs)
-        return std::make_pair(x,fval);
-
-      fval = newf;
-
-    }
   }
 
   return std::make_pair(x,fval);
@@ -103,7 +104,7 @@ Eigen::VectorXd NewtonTrust::SolveSub(double                 fval,
   double alpha, beta, gradd, dBd, rr;
 
   for(int i=0; i<dim; ++i){
-    Bd = opt->ApplyHessian(0, std::vector<Eigen::VectorXd>(1,x0), d);
+    Bd = opt->ApplyHessian(d);
     gradd = grad.dot(d);
     dBd = d.dot(Bd);
     rr = r.squaredNorm();

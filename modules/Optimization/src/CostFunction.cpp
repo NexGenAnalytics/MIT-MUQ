@@ -3,90 +3,67 @@
 using namespace muq::Modeling;
 using namespace muq::Optimization;
 
-CostFunction::CostFunction(Eigen::VectorXi const& inputSizes) :
-  ModPiece(inputSizes, Eigen::VectorXi::Ones(1)) {}
-
-CostFunction::~CostFunction() {}
 
 void CostFunction::EvaluateImpl(ref_vector<Eigen::VectorXd> const& input) {
   outputs.resize(1);
-  outputs.at(0) = Eigen::VectorXd::Constant(1, CostImpl(input));
+  outputs.at(0) = Eigen::VectorXd::Constant(1, Cost(input.at(0)));
 }
 
 void CostFunction::GradientImpl(unsigned int const outputDimWrt,
                                 unsigned int const inputDimWrt,
                                 ref_vector<Eigen::VectorXd> const& input,
                                 Eigen::VectorXd const& sensitivity) {
-  GradientImpl(inputDimWrt, input, sensitivity);
+  gradient = Gradient(input.at(0));
 }
 
-void CostFunction::GradientImpl(unsigned int const inputDimWrt,
-                                ref_vector<Eigen::VectorXd> const& input,
-                                Eigen::VectorXd const& sensitivity) {
-  ModPiece::GradientImpl(0, inputDimWrt, input, sensitivity);
-}
+void CostFunction::SetPoint(Eigen::VectorXd const& evalPt) {
+  assert(evalPt.size()==inputSizes(0));
+  x = evalPt;
+};
 
-double
-CostFunction::Cost(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) {
-  return Evaluate(input).at(0) (0);
-}
-
-Eigen::VectorXd const&
-CostFunction::Gradient(unsigned int const inputDimWrt,
-                       std::vector<Eigen::VectorXd> const& input,
-                       Eigen::VectorXd const& sensitivity) {
-  return ModPiece::Gradient(0, inputDimWrt, input, sensitivity);
+Eigen::VectorXd const& CostFunction::Gradient() {
+  Eigen::VectorXd sens = Eigen::VectorXd::Ones(1);
+  return ModPiece::Gradient(0, 0, muq::Modeling::ref_vector<Eigen::VectorXd>(1,x), sens);
 }
 
 
-Eigen::MatrixXd
-CostFunction::Hessian(unsigned int const inputDimWrt,
-                      std::vector<Eigen::VectorXd> const& input) {
-  return HessianByFD(inputDimWrt, input);
+Eigen::MatrixXd CostFunction::Hessian() {
+  return HessianByFD();
 }
-  
 
-Eigen::MatrixXd
-CostFunction::HessianByFD(unsigned int const inputDimWrt,
-                          std::vector<Eigen::VectorXd> const& input) {
 
-  const Eigen::VectorXd sensitivity = Eigen::VectorXd::Ones(input[0].size());
-  
-  Eigen::VectorXd f0 = ModPiece::Gradient(0, inputDimWrt, input, sensitivity);
+Eigen::MatrixXd CostFunction::HessianByFD() {
+
+  Eigen::VectorXd f0 = Gradient();
+  Eigen::VectorXd x0 = x;
   Eigen::VectorXd f;
 
   double eps;
 
-  Eigen::VectorXd newInput(input.at(inputDimWrt));
-  std::vector<Eigen::VectorXd> newInputVec = input;
+  Eigen::VectorXd newInput(x0);
 
-  Eigen::MatrixXd hes(inputSizes(inputDimWrt), inputSizes(inputDimWrt));
-  for (int i=0; i<inputSizes(inputDimWrt); ++i) {
+  Eigen::MatrixXd hes(inputSizes(0), inputSizes(0));
 
-    eps = std::max(1.0e-8,
-                   1.0e-10*std::abs(input.at(inputDimWrt)(i)));
+  for (int i=0; i<inputSizes(0); ++i) {
 
-    newInput(i) = input.at(inputDimWrt)(i) + eps;
-    newInputVec.at(inputDimWrt) = std::cref(newInput);
-    
-    f = ModPiece::Gradient(0, inputDimWrt, newInputVec, sensitivity);
-    
+    eps = std::max(1.0e-8, 1.0e-10*std::abs(x(i)));
+
+    newInput(i) = x(i) + eps;
+    f = Gradient(newInput);
+
     hes.col(i) = (f-f0)/eps;
-      
-    newInput(i) = input.at(inputDimWrt)(i);
+
+    newInput(i) = x0(i);
 
   }
 
-  return hes;
+  // Reset the point to the original
+  SetPoint(x0);
 
+  return hes;
 }
 
 
-Eigen::VectorXd
-CostFunction::ApplyHessian(unsigned int const inputDimWrt,
-                           std::vector<Eigen::VectorXd> const& input,
-                           Eigen::VectorXd const& vec) {
-
-  return Hessian(inputDimWrt, input)*vec;
-
+Eigen::VectorXd CostFunction::ApplyHessian(Eigen::VectorXd const& vec) {
+  return Hessian()*vec;
 }

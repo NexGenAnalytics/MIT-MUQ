@@ -312,7 +312,7 @@ TEST_F(PolynomialMapTests, CreateIdentity) {
 
 TEST(PolynomialMapConstruct, FromSamples) {
   // the number of samples used to build the map
-  const unsigned int n = 50000;
+  const unsigned int n = 10000;
 
   // parameters for the banana
   //double a = 2.0;
@@ -328,16 +328,20 @@ TEST(PolynomialMapConstruct, FromSamples) {
     tgtSamps.col(i) = nanner->Sample();
 
   pt::ptree pt;
-  pt.put<unsigned int>("Order", 2);
+  pt.put("Order", 3);
+  pt.put("PrintLevel", 0);
+
   //pt.put<std::string>("InverseMethod", "Newton");
-  pt.put<std::string>("Optimization", "MyOpt");
-  pt.put("MyOpt.Ftol.AbsoluteTolerance", 0.0);
+  pt.put("Optimization", "MyOpt");
+  pt.put("MyOpt.Ftol.AbsoluteTolerance", 1e-4);
   pt.put("MyOpt.Ftol.RelativeTolerance", 0.0);
-  pt.put("MyOpt.Xtol.AbsoluteTolerance", 1.0e-14);
+  pt.put("MyOpt.Xtol.AbsoluteTolerance", 1e-4);
   pt.put("MyOpt.Xtol.RelativeTolerance", 0.0);
   pt.put("MyOpt.ConstraintTolerance", 1.0e-10);
   pt.put("MyOpt.MaxEvaluations", 1000); // max number of cost function evaluations
-  pt.put("MyOpt.Algorithm", "LBFGS");
+  pt.put("MyOpt.Algorithm", "NewtonTrust");
+  pt.put("MyOpt.PrintLevel", 0);
+
   auto map = PolynomialMap::FromSamples(tgtSamps, pt);
 
   // Estimate the actual KL divergence between the map-induced and true distributions
@@ -347,8 +351,8 @@ TEST(PolynomialMapConstruct, FromSamples) {
     double trueLogDens = nanner->LogDensity(tgtSamps.col(i).eval());
     klDiv += trueLogDens - mapLogDens;
   }
-  klDiv /= double(n);
-  std::cout << "KL Divergence = " << klDiv << std::endl;
-  EXPECT_NEAR(0.0, klDiv, 1e-2);
 
+  klDiv /= double(n);
+
+  EXPECT_NEAR(0.0, klDiv, 1e-2);
 }

@@ -8,7 +8,7 @@ using namespace muq::Optimization;
 TEST(CostFunctionTests, RosenbrockCost) {
 
   // the Rosenbrock cost function
-  auto rosen = std::make_shared<RosenbrockFunction>();
+  std::shared_ptr<CostFunction> rosen = std::make_shared<RosenbrockFunction>();
 
   // choose a random point
   const Eigen::VectorXd x = Eigen::Vector2d::Random();
@@ -24,9 +24,8 @@ TEST(CostFunctionTests, RosenbrockCost) {
   const Eigen::Vector2d grad_true(-4.0*a[0]*(x(1)-x(0)*x(0))*x(0)-2.0*(1.0-x(0)), 2.0*a[0]*(x(1)-x(0)*x(0)));
 
   // compute the gradient
-  const Eigen::VectorXd& grad_test0 =
-    rosen->Gradient(0, x, (Eigen::VectorXd)Eigen::VectorXd::Ones(1));
-  
+  const Eigen::VectorXd& grad_test0 = rosen->Gradient(x);
+
   EXPECT_DOUBLE_EQ((grad_true-grad_test0).norm(), 0.0);
 
   // the true hessian
@@ -36,22 +35,16 @@ TEST(CostFunctionTests, RosenbrockCost) {
   const Eigen::Matrix2d hess_true(hess_temp);
 
   // compute the Hessian
-  std::vector<Eigen::VectorXd> input;
-  input.push_back(x);
-
-  const Eigen::MatrixXd& hess_test0 = rosen->Hessian(0, input);
+  const Eigen::MatrixXd& hess_test0 = rosen->Hessian(x);
 
   EXPECT_NEAR((hess_true-hess_test0).norm(), 0.0, 1.0e-5);
 
   // Test the Hessian action
   Eigen::Vector2d vec(-12.3, 34.6);
 
-
   const Eigen::VectorXd& hessAction_true = hess_true*vec;
-  const Eigen::VectorXd& hessAction_test = rosen->ApplyHessian(0, input, vec);
+  const Eigen::VectorXd& hessAction_test = rosen->ApplyHessian(x,vec);
 
-  
+
   EXPECT_NEAR((hessAction_true-hessAction_test).norm(), 0.0, 3.0e-4);
-  
 }
-

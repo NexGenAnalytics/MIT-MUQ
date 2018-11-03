@@ -127,16 +127,18 @@ double NLoptOptimizer::Cost(unsigned int n,
   Eigen::Map<const Eigen::VectorXd> xmap(x, n);
   const Eigen::VectorXd& xeig = xmap;
 
+
+  opt->SetPoint(xeig);
   if (grad) {
 
     Eigen::Map<Eigen::VectorXd> gradmap(grad, n);
     const Eigen::VectorXd& gradeig =
-      opt->Gradient(0, xeig, (Eigen::VectorXd)Eigen::VectorXd::Ones(1));
+      opt->Gradient();
     gradmap = gradeig;
 
   }
 
-  return opt->Cost(xeig);
+  return opt->Cost();
 
 }
 

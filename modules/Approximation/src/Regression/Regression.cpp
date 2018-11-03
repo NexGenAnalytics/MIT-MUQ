@@ -62,20 +62,20 @@ int Regression::NumInterpolationPoints() const {
   std::cerr << std::endl << std::endl << "ERROR: Not able to compute the number of points required for interpolation" <<
     std::endl << "\tPolynomialRegressor.cpp NumInterpolationPoints()" << std::endl;
   assert(false);
-  
+
   return -1;
 }
 
 void Regression::Fit(std::vector<Eigen::VectorXd> xs, std::vector<Eigen::VectorXd> const& ys, Eigen::VectorXd const& center) {
   assert(xs.size()>0);
   assert(xs.size()==ys.size());
-  
+
   // set the current center
   currentCenter = center;
-  
+
   // center the input points
   CenterPoints(xs);
-  
+
   // Compute basis coefficients
   coeff = ComputeCoefficients(xs, ys);
 }
@@ -83,14 +83,14 @@ void Regression::Fit(std::vector<Eigen::VectorXd> xs, std::vector<Eigen::VectorX
 void Regression::Fit(std::vector<Eigen::VectorXd> const& xs, std::vector<Eigen::VectorXd> const& ys) {
   assert(xs.size()>0);
   assert(xs.size()==ys.size());
-  
+
   // preform the fit with zero center
   Fit(xs, ys, Eigen::VectorXd::Zero(xs[0].size()));
 }
 
 Eigen::MatrixXd Regression::ComputeCoefficients(std::vector<Eigen::VectorXd> const& xs, std::vector<Eigen::VectorXd> const& ys) const {
   assert(xs.size()==ys.size());
-    
+
   // check to make sure we have more than the number of points required to interpolate
   const unsigned int interp = NumInterpolationPoints();
   if( xs.size()<interp ) {
@@ -98,7 +98,7 @@ Eigen::MatrixXd Regression::ComputeCoefficients(std::vector<Eigen::VectorXd> con
     std::cerr << "\tTry fitting the regression with at least " << interp+1 << " points." << std::endl << std::endl;
     assert(xs.size()>NumInterpolationPoints());
   }
-  
+
   // create the Vandermonde matrix and the rhs
   Eigen::MatrixXd vand = VandermondeMatrix(xs);
   const Eigen::MatrixXd rhs = ComputeCoefficientsRHS(vand, ys);
@@ -106,7 +106,7 @@ Eigen::MatrixXd Regression::ComputeCoefficients(std::vector<Eigen::VectorXd> con
 
   // make the solver to do the regression
   auto solver = vand.colPivHouseholderQr();
-  
+
   // comptue the coefficients
   return solver.solve(rhs).transpose();
 }
@@ -115,40 +115,40 @@ Eigen::MatrixXd Regression::ComputeCoefficientsRHS(Eigen::MatrixXd const& vand, 
   // the dimension
   assert(ys_data.size()>0);
   const unsigned int dim = ys_data[0].size();
-  
+
   // initialize space for the data
   Eigen::MatrixXd ys = Eigen::MatrixXd::Constant(ys_data.size(), dim, std::numeric_limits<double>::quiet_NaN());
-  
+
   // copy the data into an Eigen type
   for( unsigned int i=0; i<ys_data.size(); ++i ) {
     ys.row(i) = ys_data[i];
   }
-  
+
   // apply the Vandermonde matrix
   return vand.transpose()*ys;
 }
 
 Eigen::MatrixXd Regression::VandermondeMatrix(std::vector<Eigen::VectorXd> const& xs) const {
   assert(multi);
-  
+
   // the number of points and the number of terms
   const unsigned int N = xs.size();
   const unsigned int M = multi->Size();
   assert(N>0);
-  
+
   // initialize the matrix
   Eigen::MatrixXd vand = Eigen::MatrixXd::Ones(N, M);
-  
+
   // each term is built by evaluating the polynomial basis
   for( unsigned int i=0; i<M; ++i ) { // loop through the terms
     // get the multi-index
     const Eigen::RowVectorXi& alpha = multi->at(i)->GetVector();
-    
+
     for( unsigned int pt=0; pt<N; ++pt ) { // loop through the points
       // get the point
       const Eigen::VectorXd& pnt = xs[pt];
       assert(alpha.size()==pnt.size());
-      
+
       // each term is a product of 1D variables
       for( unsigned int v=0; v<alpha.size(); ++v ) {
 	// evaluate the polynomial
@@ -156,32 +156,32 @@ Eigen::MatrixXd Regression::VandermondeMatrix(std::vector<Eigen::VectorXd> const
       }
     }
   }
-  
+
   return vand;
 }
 
 double Regression::CenterPoints(std::vector<Eigen::VectorXd>& xs, Eigen::VectorXd const& center) const {
   // reset the radius
   double radius = 0.0;
-  
+
   // is the center zero?
   const bool zeroCenter = center.norm()<std::numeric_limits<double>::epsilon();
-  
+
   // loop through all of the input points
   for( auto it=xs.begin(); it!=xs.end(); ++it ) {
     if( !zeroCenter ) {
       // recenter the the point
       *it -= center;
     }
-    
+
     // set the radius to the largest distance from the center
     radius = std::max(radius, it->norm());
   }
-  
+
   // loop through all of the input points to normalize by the radius
   for( auto it=xs.begin(); it!=xs.end(); ++it ) { *it /= radius; }
 
-  // return the radius 
+  // return the radius
   return radius;
 }
 
@@ -212,11 +212,11 @@ std::pair<Eigen::VectorXd, double> Regression::PoisednessConstant(std::vector<Ei
   for( unsigned int i=0; i<N; ++i ) {
     if( i>0 ) { euclidean[i-1] = Eigen::VectorXd::Zero(1); }
     euclidean[i] = Eigen::VectorXd::Ones(1);
-    
-    // compute the coefficients 
+
+    // compute the coefficients
     lagrangeCoeff[i] = ComputeCoefficients(xs, euclidean);
   }
-  
+
   auto cost = std::make_shared<PoisednessCost>(shared_from_this(), lagrangeCoeff, inputDim);
   auto constraint = std::make_shared<PoisednessConstraint>(inputDim);
 
@@ -226,7 +226,7 @@ std::pair<Eigen::VectorXd, double> Regression::PoisednessConstant(std::vector<Ei
 
   std::vector<Eigen::VectorXd> inputs;
   inputs.push_back((Eigen::VectorXd)Eigen::VectorXd::Zero(inputDim));
-  
+
   const std::pair<Eigen::VectorXd, double>& soln =
     opt->Solve(inputs);
   assert(soln.second<=0.0); // we are minimizing a negative inner product so the optimal solution should be negative
@@ -244,9 +244,9 @@ void Regression::ComputeBasisDerivatives(Eigen::VectorXd const& point, std::vect
     // initialize the gradient of basis function i
     gradient.at(i) = Eigen::VectorXd::Constant(inputDim, std::numeric_limits<double>::quiet_NaN());
 
-    // the multiindex 
+    // the multiindex
     const Eigen::VectorXi multiIndex = multi->at(i)->GetVector();
-    
+
     for( unsigned int d1=0; d1<inputDim; ++d1 ) { // loop through the dimensions of statespace
       // each term is a product of the 1D variables
       double result = 1.0;
@@ -257,18 +257,17 @@ void Regression::ComputeBasisDerivatives(Eigen::VectorXd const& point, std::vect
 	  result *= boost::any_cast<double const>(poly->Evaluate((unsigned int)multiIndex(v), point(v)) [0]);
 	}
       }
-      
+
       // insert each entry into the vector
       gradient.at(i) (d1) = result;
     }
   }
 }
 
-Regression::PoisednessCost::PoisednessCost(std::shared_ptr<Regression const> parent, std::vector<Eigen::RowVectorXd> const& lagrangeCoeff, unsigned int const inDim) : CostFunction(Eigen::VectorXi::Constant(1, inDim)), parent(parent), lagrangeCoeff(lagrangeCoeff) {}
+Regression::PoisednessCost::PoisednessCost(std::shared_ptr<Regression const> parent, std::vector<Eigen::RowVectorXd> const& lagrangeCoeff, unsigned int const inDim) : CostFunction(inDim), parent(parent), lagrangeCoeff(lagrangeCoeff) {}
 
-double Regression::PoisednessCost::CostImpl(ref_vector<Eigen::VectorXd> const& input) {
-  const Eigen::VectorXd& x = input[0];
-  
+double Regression::PoisednessCost::Cost() {
+
   const Eigen::RowVectorXd& phi = parent->VandermondeMatrix(std::vector<Eigen::VectorXd>(1, x));
 
   Eigen::VectorXd lambda(lagrangeCoeff.size());
@@ -277,10 +276,8 @@ double Regression::PoisednessCost::CostImpl(ref_vector<Eigen::VectorXd> const& i
   return -1.0*lambda.norm();
 }
 
-void Regression::PoisednessCost::GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) {
-  assert(inputDimWrt==0);
-  const Eigen::VectorXd& x = input[0];
-  
+Eigen::VectorXd const& Regression::PoisednessCost::Gradient() {
+
   const Eigen::RowVectorXd& phi = parent->VandermondeMatrix(std::vector<Eigen::VectorXd>(1, x));
 
   // compute the gradient of the basis functions; each element is the gradient of a basis function
@@ -288,7 +285,7 @@ void Regression::PoisednessCost::GradientImpl(unsigned int const inputDimWrt, mu
   parent->ComputeBasisDerivatives(x, gradBasis);
   assert(gradBasis.size()==lagrangeCoeff[0].size());
   assert(gradBasis[0].size()==inputSizes(0));
-  
+
   gradient = Eigen::VectorXd::Zero(inputSizes(0));
 
   Eigen::VectorXd lambda(lagrangeCoeff.size());
@@ -299,7 +296,8 @@ void Regression::PoisednessCost::GradientImpl(unsigned int const inputDimWrt, mu
     }
   }
 
-  gradient *= -1.0*sensitivity(0)/lambda.norm();
+  gradient *= -1.0/lambda.norm();
+  return gradient;
 
   /*{ // sanity check ...
     std::cout << std::endl;
@@ -321,14 +319,14 @@ void Regression::PoisednessConstraint::EvaluateImpl(ref_vector<Eigen::VectorXd> 
 
 void Regression::PoisednessConstraint::JacobianImpl(unsigned int const outputDimWrt,
                                                     unsigned int const inputDimWrt,
-                                                    muq::Modeling::ref_vector<Eigen::VectorXd> const& input) { 
+                                                    muq::Modeling::ref_vector<Eigen::VectorXd> const& input) {
 
   assert(inputDimWrt==0);
   const Eigen::VectorXd& x = input[0];
 
   jacobian.resize(inputSizes[0], outputSizes[0]);
   jacobian = 2.0*x;
-  
+
   /*{ // sanity check ...
     std::cout << std::endl;
     Eigen::VectorXd gradFD = GradientByFD(0, 0, input, sensitivity);

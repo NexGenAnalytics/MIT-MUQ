@@ -12,15 +12,23 @@ namespace muq {
 
       virtual ~KLSamplesCost() = default;
 
+      virtual void SetPoint(Eigen::VectorXd const& evalPt) override;
+      virtual double Cost() override;
+
+      virtual Eigen::VectorXd const& Gradient() override;
+      virtual Eigen::MatrixXd Hessian() override;
+      virtual Eigen::VectorXd ApplyHessian(Eigen::VectorXd const& vec) override;
+
     private:
 
-      virtual double CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override;
+      Eigen::MatrixXd const& vand;
+      Eigen::MatrixXd const& deriv;
 
-      void GradientImpl(unsigned int const inputDimWrt, muq::Modeling::ref_vector<Eigen::VectorXd> const& input, Eigen::VectorXd const& sensitivity) override;
+      const double numSamps;
 
-      const Eigen::MatrixXd& vand;
+      Eigen::VectorXd vandApp; // holds V*x
+      Eigen::VectorXd derivApp; // holds G*x
 
-      const Eigen::MatrixXd& deriv;
     };
 
     class KLSamplesConstraint : public muq::Modeling::ModPiece {

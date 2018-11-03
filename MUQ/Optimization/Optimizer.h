@@ -25,7 +25,7 @@ namespace Optimization {
               boost::property_tree::ptree const& pt);
 
 
-    virtual ~Optimizer();
+    virtual ~Optimizer() = default;
 
     /** Constructs an optimizer given a cost function and ptree of options.
 

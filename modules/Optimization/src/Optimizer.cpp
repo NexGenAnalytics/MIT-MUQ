@@ -14,15 +14,13 @@ Optimizer::Optimizer(std::shared_ptr<CostFunction> cost,
             cost->numInputs,
             std::vector<std::string>({typeid(Eigen::VectorXd).name(), typeid(double).name()})),
   opt(cost),
-  ftol_rel(pt.get("Ftol.AbsoluteTolerance", 1.0e-8)),
-  ftol_abs(pt.get("Ftol.RelativeTolerance", 1.0e-8)),
-  xtol_rel(pt.get("Xtol.AbsoluteTolerance", 1.0e-8)),
-  xtol_abs(pt.get("Xtol.RelativeTolerance", 1.0e-8)),
+  ftol_rel(pt.get("Ftol.RelativeTolerance", 1.0e-8)),
+  ftol_abs(pt.get("Ftol.AbsoluteTolerance", 1.0e-8)),
+  xtol_rel(pt.get("Xtol.RelativeTolerance", 1.0e-8)),
+  xtol_abs(pt.get("Xtol.AbsoluteTolerance", 1.0e-8)),
   constraint_tol(pt.get("ConstraintTolerance", 1.0e-8)),
   maxEvals(pt.get("MaxEvaluations", 100)) {}
 
-
-Optimizer::~Optimizer() {}
 
 void Optimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
 
