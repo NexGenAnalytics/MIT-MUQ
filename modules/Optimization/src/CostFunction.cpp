@@ -82,7 +82,7 @@ CostFunction::HessianByFD(unsigned int const inputDimWrt,
 }
 
 
-Eigen::MatrixXd
+Eigen::VectorXd
 CostFunction::ApplyHessian(unsigned int const inputDimWrt,
                            std::vector<Eigen::VectorXd> const& input,
                            Eigen::VectorXd const& vec) {
@@ -90,4 +90,3 @@ CostFunction::ApplyHessian(unsigned int const inputDimWrt,
   return Hessian(inputDimWrt, input)*vec;
 
 }
-

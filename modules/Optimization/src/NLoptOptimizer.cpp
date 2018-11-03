@@ -27,7 +27,6 @@ NLoptOptimizer::NLoptOptimizer(std::shared_ptr<CostFunction> cost,
                                pt::ptree const& pt) :
   Optimizer(cost, pt),
   algorithm(NLOptAlgorithm(pt.get<std::string>("Algorithm"))) {
-  opt = cost;
 }
 
 NLoptOptimizer::~NLoptOptimizer() {}
@@ -64,9 +63,7 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
     double ineqTol[ineqConstraints[i]->outputSizes(0)];
     Eigen::Map<const Eigen::VectorXd> ineqTolmap(ineqTol, ineqConstraints[i]->outputSizes(0));
     const Eigen::VectorXd ineqTolEig = Eigen::VectorXd::Constant(ineqConstraints[i]->outputSizes(0), constraint_tol);
-    std::cout << "ADDOING THE CONSTRAINT " << ineqConstraints[i]->outputSizes(0) << " tol: " << constraint_tol << std::endl;
     nlopt_add_inequality_mconstraint(solver, ineqConstraints[i]->outputSizes(0), Constraint, &ineqConstraints[i], ineqTol);
-    std::cout << "DONE ADDING THE CONSTRAINT" << std::endl;
   }
 
   for (int i=0; i<eqConstraints.size(); ++i) {
@@ -97,7 +94,6 @@ void NLoptOptimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
   double minf;
 
   const nlopt_result check = nlopt_optimize(solver, xopt.data(), &minf);
-  std::cout << "OPT CHECK: " << check << std::endl;
 
   if( check<0 )
     muq::ExternalLibraryError("NLOPT has failed with flag " + std::to_string(check));
@@ -151,14 +147,11 @@ void NLoptOptimizer::Constraint(unsigned int m,
                                 const double* x,
                                 double* grad,
                                 void* f_data) {
-  std::cout << "EVALAUTING THE NLOPT CONSTRAINT FUNCTION" << std::endl;
   // The constraint
   std::shared_ptr<ModPiece> opt = *((std::shared_ptr<ModPiece>*) f_data);
 
   Eigen::Map<const Eigen::VectorXd> xmap(x, n);
   const Eigen::VectorXd& xeig = xmap;
-
-  std::cout << "num con: " << m << std::endl;
 
   if( grad ) {
 

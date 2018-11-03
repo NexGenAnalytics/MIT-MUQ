@@ -11,7 +11,7 @@ using namespace muq::Optimization;
 class OptimizationTests : public::testing::Test {
 public:
 
-  inline OptimizationTests() {
+  OptimizationTests() {
     pt.put("Optimization.Ftol.AbsoluteTolerance", 1.0e-14);
     pt.put("Optimization.Ftol.RelativeTolerance", 1.0e-14);
     pt.put("Optimization.Xtol.AbsoluteTolerance", 1.0e-14);
@@ -21,10 +21,10 @@ public:
     cost = std::make_shared<RosenbrockFunction>();
   }
 
-  inline virtual ~OptimizationTests() {}
+  virtual ~OptimizationTests() {}
 
-  inline void TearDown() {
-    
+  void TearDown() {
+
     const Eigen::VectorXd x = Eigen::Vector2d(0.85, 1.2);
 
     auto opt = Optimizer::Construct(cost, pt.get_child("Optimization"));
@@ -97,6 +97,12 @@ TEST_F(OptimizationTests, PreTN) {
 TEST_F(OptimizationTests, LMVM) {
   pt.put("Optimization.Algorithm", "LMVM");
 }
+
+
+TEST_F(OptimizationTests, NewtonTrust) {
+  pt.put("Optimization.Algorithm", "NewtonTrust");
+}
+
 
 class InequalityConstraint : public muq::Modeling::ModPiece {
   public:

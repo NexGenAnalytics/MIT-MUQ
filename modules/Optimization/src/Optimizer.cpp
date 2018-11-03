@@ -1,6 +1,8 @@
 #include "MUQ/Optimization/Optimizer.h"
 #include "MUQ/Utilities/Exceptions.h"
 
+#include "MUQ/Utilities/AnyHelpers.h"
+
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::Optimization;
@@ -11,15 +13,25 @@ Optimizer::Optimizer(std::shared_ptr<CostFunction> cost,
   WorkPiece(cost->InputTypes(),
             cost->numInputs,
             std::vector<std::string>({typeid(Eigen::VectorXd).name(), typeid(double).name()})),
-  ftol_rel(pt.get<double>("Ftol.AbsoluteTolerance", 1.0e-8)),
-  ftol_abs(pt.get<double>("Ftol.RelativeTolerance", 1.0e-8)),
-  xtol_rel(pt.get<double>("Xtol.AbsoluteTolerance", 0.0)),
-  xtol_abs(pt.get<double>("Xtol.RelativeTolerance", 0.0)),
-  constraint_tol(pt.get<double>("ConstraintTolerance", 1.0e-8)),
-  maxEvals(pt.get<unsigned int>("MaxEvaluations", 100)) {}
+  opt(cost),
+  ftol_rel(pt.get("Ftol.AbsoluteTolerance", 1.0e-8)),
+  ftol_abs(pt.get("Ftol.RelativeTolerance", 1.0e-8)),
+  xtol_rel(pt.get("Xtol.AbsoluteTolerance", 1.0e-8)),
+  xtol_abs(pt.get("Xtol.RelativeTolerance", 1.0e-8)),
+  constraint_tol(pt.get("ConstraintTolerance", 1.0e-8)),
+  maxEvals(pt.get("MaxEvaluations", 100)) {}
 
 
 Optimizer::~Optimizer() {}
+
+void Optimizer::EvaluateImpl(ref_vector<boost::any> const& inputs) {
+
+  std::vector<Eigen::VectorXd> inVec(1);
+  inVec.at(0) = muq::Utilities::AnyConstCast(inputs.at(0).get());
+
+  outputs.resize(1);
+  outputs.at(0) = Solve(inVec);
+}
 
 void Optimizer::AddInequalityConstraint(std::vector<std::shared_ptr<ModPiece>> const& ineq) {
   ineqConstraints.insert(ineqConstraints.end(), ineq.begin(), ineq.end());

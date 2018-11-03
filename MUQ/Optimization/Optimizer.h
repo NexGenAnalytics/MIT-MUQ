@@ -31,8 +31,14 @@ namespace Optimization {
 
         <h3>Options:</h3>
         <table>
-        <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Description
+        <tr><th>Option Key <th> Optional/Required <th> Type <th> Possible Values <th> Default <th> Description
         <tr><td> Method <td> Required <td> string <td> Many.  Typically the name of the Optimizer child or the name of an NLOPT algorithm, but run Optimizer::ListMethod() for a complete list. <td> -- <td> Specifies the optimization method to use.
+        <tr><td> Ftol.AbsoluteTolerance <td> Optional <td> double <td> Any nonnegative real number. <td> 1e-8 <td> Termination criterion based on value of function value.  Note: this may not be used by all algorithms.
+        <tr><td> Ftol.RelativeTolerance <td> Optional <td> double <td> Any nonnegative real number. <td> 1e-8 <td> Termination criterion based on the relative change in the function value.  Note: this may not be used by all algorithms.
+        <tr><td> Xtol.AbsoluteTolerance <td> Optional <td> double <td> Any nonnegative real number. <td> 1e-8 <td> Termination criterion based on the change of optimization variables or gradient. Note: this may not be used by all algorithms.
+        <tr><td> Xtol.RelativeTolerance <td> Optional <td> double <td> Any nonnegative real number. <td> 1e-8 <td> Termination criterion based on the relative change of optimization variables or gradient. Note: this may not be used by all algorithms.
+        <tr><td> ConstraintTolerance <td> Optional <td> double <td> Any nonnegative real number.  <td> 1e-8 <td> Tolerance on equality constraints.
+        <tr><td> MaxEvaluations <td> Optional <td> unsigned int <td> Any natural number. <td> 100 <td> Depending on the algorithm, either the number of cost function evaluations allowed or the number of optimization iterations allowed.
         </table>
     */
     static std::shared_ptr<Optimizer> Construct(std::shared_ptr<CostFunction> cost,
@@ -88,6 +94,8 @@ namespace Optimization {
     virtual std::pair<Eigen::VectorXd, double> Solve(std::vector<Eigen::VectorXd> const& inputs) = 0;
 
   protected:
+
+    virtual void EvaluateImpl(muq::Modeling::ref_vector<boost::any> const& inputs) override;
 
     /// The cost function that we are trying to minimize
     std::shared_ptr<CostFunction> opt;
