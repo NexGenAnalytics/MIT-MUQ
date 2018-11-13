@@ -13,6 +13,8 @@ KLSamplesCost::KLSamplesCost(Eigen::MatrixXd const& vand,
 
  assert(vand.cols()==deriv.cols());
  assert(vand.rows()==deriv.rows());
+
+ vv = vand.transpose() * vand;
 }
 
 void KLSamplesCost::SetPoint(Eigen::VectorXd const& evalPt) {
@@ -34,11 +36,11 @@ Eigen::VectorXd const& KLSamplesCost::Gradient() {
 }
 
 Eigen::MatrixXd KLSamplesCost::Hessian() {
-  return (vand.transpose() * vand + deriv.transpose() * (derivApp.array().square().inverse().matrix().asDiagonal() * deriv))/numSamps;
+  return (vv + deriv.transpose() * (derivApp.array().square().inverse().matrix().asDiagonal() * deriv))/numSamps;
 };
 
 Eigen::VectorXd KLSamplesCost::ApplyHessian(Eigen::VectorXd const& vec) {
-   return (vand.transpose() * vand * vec + deriv.transpose()*derivApp.array().square().inverse().matrix().asDiagonal() * deriv*vec)/numSamps;
+   return (vv * vec + deriv.transpose()*derivApp.array().square().inverse().matrix().asDiagonal() * deriv*vec)/numSamps;
 };
 
 KLSamplesConstraint::KLSamplesConstraint(Eigen::MatrixXd const& deriv) :

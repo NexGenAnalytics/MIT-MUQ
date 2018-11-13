@@ -29,6 +29,8 @@ namespace muq {
       Eigen::VectorXd vandApp; // holds V*x
       Eigen::VectorXd derivApp; // holds G*x
 
+      Eigen::MatrixXd vv; // holds vand.transpose()*vand
+
     };
 
     class KLSamplesConstraint : public muq::Modeling::ModPiece {
