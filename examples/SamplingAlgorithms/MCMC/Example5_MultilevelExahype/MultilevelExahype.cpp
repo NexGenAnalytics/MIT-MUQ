@@ -172,7 +172,7 @@ private:
 int main(){
 
 { // Forward UQ
-  /*pt::ptree pt;
+  pt::ptree pt;
   pt.put("BlockIndex",0);
   pt.put("NumSamples",1);
 
@@ -192,7 +192,7 @@ int main(){
   auto startingPoint = componentFactory->StartingPoint(finestIndex);
   auto chain = std::make_shared<SingleChainMCMC>(pt,kernels,startingPoint);
 
-  chain->Run();*/
+  chain->Run();
 }
 
 { // Inverse UQ
