@@ -44,6 +44,7 @@ CreateCompileGroup(
     MarkovChain.cpp
 
     TransitionKernel.cpp
+    DummyKernel.cpp
     #MCKernel.cpp
     #ISKernel.cpp
     MHKernel.cpp
