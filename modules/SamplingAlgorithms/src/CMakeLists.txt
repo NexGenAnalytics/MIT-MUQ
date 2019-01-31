@@ -17,7 +17,7 @@ CreateCompileGroup(
     "Implement sampling algorithms such as Monte Carlo, importance sampling, and Markov chain Monte Carlo"
     muqSamplingAlgorithms
     "MODELING_CORE;APPROXIMATION_REGRESSION"
-    ""
+    "PARCER"
     ""
 
     SamplingProblem.cpp
