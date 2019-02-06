@@ -52,6 +52,9 @@ namespace muq{
                       Eigen::VectorXd x0)
                     : SingleChainMCMC(pt, kernels, std::vector<Eigen::VectorXd>(1,x0)) {};
 
+      SingleChainMCMC(boost::property_tree::ptree pt,
+                std::vector<std::shared_ptr<TransitionKernel>> kernelsIn,
+                std::shared_ptr<SamplingState> x0);
 
       virtual ~SingleChainMCMC() = default;
 
