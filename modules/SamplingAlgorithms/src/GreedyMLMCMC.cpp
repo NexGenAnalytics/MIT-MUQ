@@ -4,7 +4,7 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     GreedyMLMCMC::GreedyMLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-    : SamplingAlgorithm(nullptr, nullptr),
+    : SamplingAlgorithm(nullptr),
       componentFactory(componentFactory),
       numInitialSamples(pt.get("NumInitialSamples",1000)),
       e(pt.get("GreedyTargetVariance",0.1)),

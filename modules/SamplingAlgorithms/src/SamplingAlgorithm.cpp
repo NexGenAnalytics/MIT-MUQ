@@ -6,14 +6,19 @@ SamplingAlgorithm::SamplingAlgorithm(std::shared_ptr<SampleCollection> samplesIn
                   std::shared_ptr<SampleCollection> QOIsIn)
  : samples(samplesIn),
    QOIs(QOIsIn)
-{}
+   {
+   }
 
 SamplingAlgorithm::SamplingAlgorithm(std::shared_ptr<SampleCollection> samplesIn)
  : SamplingAlgorithm (samplesIn, std::make_shared<SampleCollection>())
-{}
+ {
+ }
 
 #if MUQ_HAS_PARCER
-SamplingAlgorithm::SamplingAlgorithm(std::shared_ptr<SampleCollection> samplesIn, std::shared_ptr<parcer::Communicator> comm) : SamplingAlgorithm(samplesIn), comm(comm) {};
+SamplingAlgorithm::SamplingAlgorithm(std::shared_ptr<SampleCollection> samplesIn, std::shared_ptr<parcer::Communicator> commIn) : SamplingAlgorithm(samplesIn)
+{
+  comm = commIn;
+};
 #endif
 
 std::shared_ptr<SampleCollection> SamplingAlgorithm::GetSamples() const { return samples; }

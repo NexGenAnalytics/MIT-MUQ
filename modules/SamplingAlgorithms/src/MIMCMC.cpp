@@ -4,7 +4,7 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     MIMCMC::MIMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-    : SamplingAlgorithm(nullptr, nullptr),
+    : SamplingAlgorithm(nullptr),
       componentFactory(componentFactory),
       samples(pt.get("NumSamples",1000))
     {
