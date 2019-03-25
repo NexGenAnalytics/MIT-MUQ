@@ -62,7 +62,7 @@ namespace muq {
       std::shared_ptr<SampleCollection> QOIs;
 
 #if MUQ_HAS_PARCER
-      std::shared_ptr<parcer::Communicator> comm = std::make_shared<parcer::Communicator>();
+      std::shared_ptr<parcer::Communicator> comm;// = std::make_shared<parcer::Communicator>();
 #endif
 
     private:

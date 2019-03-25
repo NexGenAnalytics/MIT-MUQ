@@ -17,7 +17,7 @@ CreateCompileGroup(
     "Implement sampling algorithms such as Monte Carlo, importance sampling, and Markov chain Monte Carlo"
     muqSamplingAlgorithms
     "MODELING_CORE;APPROXIMATION_REGRESSION"
-    ""
+    "PARCER"
     ""
 
     SamplingProblem.cpp
@@ -80,6 +80,8 @@ if(MUQ_USE_MPI)
       "PARCER"
       ""
       DistributedCollection.cpp
+      ParallelAbstractSamplingProblem.cpp
+      ParallelMIComponentFactory.cpp
   )
 
 endif()

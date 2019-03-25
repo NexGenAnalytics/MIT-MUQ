@@ -4,11 +4,10 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     SLMCMC::SLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-     : SamplingAlgorithm(nullptr, nullptr),
+     : SamplingAlgorithm(nullptr),
        componentFactory(componentFactory)
     {
       auto index = componentFactory->FinestIndex();
-
       auto problem = componentFactory->SamplingProblem(index);
       auto proposal = componentFactory->Proposal(index, problem);
 
@@ -30,7 +29,7 @@ namespace muq {
     }
 
     std::shared_ptr<SampleCollection> SLMCMC::RunImpl() {
-      coarse_chain->Run();
+      return coarse_chain->Run();
     }
 
     Eigen::VectorXd SLMCMC::MeanQOI() {

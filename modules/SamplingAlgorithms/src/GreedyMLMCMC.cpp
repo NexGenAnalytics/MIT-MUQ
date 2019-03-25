@@ -4,7 +4,7 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     GreedyMLMCMC::GreedyMLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-    : SamplingAlgorithm(nullptr, nullptr),
+    : SamplingAlgorithm(nullptr),
       componentFactory(componentFactory),
       numInitialSamples(pt.get("NumInitialSamples",1000)),
       e(pt.get("GreedyTargetVariance",0.1)),
@@ -86,6 +86,11 @@ namespace muq {
           std::cout << "var_mle " << var_mle << "\t" << n_new_samples << " new samples on level " << l << std::endl;
         for (int i = 0; i < n_new_samples; i++)
           boxes[l]->Sample();
+      }
+
+      if (verbosity > 0) {
+        for (int l = 0; l <= levels; l++)
+          boxes[l]->FinestChain()->PrintStatus("lvl " + std::to_string(l) + " ");
       }
 
       return nullptr;
