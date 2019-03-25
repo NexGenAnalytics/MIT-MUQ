@@ -80,6 +80,8 @@ if(MUQ_USE_MPI)
       "PARCER"
       ""
       DistributedCollection.cpp
+      ParallelAbstractSamplingProblem.cpp
+      ParallelMIComponentFactory.cpp
   )
 
 endif()

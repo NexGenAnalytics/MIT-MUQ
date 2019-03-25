@@ -4,6 +4,7 @@
 #include "MUQ/SamplingAlgorithms/MHKernel.h"
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
 #include "MUQ/SamplingAlgorithms/MIKernel.h"
+#include "MUQ/SamplingAlgorithms/RemoteMIProposal.h"
 #include "MUQ/Utilities/AnyHelpers.h"
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
