@@ -16,6 +16,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "calculateLikelihood.hh"
+
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
@@ -45,30 +47,13 @@ public:
     file.close();
 
     // run it
-    system("./ExaHyPE-SWE ../SWE_MC.exahype");
+    system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
+    //call_exahype();
 
-    std::cout << "ref:" << state->state[0] << std::endl;
+    std::cout << "parameter:" << state->state[0].transpose() << std::endl;
 
-
-
-    /*const int dim_measurements = 2;
-    Eigen::VectorXd measurements(dim_measurements);
-    std::ifstream infile("heightmeasurement.csv");
-    std::string line;
-    int row = 0;
-    while (std::getline(infile, line))
-    {
-      if (line.back() == ';') {
-        measurements[row] = std::stod(line);
-        std::cout << "number: " << measurements[row] << std::endl;
-        row++;
-      }
-    }
-    assert(row == dim_measurements);
-
-
-    return target->Evaluate(state->state).at(0)(0);*/
-    return 0.5;
+    double sigma = 1.0;
+    return calculateLikelihood() - 0.5/(sigma*sigma)*state->state[0].squaredNorm();
   };
 
   virtual std::shared_ptr<SamplingState> QOI() override {
@@ -104,7 +89,7 @@ public:
 
     auto mu = Eigen::VectorXd::Zero(NUM_PARAM);
     Eigen::MatrixXd cov = Eigen::MatrixXd::Identity(NUM_PARAM, NUM_PARAM);
-    cov *= 0.01;
+    cov *= 0.05;
 
     auto prior = std::make_shared<Gaussian>(mu, cov);
 
@@ -139,6 +124,33 @@ public:
   virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> index) override {
     /*Eigen::VectorXd mu(2);
     mu << 1.0, 2.0;*/
+    //Eigen::VectorXd starting_point(NUM_PARAM) ;
+    /*starting_point << 0.121314257467467,
+ 0.025122621496891+0.05,
+ -0.06288251326481,
+0.0044990047381523,
+ -0.35931096483882+0.05,
+ -0.17980950702760,
+-0.039303158036783,
+  0.04051263131116,
+  0.20642980153421,
+-0.087846593742242,
+ -0.14806056460221,
+  0.10989384874583,
+ -0.23276913591139,
+-0.060517155234500,
+ -0.27394006329741,
+  0.18238397513562,
+  0.21470562207520,
+  0.27819286077795,
+  0.47720961992223,
+ -0.23964603300818,
+  0.21068404741421,
+-0.051877149846593,
+ -0.12971859216880,
+ 0.019382490909568,
+ 0.0409844709964236;*/
+    //return starting_point;
     return Eigen::VectorXd::Zero(NUM_PARAM);
   }
 
@@ -171,7 +183,7 @@ private:
 
 int main(){
 
-{ // Forward UQ
+/*{ // Forward UQ
   pt::ptree pt;
   pt.put("BlockIndex",0);
   pt.put("NumSamples",1);
@@ -193,16 +205,16 @@ int main(){
   auto chain = std::make_shared<SingleChainMCMC>(pt,kernels,startingPoint);
 
   chain->Run();
-}
+}*/
 
 { // Inverse UQ
   auto componentFactory = std::make_shared<MyMIComponentFactory>();
 
   pt::ptree pt;
 
-  pt.put("NumSamples", 1e1); // number of samples for single level
-  pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
-  pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
+  pt.put("NumSamples", 1e3); // number of samples for single level
+  pt.put("NumInitialSamples", 1e3); //ignore// number of initial samples for greedy MLMCMC
+  pt.put("GreedyTargetVariance", 0.05); //ignore// estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
 
   /*std::cout << std::endl << "*************** greedy multillevel chain" << std::endl << std::endl;
@@ -217,6 +229,17 @@ int main(){
   SLMCMC slmcmc (pt, componentFactory);
   slmcmc.Run();
   std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+  //std::cout << "variance QOI: " << slmcmc.VarianceQOI().transpose() << std::endl;
+
+  //Write mean to file
+  std::ofstream file("Input/parameters.csv");
+  file << (slmcmc.MeanQOI()).format(CSVFormat);
+  file.close();
+
+  //plot mean
+  system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
+  calculateLikelihood();
+
 }
   return 0;
 }
