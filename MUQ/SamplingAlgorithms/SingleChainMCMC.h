@@ -66,6 +66,8 @@ namespace muq{
 
       virtual double TotalTime() { return totalTime; }
 
+      void PrintStatus(std::string prefix = "");
+
     protected:
 
       std::shared_ptr<SamplingState> SaveSamples(std::vector<std::shared_ptr<SamplingState> > const& newStates, std::shared_ptr<SamplingState>& lastSavedState, unsigned int& sampNum) const;

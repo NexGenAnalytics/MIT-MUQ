@@ -7,10 +7,7 @@ namespace muq {
      : SamplingAlgorithm(nullptr),
        componentFactory(componentFactory)
     {
-      std::cout << "constr" << std::endl;
       auto index = componentFactory->FinestIndex();
-      std::cout << "constr2" << std::endl;
-
       auto problem = componentFactory->SamplingProblem(index);
       auto proposal = componentFactory->Proposal(index, problem);
 

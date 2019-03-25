@@ -88,6 +88,11 @@ namespace muq {
           boxes[l]->Sample();
       }
 
+      if (verbosity > 0) {
+        for (int l = 0; l <= levels; l++)
+          boxes[l]->FinestChain()->PrintStatus("lvl " + std::to_string(l) + " ");
+      }
+
       return nullptr;
     }
 
