@@ -16,6 +16,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "/home/anne/Desktop/exahype/ExaHyPE-Engine/ApplicationExamples/SWE/SWE_MC_ADERDG/initandsoon.h"
 #include "calculateLikelihood.hh"
 
 namespace pt = boost::property_tree;
@@ -34,9 +35,16 @@ class MySamplingProblem : public AbstractSamplingProblem {
 public:
   MySamplingProblem()
   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,NUM_PARAM), Eigen::VectorXi::Constant(1,NUM_PARAM))
-     {}
+     {
+             char* hi[2];
+             hi[0] = "ExaHyPE-SWE";
+             hi[1] = "SWE_MC_ADERDG.exahype2";
+             muq::init(2,hi);
+     }
 
-  virtual ~MySamplingProblem() = default;
+  virtual ~MySamplingProblem(){
+    muq::finalize();
+  }
 
 
   virtual double LogDensity(unsigned int const t, std::shared_ptr<SamplingState> state, AbstractSamplingProblem::SampleType type) override {
@@ -47,8 +55,9 @@ public:
     file.close();
 
     // run it
-    system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
-    //call_exahype();
+    //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
+    system("rm vtk-output/*");
+    muq::run_exahype();
 
     std::cout << "parameter:" << state->state[0].transpose() << std::endl;
 
@@ -212,7 +221,7 @@ int main(){
 
   pt::ptree pt;
 
-  pt.put("NumSamples", 1e3); // number of samples for single level
+  pt.put("NumSamples", 3); // number of samples for single level
   pt.put("NumInitialSamples", 1e3); //ignore// number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); //ignore// estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
@@ -237,7 +246,8 @@ int main(){
   file.close();
 
   //plot mean
-  system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
+  //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
+  muq::run_exahype();
   calculateLikelihood();
 
 }

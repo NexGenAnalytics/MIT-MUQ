@@ -55,7 +55,7 @@ double calculateLikelihood(){
         }
         std::cout << "Probe " << i_probe << " " << diff << std::endl;*/
 
-        std::string arg = "python Output/TFMisfit/TFMisfit.py -r Output/Reference/waveheight"+std::to_string(i_probe+1)+".probe -s Output/waveheight"+std::to_string(i_probe+1)+".probe > Output/output.csv 2> Output/err";
+        std::string arg = "python Output/TFMisfit/TFMisfit.py -r Output/Reference/waveheight"+std::to_string(i_probe+1)+".probe -s Output/waveheight"+std::to_string(i_probe+1)+"-rank-0.probe > Output/output.csv 2> Output/err";
         const char *command = arg.c_str(); 
         system(command);
 
