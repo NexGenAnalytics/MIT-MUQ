@@ -38,7 +38,7 @@ namespace muq {
         std::shared_ptr<SingleChainMCMC> coarse_chain = nullptr;
         std::shared_ptr<AbstractSamplingProblem> coarse_problem = nullptr;
 
-        for (int i = 0; i < boxIndices->Size(); i++) {
+        for (uint i = 0; i < boxIndices->Size(); i++) {
           std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
 
           if (boxIndex->Max() == 0) {
@@ -136,7 +136,7 @@ namespace muq {
       }
 
       void Sample() {
-        for (int i = 0; i < boxIndices->Size(); i++) {
+        for (uint i = 0; i < boxIndices->Size(); i++) {
           std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
           auto chain = boxChains[boxIndices->MultiToIndex(boxIndex)];
           chain->Sample();
@@ -146,7 +146,7 @@ namespace muq {
       Eigen::VectorXd MeanQOI() {
         Eigen::VectorXd sampMean = Eigen::VectorXd::Zero(GetFinestProblem()->blockSizesQOI.sum());
 
-        for (int i = 0; i < boxIndices->Size(); i++) {
+        for (uint i = 0; i < boxIndices->Size(); i++) {
           std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
           auto chain = boxChains[boxIndices->MultiToIndex(boxIndex)];
           auto samps = chain->GetQOIs();

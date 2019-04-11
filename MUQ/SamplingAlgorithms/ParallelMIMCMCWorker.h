@@ -57,7 +57,7 @@ namespace muq {
           sampling = false;
         } else if (command == ControlFlag::MEANS_DONE) {
 
-          for (int i = 0; i < boxIndices->Size(); i++) {
+          for (uint i = 0; i < boxIndices->Size(); i++) {
             std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
 
             Eigen::VectorXd chainSampleMean = comm->Recv<Eigen::VectorXd>(status.MPI_SOURCE, ControlTag);
@@ -289,7 +289,7 @@ namespace muq {
 
             std::vector<std::shared_ptr<DistributedCollection>> sampleCollections(boxIndices->Size());
             std::vector<std::shared_ptr<DistributedCollection>> qoiCollections(boxIndices->Size());
-            for (int i = 0; i < boxIndices->Size(); i++) {
+            for (uint i = 0; i < boxIndices->Size(); i++) {
               auto sampleCollection = std::make_shared<MarkovChain>();
               sampleCollections[i] = std::make_shared<DistributedCollection>(sampleCollection, subcomm);
               auto qoiCollection = std::make_shared<MarkovChain>();
@@ -315,7 +315,7 @@ namespace muq {
                 for (int i = 0; i < numSamples; i++) {
                   int remoteRank = phonebookClient->Query(boxHighestIndex);
                   comm->Send(ControlFlag::SAMPLE_BOX, remoteRank, ControlTag); // TODO: Receive sample in one piece?
-                  for (int i = 0; i < boxIndices->Size(); i++) {
+                  for (uint i = 0; i < boxIndices->Size(); i++) {
                     //std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
                     sampleCollections[i]->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
                     qoiCollections[i]->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
@@ -330,7 +330,7 @@ namespace muq {
               } else if (command == ControlFlag::MEANS) {
                 std::list<Eigen::VectorXd> sampleMeans;
                 std::list<Eigen::VectorXd> qoiMeans;
-                for (int i = 0; i < boxIndices->Size(); i++) {
+                for (uint i = 0; i < boxIndices->Size(); i++) {
                   sampleMeans.push_back(sampleCollections[i]->GlobalMean());
                   qoiMeans.push_back(qoiCollections[i]->GlobalMean());
                 }
