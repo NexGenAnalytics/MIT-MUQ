@@ -13,6 +13,7 @@
 #include "MUQ/SamplingAlgorithms/ParallelFlags.h"
 #include "MUQ/SamplingAlgorithms/ParallelMIComponentFactory.h"
 #include "MUQ/SamplingAlgorithms/ParallelMIMCMCBox.h"
+#include "MUQ/Utilities/Cereal/MultiIndexSerializer.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
@@ -24,7 +25,7 @@ namespace muq {
          for (int dest : subgroup) {
            comm->Send(ControlFlag::ASSIGN_COLLECTOR, dest, ControlTag);
            comm->Send(subgroup, dest, ControlTag);
-           comm->Send(boxHighestIndex->GetValue(0), dest, ControlTag); // TODO: MultiIndex senden
+           comm->Send(*boxHighestIndex, dest, ControlTag);
          }
 
          // Set up Multiindex box
@@ -133,7 +134,7 @@ namespace muq {
         for (int dest : subgroup) {
           comm->Send(ControlFlag::ASSIGN, dest, ControlTag);
           comm->Send(subgroup, dest, ControlTag);
-          comm->Send(modelindex->GetValue(0), dest, ControlTag); // TODO: MultiIndex senden
+          comm->Send(*modelindex, dest, ControlTag);
           comm->Send(*measurements, dest, ControlTag);
         }
         phonebookClient->Register(modelindex, subgroup[0]);
@@ -146,14 +147,15 @@ namespace muq {
       }
 
       void UnassignAll() {
-        std::shared_ptr<MultiIndex> largest = phonebookClient->LargestIndex();
-        while (largest->GetValue(0) != -1) {
+        std::shared_ptr<MultiIndex> largest = nullptr;
+        do {
+          largest = phonebookClient->LargestIndex();
           std::cout << "Unassigning model " << *largest << std::endl;
           std::vector<int> ranks = phonebookClient->GetWorkgroups(largest);
-          for (int rank : ranks)
+          for (int rank : ranks) {
             UnassignGroup(largest, rank);
-          largest = phonebookClient->LargestIndex();
-        }
+          }
+        } while (largest->Max() != 0);
       }
 
       void Finalize() {
@@ -175,7 +177,7 @@ namespace muq {
           ControlFlag command = comm->Recv<ControlFlag>(RootRank, ControlTag);
           if (command == ControlFlag::ASSIGN) {
             std::vector<int> subgroup_proc = comm->Recv<std::vector<int>>(0, ControlTag);
-            auto samplingProblemIndex = std::make_shared<MultiIndex>(1, comm->Recv<int>(0, ControlTag));
+            auto samplingProblemIndex = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(0, ControlTag));
             auto measurements = std::make_shared<Eigen::VectorXd>(comm->Recv<Eigen::VectorXd>(0, ControlTag));
 
             MPI_Group world_group;
@@ -268,7 +270,7 @@ namespace muq {
             std::cout << "Rank " << comm->GetRank() << " finalized" << std::endl;
           } else if (command == ControlFlag::ASSIGN_COLLECTOR) {
             std::vector<int> subgroup_proc = comm->Recv<std::vector<int>>(RootRank, ControlTag);
-            auto boxHighestIndex = std::make_shared<MultiIndex>(1, comm->Recv<int>(RootRank, ControlTag));
+            auto boxHighestIndex = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(RootRank, ControlTag));
 
             // Set up subcommunicator
             MPI_Group world_group;

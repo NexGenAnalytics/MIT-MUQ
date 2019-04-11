@@ -9,6 +9,7 @@
 
 #include <parcer/Communicator.h>
 #include "MUQ/SamplingAlgorithms/ParallelFlags.h"
+#include "MUQ/Utilities/Cereal/MultiIndexSerializer.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
@@ -33,11 +34,11 @@ namespace muq {
           ControlFlag command = comm->Recv<ControlFlag>(MPI_ANY_SOURCE, ControlTag, &status);
           //timer_idle.stop();
           if (command == ControlFlag::GET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
 
             requests.push_back(std::tie(index, status.MPI_SOURCE));
           } else if (command == ControlFlag::SET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
 
             if (!phonebook.count(index)) {
@@ -46,7 +47,7 @@ namespace muq {
             phonebook[index].AddWorker(rank);
             std::cout << "Phonebook entry for " << *index << " set" << std::endl;
           } else if (command == ControlFlag::UNSET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
 
             if (!phonebook.count(index)) {
@@ -59,7 +60,7 @@ namespace muq {
             }
             std::cout << "Phonebook entry for " << *index << " unset" << std::endl;
           } else if (command == ControlFlag::GET_WORKGROUPS) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
 
             if (!phonebook.count(index)) {
               std::cerr << "getting workers for nonexistent model!" << std::endl;
@@ -70,11 +71,11 @@ namespace muq {
               comm->Send(-1, status.MPI_SOURCE, ControlTag);
               std::cout << "Sent empty largest index" << std::endl;
             } else {
-              comm->Send(phonebook.rbegin()->first->GetValue(0), status.MPI_SOURCE, ControlTag);
-              std::cout << "Sent largest index " << phonebook.rbegin()->first->GetValue(0) << std::endl;
+              comm->Send(*phonebook.rbegin()->first, status.MPI_SOURCE, ControlTag);
+              std::cout << "Sent largest index " << *phonebook.rbegin()->first << std::endl;
             }
           } else if (command == ControlFlag::SET_WORKER_READY) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             if (!phonebook.count(index)) {
               std::cerr << "setting ready for nonexistent model!" << std::endl;
               continue;
@@ -168,12 +169,12 @@ namespace muq {
           ControlFlag command = comm->Recv<ControlFlag>(MPI_ANY_SOURCE, ControlTag, &status);
           //timer_idle.stop();
           if (command == ControlFlag::GET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             int workerRank = phonebook[index].NextWorker();
             comm->Send(workerRank, status.MPI_SOURCE, ControlTag);
             //std::cout << "Phonebook rank " << workerRank << " for model " << *index << " sent to rank " << status.MPI_SOURCE << std::endl;
           } else if (command == ControlFlag::SET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
 
             if (!phonebook.count(index)) {
@@ -182,7 +183,7 @@ namespace muq {
             phonebook[index].AddWorker(rank);
             std::cout << "Phonebook entry for " << *index << " set" << std::endl;
           } else if (command == ControlFlag::UNSET_WORKGROUP) {
-            auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(status.MPI_SOURCE, ControlTag));
+            auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
             int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
 
             if (!phonebook.count(index)) {
@@ -199,7 +200,7 @@ namespace muq {
               comm->Send(-1, status.MPI_SOURCE, ControlTag);
               std::cout << "Sent empty largest index" << std::endl;
             } else
-              comm->Send(phonebook.rbegin()->first->GetValue(0), status.MPI_SOURCE, ControlTag);
+              comm->Send(*phonebook.rbegin()->first, status.MPI_SOURCE, ControlTag);
           } else if (command == ControlFlag::SET_WORKER_READY) {
             // Just a dummy receive to be compatible with other phonebooks
             comm->Recv<int>(status.MPI_SOURCE, ControlTag);
@@ -256,36 +257,36 @@ namespace muq {
 
       int Query(std::shared_ptr<MultiIndex> remoteIndex) {
         comm->Send(ControlFlag::GET_WORKGROUP, phonebookRank, ControlTag);
-        comm->Send(remoteIndex->GetValue(0), phonebookRank, ControlTag);
+        comm->Send<MultiIndex>(*remoteIndex, phonebookRank, ControlTag);
         return comm->Recv<int>(phonebookRank, ControlTag);
       }
 
       std::vector<int> GetWorkgroups(std::shared_ptr<MultiIndex> modelIndex) {
         comm->Send(ControlFlag::GET_WORKGROUPS, phonebookRank, ControlTag);
-        comm->Send(modelIndex->GetValue(0), phonebookRank, ControlTag);
+        comm->Send(*modelIndex, phonebookRank, ControlTag);
         return comm->Recv<std::vector<int>>(phonebookRank, ControlTag);
       }
 
       std::shared_ptr<MultiIndex> LargestIndex() {
         comm->Send(ControlFlag::GET_LARGEST_INDEX, phonebookRank, ControlTag);
-        return std::make_shared<MultiIndex>(1, comm->Recv<int>(phonebookRank, ControlTag));
+        return std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(phonebookRank, ControlTag));
       }
 
       void Register(std::shared_ptr<MultiIndex> modelIndex, int rank) {
         comm->Send(ControlFlag::SET_WORKGROUP, phonebookRank, ControlTag);
-        comm->Send(modelIndex->GetValue(0), phonebookRank, ControlTag);
+        comm->Send(*modelIndex, phonebookRank, ControlTag);
         comm->Ssend(rank, phonebookRank, ControlTag);
       }
 
       void UnRegister(std::shared_ptr<MultiIndex> modelIndex, int rank) {
         comm->Send(ControlFlag::UNSET_WORKGROUP, phonebookRank, ControlTag);
-        comm->Send(modelIndex->GetValue(0), phonebookRank, ControlTag);
+        comm->Send(*modelIndex, phonebookRank, ControlTag);
         comm->Ssend(rank, phonebookRank, ControlTag);
       }
 
       void SetWorkerReady(std::shared_ptr<MultiIndex> modelIndex, int rank) {
         comm->Send(ControlFlag::SET_WORKER_READY, phonebookRank, ControlTag);
-        comm->Send(modelIndex->GetValue(0), phonebookRank, ControlTag);
+        comm->Send(*modelIndex, phonebookRank, ControlTag);
         comm->Send(rank, phonebookRank, ControlTag);
       }
 
