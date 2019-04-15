@@ -168,7 +168,7 @@ namespace muq {
       std::shared_ptr<PhonebookClient> phonebookClient;
     };
 
-    template <typename COMPONENT_FACTORY>
+    template <typename COMPONENT_FACTORY> // TODO: Avoid this template
     class WorkerServer {
     public:
       WorkerServer(boost::property_tree::ptree const& pt, std::shared_ptr<parcer::Communicator> comm, std::shared_ptr<PhonebookClient> phonebookClient, int RootRank) {
@@ -201,7 +201,7 @@ namespace muq {
               // Burn in coarsest chains
               if (samplingProblemIndex->Max() == 0) {
                 std::cout << "Burning in" << std::endl;
-                for (int i = 0; i < configuration.get<int>("MCMC.burnin"); i++) // TODO: Proper solution for burnin
+                for (int i = 0; i < pt.get<int>("MCMC.burnin"); i++)
                   box->Sample();
                 std::cout << "Burned in" << std::endl;
               }

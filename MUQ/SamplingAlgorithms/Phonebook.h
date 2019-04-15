@@ -76,11 +76,11 @@ namespace muq {
             }
           } else if (command == ControlFlag::SET_WORKER_READY) {
             auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(status.MPI_SOURCE, ControlTag));
+            int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
             if (!phonebook.count(index)) {
               std::cerr << "setting ready for nonexistent model!" << std::endl;
               continue;
             }
-            int rank = comm->Recv<int>(status.MPI_SOURCE, ControlTag, &status);
             phonebook[index].SetWorkerReady(rank);
           } else if (command == ControlFlag::QUIT) {
             std::cout << "Rank " << comm->GetRank() << " quit" << std::endl;
