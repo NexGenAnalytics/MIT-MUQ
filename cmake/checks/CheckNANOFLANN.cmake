@@ -8,11 +8,11 @@ CHECK_CXX_SOURCE_COMPILES(
 
 #include <stdio.h>
 
-using namespace flann;
+using namespace nanoflann;
 
 int main(int argc, char** argv)
 {
-    int nn = 3;
+    /*int nn = 3;
 
     Matrix<float> dataset;
     Matrix<float> query;
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     delete[] dataset.ptr();
     delete[] query.ptr();
     delete[] indices.ptr();
-    delete[] dists.ptr();
+    delete[] dists.ptr();*/
     
     return 0;
 }

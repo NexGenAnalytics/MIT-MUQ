@@ -12,7 +12,7 @@ else()
 
 	find_path(STANMATH_INCLUDE_DIR stan/math.hpp
 	          HINTS ${MUQ_STANMATH_DIR}
-			  PATH_SUFFIXES stan NO_DEFAULT_PATH)
+			  NO_DEFAULT_PATH)
 
 endif()
 set(STANMATH_INCLUDE_DIRS ${STANMATH_INCLUDE_DIR} )
