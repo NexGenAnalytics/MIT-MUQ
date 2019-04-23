@@ -36,7 +36,7 @@ namespace muq {
               break;
             }
             if (command == ControlFlag::INIT_PROBLEM) {
-              auto index = std::make_shared<MultiIndex>(1, comm->Recv<int>(0, WorkgroupTag));
+              auto index = std::make_shared<MultiIndex>(comm->Recv<MultiIndex>(0, WorkgroupTag));
               int id = comm->Recv<int>(0, WorkgroupTag);
               std::cout << "Rank " << comm->GetRank() << " building model index " << *index << std::endl;
               samplingProblems[id] = componentFactory->SamplingProblem(index);//std::make_shared<MySamplingProblem>(index, comm, id, measurements);
@@ -98,7 +98,7 @@ namespace muq {
           std::cout << "Rank " << comm->GetRank() << " requesting model " << *index << std::endl;
           for (int dest = 1; dest < comm->GetSize(); dest++) {
             comm->Send(ControlFlag::INIT_PROBLEM, dest, WorkgroupTag);
-            comm->Send(index->GetValue(0), dest, WorkgroupTag);
+            comm->Send(*index, dest, WorkgroupTag);
             comm->Send(idcnt, dest, WorkgroupTag);
           }
         }
