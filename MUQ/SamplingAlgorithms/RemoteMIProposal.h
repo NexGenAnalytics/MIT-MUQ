@@ -22,7 +22,7 @@ namespace muq {
 		public:
 			RemoteMIProposal (pt::ptree const& pt, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<parcer::Communicator> comm, std::shared_ptr<MultiIndex> remoteIndex, std::shared_ptr<PhonebookClient> phonebookClient)
 				: MCMCProposal(pt,prob),
-				subsampling(pt.get("subsampling",1)),
+				//subsampling(pt.get<int>("Subsampling")),
 				comm(comm),
 		    remoteIndex(remoteIndex),
 				phonebookClient(phonebookClient)
@@ -51,7 +51,7 @@ namespace muq {
 		private:
 			int sampleID = 0;
 			int sampleWeight = 0;
-			const int subsampling;
+			//const int subsampling;
 			std::shared_ptr<parcer::Communicator> comm;
 		  std::shared_ptr<MultiIndex> remoteIndex;
 			std::shared_ptr<PhonebookClient> phonebookClient;

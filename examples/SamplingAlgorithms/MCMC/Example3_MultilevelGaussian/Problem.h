@@ -1,3 +1,5 @@
+#include "MUQ/SamplingAlgorithms/ParallelizableMIComponentFactory.h"
+
 class MySamplingProblem : public AbstractSamplingProblem {
 public:
   MySamplingProblem(std::shared_ptr<muq::Modeling::ModPiece> targetIn)
@@ -32,14 +34,19 @@ public:
   }
 };
 
-class MyMIComponentFactory : public MIComponentFactory {
+class MyMIComponentFactory : public ParallelizableMIComponentFactory {
 public:
-  MyMIComponentFactory (std::shared_ptr<parcer::Communicator> comm, std::shared_ptr<parcer::Communicator> global_comm, std::shared_ptr<Eigen::VectorXd> measurements_in)
+  MyMIComponentFactory (pt::ptree pt)
+   : pt(pt)
   { }
 
+  void SetComm(std::shared_ptr<parcer::Communicator> comm) override {
+
+  }
+
   virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> index, std::shared_ptr<AbstractSamplingProblem> samplingProblem) override {
-    pt::ptree pt;
-    pt.put("BlockIndex",0);
+    pt::ptree pt_prop;
+    pt_prop.put("BlockIndex",0);
 
     Eigen::VectorXd mu(2);
     mu << 1.0, 2.0;
@@ -50,12 +57,12 @@ public:
 
     auto prior = std::make_shared<Gaussian>(mu, cov);
 
-    return std::make_shared<CrankNicolsonProposal>(pt, samplingProblem, prior);
+    return std::make_shared<CrankNicolsonProposal>(pt_prop, samplingProblem, prior);
   }
 
   virtual std::shared_ptr<MultiIndex> FinestIndex() override {
     auto index = std::make_shared<MultiIndex>(1);
-    index->SetValue(0, 3);
+    index->SetValue(0, 1);
     return index;
   }
 
@@ -64,8 +71,8 @@ public:
                                                            std::shared_ptr<SingleChainMCMC> coarseChain) override {
     pt::ptree ptProposal;
     ptProposal.put("BlockIndex",0);
-    int subsampling = 5;
-    ptProposal.put("subsampling", subsampling);
+    //int subsampling = 5;
+    ptProposal.put("Subsampling", pt.get<int>("MLMCMC.Subsampling"));
     return std::make_shared<SubsamplingMIProposal>(ptProposal, coarseProblem, coarseChain);
   }
 
@@ -76,7 +83,7 @@ public:
     cov << 0.7, 0.6,
            0.6, 1.0;
 
-    if (index->GetValue(0) == 0) {
+    /*if (index->GetValue(0) == 0) {
       mu *= 0.8;
       cov *= 2.0;
     } else if (index->GetValue(0) == 1) {
@@ -86,6 +93,12 @@ public:
       mu *= 0.99;
       cov *= 1.1;
     } else if (index->GetValue(0) == 3) {
+      mu *= 1.0;
+      cov *= 1.0;*/
+    if (index->GetValue(0) == 0) {
+      mu *= 0.95;
+      cov *= 1.5;
+    } else if (index->GetValue(0) == 1) {
       mu *= 1.0;
       cov *= 1.0;
     } else {
@@ -107,6 +120,8 @@ public:
     return mu;
   }
 
+private:
+  pt::ptree pt;
 };
 
  

@@ -4,7 +4,7 @@ namespace muq {
 
     SubsamplingMIProposal::SubsamplingMIProposal (pt::ptree const& pt, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<SingleChainMCMC> coarseChain)
      : MCMCProposal(pt,prob), coarseChain(coarseChain),
-       subsampling(pt.get("subsampling",1))
+       subsampling(pt.get<int>("Subsampling"))
     {}
 
     std::shared_ptr<SamplingState> SubsamplingMIProposal::Sample(std::shared_ptr<SamplingState> currentState) {
