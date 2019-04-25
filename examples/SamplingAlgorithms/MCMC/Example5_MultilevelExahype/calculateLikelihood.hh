@@ -15,7 +15,7 @@ double calculateLikelihood(){
     //calculate differences at the 4 different probe points
     for(int i_probe=1; i_probe <= numProbes; i_probe++){
 
-       /* double diff;
+        double diff;
         double dh;
 
         {
@@ -53,9 +53,9 @@ double calculateLikelihood(){
         }
         diff -= dh;
         }
-        std::cout << "Probe " << i_probe << " " << diff << std::endl;*/
+        std::cout << "Probe " << i_probe << " " << diff << std::endl;
 
-        std::string arg = "python Output/TFMisfit/TFMisfit.py -r Output/Reference/waveheight"+std::to_string(i_probe+1)+".probe -s Output/waveheight"+std::to_string(i_probe+1)+"-rank-0.probe > Output/output.csv 2> Output/err";
+        /*std::string arg = "python Output/TFMisfit/TFMisfit.py -r Output/Reference/waveheight"+std::to_string(i_probe+1)+".probe -s Output/waveheight"+std::to_string(i_probe+1)+"-rank-0.probe > Output/output.csv 2> Output/err";
         const char *command = arg.c_str(); 
         system(command);
 
@@ -71,7 +71,7 @@ double calculateLikelihood(){
         double d2; ss >> d2;   // read 2
         std::cout << d1 << " " << d2 << std::endl;
         likelihood = std::max(likelihood, d1*d1 + d2*d2);  //2 norm
-        //likelihood += 1.0/numProbes * diff*diff;
+        //likelihood += 1.0/numProbes * diff*diff;*/
     }
     std::ofstream ost;
     ost.open("likelihood.log", std::ios::app);

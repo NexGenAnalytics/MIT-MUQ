@@ -11,12 +11,15 @@
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
 
-#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+#include "MUQ/SamplingAlgorithms/ParallelizableMIComponentFactory.h"
+#include "MUQ/SamplingAlgorithms/ParallelMIComponentFactory.h"
+
 #include "MUQ/SamplingAlgorithms/DummyKernel.h"
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "/home/anne/Desktop/exahype/ExaHyPE-Engine/ApplicationExamples/SWE/SWE_MC_ADERDG/initandsoon.h"
+#include "/hppfs/work/pr83no/ge68wax4/ExaHyPE-Engine/ApplicationExamples/SWE/SWE_MC_ADERDG/initandsoon.h"
+
 #include "calculateLikelihood.hh"
 
 namespace pt = boost::property_tree;
@@ -33,22 +36,28 @@ const static Eigen::IOFormat CSVFormat(Eigen::FullPrecision, 0, ", ", ";\n", "",
 
 class MySamplingProblem : public AbstractSamplingProblem {
 public:
-  MySamplingProblem()
+  MySamplingProblem(std::shared_ptr<parcer::Communicator> comm)
   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,NUM_PARAM), Eigen::VectorXi::Constant(1,NUM_PARAM))
-     {
-             char* hi[2];
-             hi[0] = "ExaHyPE-SWE";
-             hi[1] = "SWE_MC_ADERDG.exahype2";
-             muq::init(2,hi);
+     
+{
+this->comm = comm;
+
+             comm->Barrier();
+             char* input[2];
+             input[0] = "ExaHyPE-SWE";
+             input[1] = "SWE_MC_ADERDG.exahype2";
+             muq::init(2,input);
+             muq::setCommunicator(comm->GetMPICommunicator());
      }
 
   virtual ~MySamplingProblem(){
-    muq::finalize();
+	  muq::finalize();
   }
 
 
   virtual double LogDensity(unsigned int const t, std::shared_ptr<SamplingState> state, AbstractSamplingProblem::SampleType type) override {
-    lastState = state;
+   comm->Barrier();    
+   lastState = state;
 
     std::ofstream file("Input/parameters.csv");
     file << state->state[0].format(CSVFormat);
@@ -56,11 +65,12 @@ public:
 
     // run it
     //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
-    system("rm vtk-output/*");
+    system("rm -f vtk-output/*");
     muq::run_exahype();
 
     std::cout << "parameter:" << state->state[0].transpose() << std::endl;
 
+comm->Barrier();
     double sigma = 1.0;
     return calculateLikelihood() - 0.5/(sigma*sigma)*state->state[0].squaredNorm();
   };
@@ -72,7 +82,7 @@ public:
 
 private:
   std::shared_ptr<SamplingState> lastState = nullptr;
-
+  std::shared_ptr<parcer::Communicator> comm;
 };
 
 
@@ -83,7 +93,7 @@ public:
   }
 };
 
-class MyMIComponentFactory : public MIComponentFactory {
+class MyMIComponentFactory : public ParallelizableMIComponentFactory {
 public:
   virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> index, std::shared_ptr<AbstractSamplingProblem> samplingProblem) override {
     pt::ptree pt;
@@ -105,6 +115,10 @@ public:
     return std::make_shared<MHProposal>(pt, samplingProblem, prior);
   }
 
+  void SetComm(std::shared_ptr<parcer::Communicator> comm) override {
+    _comm = comm;
+  }
+
   virtual std::shared_ptr<MultiIndex> FinestIndex() override {
     auto index = std::make_shared<MultiIndex>(1);
     index->SetValue(0, 3);
@@ -123,7 +137,7 @@ public:
 
   virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> index) override {
 
-    return std::make_shared<MySamplingProblem>();
+    return std::make_shared<MySamplingProblem>(_comm);
   }
 
   virtual std::shared_ptr<MIInterpolation> Interpolation (std::shared_ptr<MultiIndex> index) override {
@@ -163,6 +177,9 @@ public:
     return Eigen::VectorXd::Zero(NUM_PARAM);
   }
 
+private:
+  std::shared_ptr<parcer::Communicator> _comm;
+
 };
 
 class MCSampleProposal : public MCMCProposal {
@@ -190,7 +207,9 @@ private:
 };
 
 
-int main(){
+int main(int argc, char** argv){
+  int initThreadProvidedThreadLevelSupport;
+  bool result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &initThreadProvidedThreadLevelSupport );
 
 /*{ // Forward UQ
   pt::ptree pt;
@@ -217,12 +236,12 @@ int main(){
 }*/
 
 { // Inverse UQ
-  auto componentFactory = std::make_shared<MyMIComponentFactory>();
+  auto localFactory = std::make_shared<MyMIComponentFactory>();
 
   pt::ptree pt;
 
   pt.put("NumSamples", 3); // number of samples for single level
-  pt.put("NumInitialSamples", 1e3); //ignore// number of initial samples for greedy MLMCMC
+  pt.put("NumInitialSamples", 3); //ignore// number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); //ignore// estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
 
@@ -233,6 +252,11 @@ int main(){
   std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
   greedymlmcmc.Draw(false);*/
 
+  auto comm = std::make_shared<parcer::Communicator>();
+  localFactory->SetComm(comm);
+  auto componentFactory = std::make_shared<ParallelMIComponentFactory>(comm, comm, localFactory);
+
+  if (comm->GetRank() == 0) {
   std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
 
   SLMCMC slmcmc (pt, componentFactory);
@@ -244,12 +268,16 @@ int main(){
   std::ofstream file("Input/parameters.csv");
   file << (slmcmc.MeanQOI()).format(CSVFormat);
   file.close();
+  }
+  componentFactory->finalize();
 
   //plot mean
   //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
-  muq::run_exahype();
-  calculateLikelihood();
+  //muq::run_exahype();
+  //calculateLikelihood();
 
 }
+
+  MPI_Finalize();
   return 0;
 }
