@@ -31,6 +31,7 @@ namespace muq {
             //timer_idle.stop();
             std::cout << "Rank " << comm->GetRank() << " received " << command << std::endl;
             if (command == ControlFlag::FINALIZE) {
+              samplingProblems.clear(); // Tear down models synchronously
               comm->Barrier();
               std::cout << "Rank " << comm->GetRank() << " went through barrier" << std::endl;
               break;
@@ -73,6 +74,7 @@ namespace muq {
         std::cout << "Send finalize" << std::endl;
         for (int dest = 1; dest < comm->GetSize(); dest++)
           comm->Send(ControlFlag::FINALIZE, dest, WorkgroupTag);
+        samplingProblems.clear(); // Tear down models synchronously
         comm->Barrier();
         std::cout << "Finalized" << std::endl;
       }
@@ -102,7 +104,8 @@ namespace muq {
             comm->Send(idcnt, dest, WorkgroupTag);
           }
         }
-        return std::make_shared<ParallelAbstractSamplingProblem>(comm, idcnt, componentFactory->SamplingProblem(index));
+        samplingProblems[idcnt] = std::make_shared<ParallelAbstractSamplingProblem>(comm, idcnt, componentFactory->SamplingProblem(index));
+        return samplingProblems[idcnt];
       }
 
       virtual std::shared_ptr<MIInterpolation> Interpolation (std::shared_ptr<MultiIndex> index) override {
