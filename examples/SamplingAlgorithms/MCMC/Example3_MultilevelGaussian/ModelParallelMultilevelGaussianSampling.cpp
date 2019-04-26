@@ -11,7 +11,7 @@
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
 
-#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+#include "MUQ/SamplingAlgorithms/ParallelMIComponentFactory.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -23,7 +23,9 @@ using namespace muq::Utilities;
 #include "Problem.h"
 
 
-int main(){
+int main(int argc, char **argv){
+
+  MPI_Init(&argc, &argv);
 
   pt::ptree pt;
 
@@ -33,22 +35,31 @@ int main(){
   pt.put("verbosity", 1); // show some output
   pt.put("MLMCMC.Subsampling", 5);
 
-
-  auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
-
+  auto localFactory = std::make_shared<MyMIComponentFactory>(pt);
 
   std::cout << std::endl << "*************** greedy multillevel chain" << std::endl << std::endl;
 
-  GreedyMLMCMC greedymlmcmc (pt, componentFactory);
-  greedymlmcmc.Run();
-  std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+  auto comm = std::make_shared<parcer::Communicator>();
+  localFactory->SetComm(comm);
+  auto componentFactory = std::make_shared<ParallelMIComponentFactory>(comm, comm, localFactory);
+
+  if (comm->GetRank() == 0) {
+    GreedyMLMCMC greedymlmcmc (pt, componentFactory);
+    greedymlmcmc.Run();
+    std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+  }
 
 
-  std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
+  if (comm->GetRank() == 0) {
+    std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
 
-  SLMCMC slmcmc (pt, componentFactory);
-  slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+    SLMCMC slmcmc (pt, componentFactory);
+    slmcmc.Run();
+    componentFactory->finalize();
+    std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+  }
 
+
+  MPI_Finalize();
   return 0;
 }
