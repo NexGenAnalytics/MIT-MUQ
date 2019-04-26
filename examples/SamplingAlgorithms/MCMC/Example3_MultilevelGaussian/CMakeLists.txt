@@ -13,5 +13,12 @@ message("${MUQ_LIBRARIES}")
 add_executable(MultilevelGaussianSampling MultilevelGaussianSampling.cpp)
 target_link_libraries(MultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
 
-add_executable(ParallelMultilevelGaussianSampling ParallelMultilevelGaussianSampling.cpp)
-target_link_libraries(ParallelMultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+add_executable(ModelParallelMultilevelGaussianSampling ModelParallelMultilevelGaussianSampling.cpp)
+target_link_libraries(ModelParallelMultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(FullParallelMultilevelGaussianSampling FullParallelMultilevelGaussianSampling.cpp)
+target_link_libraries(FullParallelMultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(SubsamplingTestMultilevelGaussianSampling SubsamplingTestMultilevelGaussianSampling.cpp)
+target_link_libraries(SubsamplingTestMultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+

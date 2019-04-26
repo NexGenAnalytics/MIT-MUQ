@@ -28,27 +28,32 @@ int main(){
   pt::ptree pt;
 
   pt.put("NumSamples", 1e3); // number of samples for single level
-  pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
+  pt.put("NumInitialSamples", 1e4); // number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
-  pt.put("MLMCMC.Subsampling", 5);
 
 
-  auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
+  for (int subsampling : {0, 5, 10, 25, 100, 1000}) {
+    std::cout << "Running with subsampling " << subsampling << std::endl;
+    pt.put("MLMCMC.Subsampling", subsampling);
 
 
-  std::cout << std::endl << "*************** greedy multillevel chain" << std::endl << std::endl;
+    auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
 
-  GreedyMLMCMC greedymlmcmc (pt, componentFactory);
-  greedymlmcmc.Run();
-  std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+    std::cout << std::endl << "*************** greedy multillevel chain" << std::endl << std::endl;
 
+    GreedyMLMCMC greedymlmcmc (pt, componentFactory);
+    greedymlmcmc.Run();
+    std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+    greedymlmcmc.Draw(false);
 
-  std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
+    /*std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
 
-  SLMCMC slmcmc (pt, componentFactory);
-  slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+    SLMCMC slmcmc (pt, componentFactory);
+    slmcmc.Run();
+    std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;*/
+
+  }
 
   return 0;
 }
