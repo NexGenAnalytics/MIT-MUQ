@@ -15,4 +15,5 @@ string(STRIP ${EXAHYPE_LINKS} EXAHYPE_LINKS)
 
 add_executable(MultilevelExahype MultilevelExahype.cpp)
 target_link_libraries(MultilevelExahype ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+target_include_directories(MultilevelExahype PRIVATE ${EXAHYPE_PATH})
 set_target_properties(MultilevelExahype PROPERTIES LINK_FLAGS ${EXAHYPE_LINKS})
