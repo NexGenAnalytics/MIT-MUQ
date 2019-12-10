@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-find_package(MUQ_PRIVATE REQUIRED)
+find_package(MUQ_EXAHYPE REQUIRED)
 
 include_directories(${MUQ_INCLUDE_DIRS})
 

@@ -10,7 +10,7 @@ INCLUDE(CheckCXXSourceRuns)
 INCLUDE(CheckFunctionExists)
 
 # define the project name
-project(MUQ_PRIVATE)
+project(MUQ_EXAHYPE)
 set(${CMAKE_PROJECT_NAME}_MAJOR_VERSION 1)
 set(${CMAKE_PROJECT_NAME}_MINOR_VERSION 0)
 set(${CMAKE_PROJECT_NAME}_PATCH_VERSION 0)
