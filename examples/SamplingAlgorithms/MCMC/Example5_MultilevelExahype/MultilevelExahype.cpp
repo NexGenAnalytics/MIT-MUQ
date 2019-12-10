@@ -13,12 +13,13 @@
 
 #include "MUQ/SamplingAlgorithms/ParallelizableMIComponentFactory.h"
 #include "MUQ/SamplingAlgorithms/ParallelMIComponentFactory.h"
+#include "MUQ/SamplingAlgorithms/ParallelFixedSamplesMIMCMC.h"
 
 #include "MUQ/SamplingAlgorithms/DummyKernel.h"
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "/hppfs/work/pr83no/ge68wax4/ExaHyPE-Engine/ApplicationExamples/SWE/SWE_MC_ADERDG/initandsoon.h"
+#include <initandsoon.h>
 
 #include "calculateLikelihood.hh"
 
@@ -29,8 +30,8 @@ using namespace muq::Utilities;
 
 #include <fstream>
 
+//TODO: read in
 const int NUM_PARAM = 25;
-
 
 const static Eigen::IOFormat CSVFormat(Eigen::FullPrecision, 0, ", ", ";\n", "", "", "", ";\n");
 
@@ -38,39 +39,35 @@ class MySamplingProblem : public AbstractSamplingProblem {
 public:
   MySamplingProblem(std::shared_ptr<parcer::Communicator> comm)
   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,NUM_PARAM), Eigen::VectorXi::Constant(1,NUM_PARAM))
-     
 {
-this->comm = comm;
+    this->comm = comm;
+    muq::setCommunicator(comm->GetMPICommunicator());
 
-             comm->Barrier();
-             char* input[2];
-             input[0] = "ExaHyPE-SWE";
-             input[1] = "SWE_MC_ADERDG.exahype2";
-             muq::init(2,input);
-             muq::setCommunicator(comm->GetMPICommunicator());
-     }
+}
 
   virtual ~MySamplingProblem(){
-	  muq::finalize();
   }
 
-
   virtual double LogDensity(unsigned int const t, std::shared_ptr<SamplingState> state, AbstractSamplingProblem::SampleType type) override {
-   comm->Barrier();    
-   lastState = state;
+    comm->Barrier();    
+    lastState = state;
 
-    std::ofstream file("Input/parameters.csv");
-    file << state->state[0].format(CSVFormat);
-    file.close();
+    //TODO pass directly to exahype
+    //std::ofstream file("Input/parameters.csv");
+    //file << state->state[0].format(CSVFormat);
+    //file.close();
 
     // run it
-    //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
-    system("rm -f vtk-output/*");
-    muq::run_exahype();
+    //system("rm -f vtk-output/*");
+    std::vector<double> param(state->state[0].size());
+    for(int i = 0; i < param.size(); i++){
+        param[i] = state->state[0][i];
+    }
+    auto output = muq::run_exahype();
 
     std::cout << "parameter:" << state->state[0].transpose() << std::endl;
 
-comm->Barrier();
+    comm->Barrier();
     double sigma = 1.0;
     return calculateLikelihood() - 0.5/(sigma*sigma)*state->state[0].squaredNorm();
   };
@@ -121,7 +118,7 @@ public:
 
   virtual std::shared_ptr<MultiIndex> FinestIndex() override {
     auto index = std::make_shared<MultiIndex>(1);
-    index->SetValue(0, 3);
+    index->SetValue(0, 0);
     return index;
   }
 
@@ -145,35 +142,7 @@ public:
   }
 
   virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> index) override {
-    /*Eigen::VectorXd mu(2);
-    mu << 1.0, 2.0;*/
-    //Eigen::VectorXd starting_point(NUM_PARAM) ;
-    /*starting_point << 0.121314257467467,
- 0.025122621496891+0.05,
- -0.06288251326481,
-0.0044990047381523,
- -0.35931096483882+0.05,
- -0.17980950702760,
--0.039303158036783,
-  0.04051263131116,
-  0.20642980153421,
--0.087846593742242,
- -0.14806056460221,
-  0.10989384874583,
- -0.23276913591139,
--0.060517155234500,
- -0.27394006329741,
-  0.18238397513562,
-  0.21470562207520,
-  0.27819286077795,
-  0.47720961992223,
- -0.23964603300818,
-  0.21068404741421,
--0.051877149846593,
- -0.12971859216880,
- 0.019382490909568,
- 0.0409844709964236;*/
-    //return starting_point;
+    //Starting guess: zero
     return Eigen::VectorXd::Zero(NUM_PARAM);
   }
 
