@@ -178,7 +178,9 @@ private:
 
 int main(int argc, char** argv){
   int initThreadProvidedThreadLevelSupport;
-  bool result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &initThreadProvidedThreadLevelSupport );
+  //bool result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &initThreadProvidedThreadLevelSupport );
+
+  muq::init(argc,argv);
 
 /*{ // Forward UQ
   pt::ptree pt;
@@ -239,6 +241,7 @@ int main(int argc, char** argv){
   file.close();
   }
   componentFactory->finalize();
+  muq::finalize();
 
   //plot mean
   //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
