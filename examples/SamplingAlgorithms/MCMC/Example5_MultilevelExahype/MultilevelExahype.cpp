@@ -31,16 +31,17 @@ using namespace muq::Utilities;
 #include <fstream>
 
 //TODO: read in
-const int NUM_PARAM = 25;
-
+const int NUM_PARAM = 2;
+int count;
 const static Eigen::IOFormat CSVFormat(Eigen::FullPrecision, 0, ", ", ";\n", "", "", "", ";\n");
 
 class MySamplingProblem : public AbstractSamplingProblem {
 public:
-  MySamplingProblem(std::shared_ptr<parcer::Communicator> comm)
+  MySamplingProblem(std::shared_ptr<parcer::Communicator> comm,std::shared_ptr<MultiIndex> index)
   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,NUM_PARAM), Eigen::VectorXi::Constant(1,NUM_PARAM))
 {
     this->comm = comm;
+    this->index = index;
     muq::setCommunicator(comm->GetMPICommunicator());
 
 }
@@ -49,27 +50,43 @@ public:
   }
 
   virtual double LogDensity(unsigned int const t, std::shared_ptr<SamplingState> state, AbstractSamplingProblem::SampleType type) override {
-    comm->Barrier();    
+    comm->Barrier();
     lastState = state;
 
     //TODO pass directly to exahype
     //std::ofstream file("Input/parameters.csv");
     //file << state->state[0].format(CSVFormat);
     //file.close();
+    unsigned int idx= index->GetValue(0); //TODO check if passing index works
 
-    // run it
-    //system("rm -f vtk-output/*");
+    //Write parameters into ExaHyPE readable format
     std::vector<double> param(state->state[0].size());
     for(int i = 0; i < param.size(); i++){
         param[i] = state->state[0][i];
     }
-    auto output = muq::run_exahype();
 
+    //Create some debug output
     std::cout << "parameter:" << state->state[0].transpose() << std::endl;
+
+    std::ofstream ost;
+    ost.open("parameters.log", std::ios::app);
+    ost << param[0] << ", " << param[1] << std::endl;
+    ost.close();
+
+    std::cout << "Sample number: " << count++ << std::endl;
+    std::cout << "Parameter " << param[0] << " " << param[1] << std::endl;
+
+    //Discard stupid parameters
+    if (param[0] >1.0 || param[0] < -0.1 || param[1]>1.0 || param[1]<-0.1)//reject parameters outside domain
+        return -24;
+
+    //run forward model
+    int level = 4;
+    auto output = muq::run_exahype(param,level);
 
     comm->Barrier();
     double sigma = 1.0;
-    return calculateLikelihood() - 0.5/(sigma*sigma)*state->state[0].squaredNorm();
+    return calculateLikelihood(output);// - 0.5/(sigma*sigma)*state->state[0].squaredNorm();
   };
 
   virtual std::shared_ptr<SamplingState> QOI() override {
@@ -80,6 +97,7 @@ public:
 private:
   std::shared_ptr<SamplingState> lastState = nullptr;
   std::shared_ptr<parcer::Communicator> comm;
+  std::shared_ptr<MultiIndex> index;
 };
 
 
@@ -105,7 +123,7 @@ public:
 
     auto mu = Eigen::VectorXd::Zero(NUM_PARAM);
     Eigen::MatrixXd cov = Eigen::MatrixXd::Identity(NUM_PARAM, NUM_PARAM);
-    cov *= 0.05;
+    cov *= 0.005;
 
     auto prior = std::make_shared<Gaussian>(mu, cov);
 
@@ -134,7 +152,7 @@ public:
 
   virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> index) override {
 
-    return std::make_shared<MySamplingProblem>(_comm);
+    return std::make_shared<MySamplingProblem>(_comm,index);
   }
 
   virtual std::shared_ptr<MIInterpolation> Interpolation (std::shared_ptr<MultiIndex> index) override {
@@ -143,7 +161,10 @@ public:
 
   virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> index) override {
     //Starting guess: zero
-    return Eigen::VectorXd::Zero(NUM_PARAM);
+      Eigen::VectorXd start = Eigen::VectorXd::Ones(NUM_PARAM);
+    start(0) = .6;
+    start(1) = .6;
+    return start;
   }
 
 private:
@@ -181,7 +202,7 @@ int main(int argc, char** argv){
   //bool result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &initThreadProvidedThreadLevelSupport );
 
   muq::init(argc,argv);
-
+  count = 0;
 /*{ // Forward UQ
   pt::ptree pt;
   pt.put("BlockIndex",0);
@@ -211,10 +232,11 @@ int main(int argc, char** argv){
 
   pt::ptree pt;
 
-  pt.put("NumSamples", 3); // number of samples for single level
+  pt.put("NumSamples", 100); // number of samples for single level
   pt.put("NumInitialSamples", 3); //ignore// number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); //ignore// estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
+  pt.put("BurnIn", 10);
 
   /*std::cout << std::endl << "*************** greedy multillevel chain" << std::endl << std::endl;
 
@@ -232,24 +254,28 @@ int main(int argc, char** argv){
 
   SLMCMC slmcmc (pt, componentFactory);
   slmcmc.Run();
+
+
+  std::cout << "mean Param: " << slmcmc.MeanParameter().transpose() << std::endl;
   std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+
   //std::cout << "variance QOI: " << slmcmc.VarianceQOI().transpose() << std::endl;
 
   //Write mean to file
-  std::ofstream file("Input/parameters.csv");
+  /*std::ofstream file("Input/parameters.csv");
   file << (slmcmc.MeanQOI()).format(CSVFormat);
-  file.close();
+  file.close();*/
   }
   componentFactory->finalize();
-  muq::finalize();
 
   //plot mean
-  //system("./ExaHyPE-SWE SWE_ADERDG_MC.exahype2 > log.log 2>&1");
-  //muq::run_exahype();
+  //std::vector<double> param = {slmcmc.MeanQOI()(0), slmcmc.MeanQOI()(1)};
+  //muq::run_exahype(param);
   //calculateLikelihood();
 
 }
 
+  muq::finalize();
   MPI_Finalize();
   return 0;
 }
