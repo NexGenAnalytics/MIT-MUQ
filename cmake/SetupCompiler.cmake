@@ -18,16 +18,6 @@ else(MUQ_USE_MPI)
   set(MUQ_HAS_MPI 0)
 endif(MUQ_USE_MPI)
 
-set(CMAKE_CXX_FLAGS_DEBUG  "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE  "-O3")
-
-# default to a release build
-message(STATUS "User defined build type = " ${CMAKE_BUILD_TYPE})
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RELEASE)
-endif()
-message(STATUS "Final build type = " ${CMAKE_BUILD_TYPE})
-
 # Require C++11
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
