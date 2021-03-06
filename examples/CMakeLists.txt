@@ -1,6 +1,8 @@
 add_subdirectory(Approximation/GaussianProcess_CO2)
 add_subdirectory(Approximation/MonotoneRegression)
 
+add_subdirectory(Modeling/DockerModPiece/cpp)
+
 add_subdirectory(SamplingAlgorithms/MC/Example1_Gaussian)
 
 add_subdirectory(SamplingAlgorithms/MCMC/Example1_Gaussian/cpp)
@@ -25,6 +27,9 @@ add_custom_target(examples
 
                           BlockOperations
                           SimpleReadWrite
+
+                          DockerModPiece
+                          DockerModPieceClient
                           )
 if (MUQ_HAS_PARCER)
   add_dependencies(examples
