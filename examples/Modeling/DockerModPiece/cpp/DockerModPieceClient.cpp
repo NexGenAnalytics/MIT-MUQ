@@ -3,10 +3,50 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include "spdlog/spdlog.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+#include "comm.h"
 
 using boost::asio::ip::tcp;
 
-//using namespace muq::Modeling;
+
+#include <MUQ/Modeling/ModPiece.h>
+
+
+class TCPModPiece : public muq::Modeling::ModPiece {
+public:
+
+  TCPModPiece(tcp::socket& socket)
+   : socket(socket),
+     ModPiece(read_input_size(socket), read_output_size(socket))
+   {
+     this->outputs.resize(this->numOutputs);
+   }
+
+private:
+
+  Eigen::VectorXi read_input_size(tcp::socket& socket) {
+    send_string(socket, "dimIn");
+    return read_vector_i(socket);
+  }
+
+  Eigen::VectorXi read_output_size(tcp::socket& socket) {
+    send_string(socket, "dimOut");
+    return read_vector_i(socket);
+  }
+
+  void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override {
+    send_string(socket, "sample");
+    for (int i = 0; i < this->numInputs; i++)
+      send_vector(socket, inputs[i]);
+    for (int i = 0; i < this->numOutputs; i++)
+      outputs[i] = read_vector(socket);
+  }
+
+  tcp::socket& socket;
+};
+
 
 int main(int argc, char* argv[])
 {
@@ -31,19 +71,35 @@ int main(int argc, char* argv[])
     }
     if (error)
       throw boost::system::system_error(error);
-    for (;;)
-    {
-      boost::array<char, 128> buf;
-      boost::system::error_code error;
 
-      size_t len = socket.read_some(boost::asio::buffer(buf), error);
-      if (error == boost::asio::error::eof)
-        break; // Connection closed cleanly by peer.
-      else if (error)
-        throw boost::system::system_error(error); // Some other error.
+    TCPModPiece modPiece(socket);
 
-      std::cout.write(buf.data(), len);
-    }
+
+    const int dim = 4;
+    Eigen::VectorXd input = Eigen::VectorXd::Ones(dim);
+    input(2) = 42;
+    std::vector<Eigen::VectorXd> in = {input};
+
+    std::vector<Eigen::VectorXd> out = modPiece.Evaluate(in);
+    out = modPiece.Evaluate(in);
+    std::cout << out[0] << std::endl;
+
+    out = modPiece.Evaluate(in);
+
+    for (int i = 0; i < modPiece.numOutputs; i++)
+      std::cout << out[i] << std::endl;
+
+    /*
+    boost::property_tree::ptree pt = read_ptree(socket);
+    std::cout << pt.get<std::string>("command") << std::endl;
+    */
+
+    /*for (int i = 0; i < 3; i++) {
+      send_string(socket, "sample");
+      Eigen::VectorXd myvector = read_vector(socket);
+      std::cout << myvector << std::endl;
+    }*/
+    send_string(socket, "shutdown");
 
   }
   catch (std::exception& e)
