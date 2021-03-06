@@ -47,19 +47,10 @@ private:
   tcp::socket& socket;
 };
 
-
-int main(int argc, char* argv[])
-{
-  try
-  {
-    if (argc != 2)
-    {
-      spdlog::error("Usage: client <host>");
-      return 1;
-    }
-    boost::asio::io_service io_service;
+tcp::socket build_socket(std::string host) {
+   boost::asio::io_service io_service;
     tcp::resolver resolver(io_service);
-    tcp::resolver::query query(argv[1], "4242");
+    tcp::resolver::query query(host, "4242");
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
     tcp::resolver::iterator end;
     tcp::socket socket(io_service);
@@ -71,7 +62,21 @@ int main(int argc, char* argv[])
     }
     if (error)
       throw boost::system::system_error(error);
+  return socket;
+}
 
+int main(int argc, char* argv[])
+{
+  try
+  {
+    if (argc != 2)
+    {
+      spdlog::error("Usage: client <host>");
+      return 1;
+    }
+
+
+    tcp::socket socket = build_socket(argv[1]);
     TCPModPiece modPiece(socket);
 
 
