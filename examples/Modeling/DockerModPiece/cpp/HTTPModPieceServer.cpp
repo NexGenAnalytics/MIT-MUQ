@@ -29,7 +29,7 @@ int main(){
   const int port = 4242;
   ExampleModPiece modPiece;
 
-  serveModPiece(modPiece, port);
+  serveModPiece(modPiece, "0.0.0.0", port);
 
   return 0;
 }

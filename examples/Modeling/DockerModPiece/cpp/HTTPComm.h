@@ -49,7 +49,7 @@ public:
 };
 
 
-void serveModPiece(ShallowModPiece& modPiece, int port) {
+void serveModPiece(ShallowModPiece& modPiece, std::string host, int port) {
   // HTTP
   httplib::Server svr;
 
@@ -95,7 +95,7 @@ void serveModPiece(ShallowModPiece& modPiece, int port) {
   });
 
   std::cout << "Listening..." << std::endl;
-  svr.listen("localhost", port);
+  svr.listen(host.c_str(), port);
   std::cout << "Quit" << std::endl;
 }
 
