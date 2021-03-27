@@ -17,3 +17,13 @@ target_link_libraries(DockerModPiece ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
 
 add_executable(DockerModPieceClient DockerModPieceClient.cpp)
 target_link_libraries(DockerModPieceClient ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+
+add_executable(HTTPModPieceServer HTTPModPieceServer.cpp)
+target_link_libraries(HTTPModPieceServer ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(HTTPModPieceClientTest HTTPModPieceClientTest.cpp)
+target_link_libraries(HTTPModPieceClientTest ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(HTTPModPieceClientMCMC HTTPModPieceClientMCMC.cpp)
+target_link_libraries(HTTPModPieceClientMCMC ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
