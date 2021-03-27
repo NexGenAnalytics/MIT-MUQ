@@ -22,6 +22,11 @@ int main(){
   Eigen::VectorXd dummyoutput = Eigen::VectorXd::Ones(dim);
   dummyoutput(4) = 42;
 
+  std::string str = vector_to_string(dummyoutput);
+  spdlog::info(str);
+  Eigen::VectorXd vec = string_to_vector(str);
+  std::cout << vec << std::endl;
+
   const int port = 4242;
 
   try
@@ -47,6 +52,14 @@ int main(){
         send_vector(socket, dummyoutput);
         send_vector(socket, dummyoutput);
         spdlog::info("Sent sample");
+      } else if (command == "jsontest") {
+        std::stringstream json;
+        json << "{" << std::endl;
+        json << "\"command\":\"Evaluate\"," << std::endl;
+        json << "\"content\":\"arx\"" << std::endl; //<< vector_to_string(dummyoutput) << "\"" << std::endl;
+        json << "}";
+        spdlog::info("Sending json {}", json.str());
+        send_string(socket, json.str());
       } else if (command == "shutdown") {
         break;
       } else {

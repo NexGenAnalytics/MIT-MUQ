@@ -94,10 +94,11 @@ int main(int argc, char* argv[])
     for (int i = 0; i < modPiece.numOutputs; i++)
       std::cout << out[i] << std::endl;
 
-    /*
+    send_string(socket, "jsontest");
     boost::property_tree::ptree pt = read_ptree(socket);
-    std::cout << pt.get<std::string>("command") << std::endl;
-    */
+    spdlog::info("Content: {}", pt.get<std::string>("content"));
+    //Eigen::VectorXd vec = string_to_vector(pt.get<std::string>("content"));
+    //std::cout << vec << std::endl;
 
     /*for (int i = 0; i < 3; i++) {
       send_string(socket, "sample");

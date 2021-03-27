@@ -27,6 +27,16 @@ void send_vector(tcp::socket& socket, const Eigen::VectorXd& vector) {
     socket.write_some(boost::asio::buffer(vc, vector.size() * sizeof(double)), ignored_error);
 }
 
+std::string vector_to_string(Eigen::VectorXd& vector) {
+  double* vc = vector.data();
+
+  return std::string(reinterpret_cast<char*>(&vc[0]), vector.size() * sizeof(double));
+}
+Eigen::VectorXd string_to_vector(std::string str) {
+  Eigen::VectorXd received = Eigen::Map<Eigen::VectorXd>(reinterpret_cast<double*>(&str[0]), str.size() * sizeof(char) / sizeof(double));
+  return received;
+}
+
 void send_vector_i(tcp::socket& socket, const Eigen::VectorXi& vector) {
     boost::system::error_code ignored_error;
     boost::array<size_t, 1> total_len_buf;
@@ -66,7 +76,7 @@ std::vector<char> read_buffer(tcp::socket& socket) {
 
 std::string read_string(tcp::socket& socket) {
   std::vector<char> buf = read_buffer(socket);
-  
+
   return std::string(&buf[0], buf.size());
 }
 
