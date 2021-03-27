@@ -94,7 +94,7 @@ void serveModPiece(ShallowModPiece& modPiece, std::string host, int port) {
     svr.stop();
   });
 
-  std::cout << "Listening..." << std::endl;
+  std::cout << "Listening on port " << port << "..." << std::endl;
   svr.listen(host.c_str(), port);
   std::cout << "Quit" << std::endl;
 }

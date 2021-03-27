@@ -1,3 +1,4 @@
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #ifndef HTTPMODPIECE
 #define HTTPMODPIECE
 #include "MUQ/Modeling/ModPiece.h"
@@ -6,8 +7,8 @@
 class HTTPModPiece : public muq::Modeling::ModPiece {
 public:
 
-  HTTPModPiece(const std::string host)
-   : host(host),
+  HTTPModPiece(const std::string host, httplib::Headers headers)
+   : host(host), headers(headers),
      ModPiece(read_input_size(host), read_output_size(host))
    {
      this->outputs.resize(this->numOutputs);
@@ -23,7 +24,7 @@ private:
   Eigen::VectorXi read_input_size(const std::string host){
     httplib::Client cli(host.c_str());
 
-    auto res = cli.Get("/GetInputSizes");
+    auto res = cli.Get("/GetInputSizes", headers);
     json response_body = json::parse(res->body);
     std::vector<int> outputvec = response_body["inputSizes"].get<std::vector<int>>();
     return stdvector_to_eigenvectori(outputvec);
@@ -32,7 +33,7 @@ private:
   Eigen::VectorXi read_output_size(const std::string host){
     httplib::Client cli(host.c_str());
 
-    auto res = cli.Get("/GetOutputSizes");
+    auto res = cli.Get("/GetOutputSizes", headers);
     json response_body = json::parse(res->body);
     std::vector<int> outputvec = response_body["outputSizes"].get<std::vector<int>>();
     return stdvector_to_eigenvectori(outputvec);
@@ -47,7 +48,7 @@ private:
     }
     request_body["level"] = 0;
 
-    auto res = cli.Post("/Evaluate", request_body.dump(), "text/plain");
+    auto res = cli.Post("/Evaluate", headers, request_body.dump(), "text/plain");
 
     for (int i = 0; i < this->numOutputs; i++) {
       json response_body = json::parse(res->body);
@@ -56,6 +57,7 @@ private:
     }
   }
 
+  httplib::Headers headers;
   const std::string host;
 };
 

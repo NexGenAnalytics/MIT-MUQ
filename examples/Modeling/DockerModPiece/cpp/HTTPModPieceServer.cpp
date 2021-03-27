@@ -26,7 +26,14 @@ public:
 
 int main(){
 
-  const int port = 4242;
+  char const* port_cstr = std::getenv("PORT");
+  if ( port_cstr == NULL ) {
+    std::cerr << "Environment variable PORT not set!" << std::endl;
+    exit(-1);
+  }
+
+
+  const int port = atoi(port_cstr);
   ExampleModPiece modPiece;
 
   serveModPiece(modPiece, "0.0.0.0", port);
