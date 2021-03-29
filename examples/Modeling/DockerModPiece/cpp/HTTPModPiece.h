@@ -9,7 +9,7 @@ public:
 
   HTTPModPiece(const std::string host, httplib::Headers headers)
    : host(host), headers(headers),
-     ModPiece(read_input_size(host), read_output_size(host))
+     ModPiece(read_input_size(host, headers), read_output_size(host, headers))
    {
      this->outputs.resize(this->numOutputs);
    }
@@ -21,7 +21,7 @@ public:
 
 private:
 
-  Eigen::VectorXi read_input_size(const std::string host){
+  Eigen::VectorXi read_input_size(const std::string host, const httplib::Headers& headers){
     httplib::Client cli(host.c_str());
 
     auto res = cli.Get("/GetInputSizes", headers);
@@ -30,7 +30,7 @@ private:
     return stdvector_to_eigenvectori(outputvec);
   }
 
-  Eigen::VectorXi read_output_size(const std::string host){
+  Eigen::VectorXi read_output_size(const std::string host, const httplib::Headers& headers){
     httplib::Client cli(host.c_str());
 
     auto res = cli.Get("/GetOutputSizes", headers);
@@ -41,6 +41,7 @@ private:
 
   void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override {
     httplib::Client cli(host.c_str());
+
     json request_body;
 
     for (int i = 0; i < this->numInputs; i++) {

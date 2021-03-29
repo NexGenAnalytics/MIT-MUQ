@@ -1,6 +1,14 @@
 #ifndef HTTPCOMM
 #define HTTPCOMM
 
+// Ensure that we only have 1 handler running at once!
+// More might cause the model itself to run concurrently!
+#define CPPHTTPLIB_THREAD_POOL_COUNT 1
+
+// Increase timeout to allow for long-running models.
+// This should be (to be on the safe side) significantly greater than the maximum time your model may take
+#define CPPHTTPLIB_READ_TIMEOUT_SECOND 60*60
+
 #include <string>
 #include <vector>
 #include <Eigen/Core>
