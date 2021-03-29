@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 
+int test_delay = 0;
 
 class ExampleModPiece : public ShallowModPiece {
 public:
@@ -21,7 +22,7 @@ public:
 
   void Evaluate(std::vector<Eigen::VectorXd> const& inputs) override {
     std::cout << "Entered" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(0));
+    std::this_thread::sleep_for(std::chrono::seconds(test_delay));
     const double mu = 0;
     const double sigma = 1;
     outputs[0][0] = - 1.0/2.0 * std::pow(inputs[0][0] - mu, 2) / std::pow(sigma, 2);
@@ -35,6 +36,11 @@ int main(){
   if ( port_cstr == NULL ) {
     std::cerr << "Environment variable PORT not set!" << std::endl;
     exit(-1);
+  }
+
+  char const* delay_cstr = std::getenv("TEST_DELAY");
+  if ( delay_cstr != NULL ) {
+    test_delay = atoi(delay_cstr);
   }
 
 
