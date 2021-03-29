@@ -20,14 +20,29 @@ using namespace muq::SamplingAlgorithms;
 
 int main(int argc, char* argv[])
 {
+  if (argc <= 1) {
+    std::cerr << "Call with: ./binary HOSTNAME:PORT [BEARER_TOKEN]" << std::endl;
+    exit(-1);
+  }
+  std::string host(argv[1]);
 
-  auto modelModPiece = std::make_shared<HTTPModPiece>("localhost:4242");
+  std::string bearer_token = "";
+  if (argc > 2) {
+    bearer_token = std::string(argv[2]);
+  } else {
+    std::cout << "No bearer token was passed. Proceeding without token.";
+  }
+
+  httplib::Headers headers;
+  headers.insert(httplib::make_bearer_token_authentication_header(bearer_token));
+
+  auto modelModPiece = std::make_shared<HTTPModPiece>(host, headers);
 
   auto samplingProblem = std::make_shared<SamplingProblem>(modelModPiece);
 
   pt::ptree pt;
-  pt.put("NumSamples", 1e3); // number of MCMC steps
-  pt.put("BurnIn", 5e1);
+  pt.put("NumSamples", 100); // number of MCMC steps
+  pt.put("BurnIn", 0);
   pt.put("PrintLevel",3);
   pt.put("KernelList", "Kernel1"); // Name of block that defines the transition kernel
   pt.put("Kernel1.Method","MHKernel");  // Name of the transition kernel class

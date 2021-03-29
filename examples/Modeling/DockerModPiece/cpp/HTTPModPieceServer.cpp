@@ -21,7 +21,7 @@ public:
 
   void Evaluate(std::vector<Eigen::VectorXd> const& inputs) override {
     std::cout << "Entered" << std::endl;
-    std::this_thread::sleep_for(std::chrono::minutes(5));
+    std::this_thread::sleep_for(std::chrono::seconds(0));
     const double mu = 0;
     const double sigma = 1;
     outputs[0][0] = - 1.0/2.0 * std::pow(inputs[0][0] - mu, 2) / std::pow(sigma, 2);

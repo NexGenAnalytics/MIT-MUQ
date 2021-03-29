@@ -23,7 +23,7 @@ add_executable(HTTPModPieceServer HTTPModPieceServer.cpp)
 target_link_libraries(HTTPModPieceServer ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
 
 add_executable(HTTPModPieceClientTest HTTPModPieceClientTest.cpp)
-target_link_libraries(HTTPModPieceClientTest ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+target_link_libraries(HTTPModPieceClientTest ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES} ssl crypto)
 
 add_executable(HTTPModPieceClientMCMC HTTPModPieceClientMCMC.cpp)
 target_link_libraries(HTTPModPieceClientMCMC ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES} ssl crypto)
