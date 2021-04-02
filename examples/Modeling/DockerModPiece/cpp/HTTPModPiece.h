@@ -9,8 +9,8 @@
 class HTTPModPiece : public muq::Modeling::ModPiece {
 public:
 
-  HTTPModPiece(const std::string host, httplib::Headers headers)
-   : host(host), headers(headers),
+  HTTPModPiece(const std::string host, httplib::Headers headers, int level = 0)
+   : host(host), headers(headers), level(level),
      ModPiece(read_input_size(host, headers), read_output_size(host, headers))
    {
      this->outputs.resize(this->numOutputs);
@@ -19,8 +19,9 @@ public:
   HTTPModPiece(const std::string host,
                httplib::Headers headers,
                Eigen::VectorXi const& inputSizes,
-               Eigen::VectorXi const& outputSizes)
-   : host(host), headers(headers),
+               Eigen::VectorXi const& outputSizes,
+               int level = 0)
+   : host(host), headers(headers), level(level),
      ModPiece(inputSizes, outputSizes)
    {
      this->outputs.resize(this->numOutputs);
@@ -63,7 +64,7 @@ private:
     for (int i = 0; i < this->numInputs; i++) {
       request_body["input" + std::to_string(i)] = eigenvectord_to_stdvector(inputs[i]);
     }
-    request_body["level"] = 0;
+    request_body["level"] = level;
 
     std::cout << "Sending" << std::endl << request_body.dump() << std::endl;
 
@@ -80,6 +81,7 @@ private:
     }
   }
 
+  int level;
   httplib::Headers headers;
   const std::string host;
 };

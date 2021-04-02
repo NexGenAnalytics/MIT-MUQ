@@ -8,6 +8,7 @@
 
 #include <chrono>
 #include <thread>
+#include <iomanip>
 
 int test_delay = 0;
 
@@ -15,17 +16,31 @@ class ExampleModPiece : public ShallowModPiece {
 public:
 
   ExampleModPiece()
-   : ShallowModPiece(Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1))
+   : ShallowModPiece(Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1)*4)
   {
-    outputs.push_back(Eigen::VectorXd::Ones(1));
+    outputs.push_back(Eigen::VectorXd::Ones(4));
   }
 
-  void Evaluate(std::vector<Eigen::VectorXd> const& inputs) override {
-    std::cout << "Entered" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(test_delay));
-    const double mu = 0;
-    const double sigma = 1;
-    outputs[0][0] = - 1.0/2.0 * std::pow(inputs[0][0] - mu, 2) / std::pow(sigma, 2);
+  void Evaluate(std::vector<Eigen::VectorXd> const& inputs, int level) override {
+    std::cout << "Entered for level " << level << std::endl;
+
+    std::ofstream inputsfile ("inputs.txt");
+    typedef std::numeric_limits<double> dl;
+    inputsfile << std::fixed << std::setprecision(dl::digits10);
+    for (int i = 0; i < inputs[0].rows(); i++) {
+      inputsfile << inputs[0](i) << std::endl;
+    }
+    inputsfile.close();
+
+    // TODO: exahype call here!
+
+    std::ifstream outputsfile("outputs.txt");
+    for (int i = 0; i < outputs[0].rows(); i++) {
+      outputsfile >> outputs[0](i);
+    }
+    outputsfile.close();
+    std::cout << "Read outputs from exahype:" << outputs[0] << std::endl;
+
     std::cout << "Left" << std::endl;
   }
 };

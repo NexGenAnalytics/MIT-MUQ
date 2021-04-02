@@ -48,7 +48,7 @@ public:
    : inputSizes(inputSizes), outputSizes(outputSizes)
   {}
 
-  virtual void Evaluate(std::vector<Eigen::VectorXd> const& inputs) = 0;
+  virtual void Evaluate(std::vector<Eigen::VectorXd> const& inputs, int level) = 0;
 
   const Eigen::VectorXi inputSizes;
   const Eigen::VectorXi outputSizes;
@@ -74,7 +74,7 @@ void serveModPiece(ShallowModPiece& modPiece, std::string host, int port) {
 
     std::cout << "Building response" << std::endl;
 
-    modPiece.Evaluate(inputs);
+    modPiece.Evaluate(inputs, request_body["level"]);
 
 
     json response_body;

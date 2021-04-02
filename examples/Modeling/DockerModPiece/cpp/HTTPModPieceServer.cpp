@@ -20,8 +20,8 @@ public:
     outputs.push_back(Eigen::VectorXd::Ones(1));
   }
 
-  void Evaluate(std::vector<Eigen::VectorXd> const& inputs) override {
-    std::cout << "Entered" << std::endl;
+  void Evaluate(std::vector<Eigen::VectorXd> const& inputs, int level) override {
+    std::cout << "Entered for level " << level << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(test_delay));
     const double mu = 0;
     const double sigma = 1;
