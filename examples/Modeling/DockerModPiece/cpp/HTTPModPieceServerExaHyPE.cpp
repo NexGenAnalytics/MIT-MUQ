@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include <iomanip>
+#include <stdlib.h>
 
 int test_delay = 0;
 
@@ -24,7 +25,7 @@ public:
   void Evaluate(std::vector<Eigen::VectorXd> const& inputs, int level) override {
     std::cout << "Entered for level " << level << std::endl;
 
-    std::ofstream inputsfile ("inputs.txt");
+    std::ofstream inputsfile ("/var/inputs.txt");
     typedef std::numeric_limits<double> dl;
     inputsfile << std::fixed << std::setprecision(dl::digits10);
     for (int i = 0; i < inputs[0].rows(); i++) {
@@ -32,9 +33,10 @@ public:
     }
     inputsfile.close();
 
-    // TODO: exahype call here!
+    // TODO: Need level dependence!
+    int status = system("cd /ExaHyPE-Tsunami/ApplicationExamples/SWE/SWE_asagi_limited && ./ExaHyPE-SWE ../SWE_asagi_limited.exahype2");
 
-    std::ifstream outputsfile("outputs.txt");
+    std::ifstream outputsfile("/var/outputs.txt");
     for (int i = 0; i < outputs[0].rows(); i++) {
       outputsfile >> outputs[0](i);
     }
