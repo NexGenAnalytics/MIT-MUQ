@@ -4,12 +4,24 @@
 #include "MUQ/Modeling/ModPiece.h"
 #include "HTTPComm.h"
 
+#include <chrono>
+
 class HTTPModPiece : public muq::Modeling::ModPiece {
 public:
 
   HTTPModPiece(const std::string host, httplib::Headers headers)
    : host(host), headers(headers),
      ModPiece(read_input_size(host, headers), read_output_size(host, headers))
+   {
+     this->outputs.resize(this->numOutputs);
+   }
+
+  HTTPModPiece(const std::string host,
+               httplib::Headers headers,
+               Eigen::VectorXi const& inputSizes,
+               Eigen::VectorXi const& outputSizes)
+   : host(host), headers(headers),
+     ModPiece(inputSizes, outputSizes)
    {
      this->outputs.resize(this->numOutputs);
    }
@@ -24,7 +36,9 @@ private:
   Eigen::VectorXi read_input_size(const std::string host, const httplib::Headers& headers){
     httplib::Client cli(host.c_str());
 
+    std::cout << "GET GetInputSizes" << std::endl;
     auto res = cli.Get("/GetInputSizes", headers);
+    std::cout << "got GetInputSizes" << std::endl;
     json response_body = json::parse(res->body);
     std::vector<int> outputvec = response_body["inputSizes"].get<std::vector<int>>();
     return stdvector_to_eigenvectori(outputvec);
@@ -33,7 +47,9 @@ private:
   Eigen::VectorXi read_output_size(const std::string host, const httplib::Headers& headers){
     httplib::Client cli(host.c_str());
 
+    std::cout << "GET GetOutputSizes" << std::endl;
     auto res = cli.Get("/GetOutputSizes", headers);
+    std::cout << "got GetOutputSizes" << std::endl;
     json response_body = json::parse(res->body);
     std::vector<int> outputvec = response_body["outputSizes"].get<std::vector<int>>();
     return stdvector_to_eigenvectori(outputvec);
@@ -49,10 +65,16 @@ private:
     }
     request_body["level"] = 0;
 
-    auto res = cli.Post("/Evaluate", headers, request_body.dump(), "text/plain");
+    std::cout << "Sending" << std::endl << request_body.dump() << std::endl;
 
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto res = cli.Post("/Evaluate", headers, request_body.dump(), "text/plain");
+    auto current_time = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Got message after " << std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count() << " seconds" << std::endl << res->body << std::endl;
+
+    json response_body = json::parse(res->body);
     for (int i = 0; i < this->numOutputs; i++) {
-      json response_body = json::parse(res->body);
       std::vector<double> outputvec = response_body["output" + std::to_string(i)].get<std::vector<double>>();
       outputs[i] = stdvector_to_eigenvectord(outputvec);
     }

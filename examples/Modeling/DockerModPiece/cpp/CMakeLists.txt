@@ -27,3 +27,9 @@ target_link_libraries(HTTPModPieceClientTest ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARI
 
 add_executable(HTTPModPieceClientMCMC HTTPModPieceClientMCMC.cpp)
 target_link_libraries(HTTPModPieceClientMCMC ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES} ssl crypto)
+
+add_executable(HTTPModPieceClientTestExaHyPE HTTPModPieceClientTestExaHyPE)
+target_link_libraries(HTTPModPieceClientTestExaHyPE ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES} ssl crypto)
+
+add_executable(HTTPModPieceServerExaHyPE HTTPModPieceServerExaHyPE)
+target_link_libraries(HTTPModPieceServerExaHyPE ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
