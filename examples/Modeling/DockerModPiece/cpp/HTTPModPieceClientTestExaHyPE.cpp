@@ -22,7 +22,8 @@ int main(int argc, char* argv[])
   httplib::Headers headers;
   headers.insert(httplib::make_bearer_token_authentication_header(bearer_token));
 
-  HTTPModPiece modPiece(host, headers, Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1)*4);
+  const int level = 0;
+  HTTPModPiece modPiece(host, headers, Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1)*4, level);
 
 
   Eigen::VectorXd input = Eigen::VectorXd::Ones(2);
