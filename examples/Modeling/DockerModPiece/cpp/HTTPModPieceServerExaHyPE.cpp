@@ -34,7 +34,19 @@ public:
     inputsfile.close();
 
     // TODO: Need level dependence!
-    int status = system("cd /ExaHyPE-Tsunami/ApplicationExamples/SWE/SWE_asagi_limited && ./ExaHyPE-SWE ../SWE_asagi_limited.exahype2");
+    int status;
+    if(level == 0) {
+      status = system("cd /ExaHyPE-Tsunami/ApplicationExamples/SWE/SWE_asagi_limited_l0 && ./ExaHyPE-SWE ../SWE_asagi_limited_l0.exahype2");
+    } else if(level == 1) {
+      status = system("cd /ExaHyPE-Tsunami/ApplicationExamples/SWE/SWE_asagi_limited_l1 && ./ExaHyPE-SWE ../SWE_asagi_limited_l1.exahype2");
+    } else if(level == 2) {
+      status = system("cd /ExaHyPE-Tsunami/ApplicationExamples/SWE/SWE_asagi_limited_l2 && ./ExaHyPE-SWE ../SWE_asagi_limited_l2.exahype2");
+    } else {
+      std::cerr << "Unknown model requested by client!" << std::endl;
+      exit(-1);
+    }
+    std::cout << "Exahype exit status " << status << std::endl;
+
 
     std::ifstream outputsfile("/tmp/outputs.txt");
     for (int i = 0; i < outputs[0].rows(); i++) {
