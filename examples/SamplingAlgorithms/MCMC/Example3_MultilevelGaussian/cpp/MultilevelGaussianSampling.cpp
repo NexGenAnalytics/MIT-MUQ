@@ -29,9 +29,9 @@ int main(){
 
   pt.put("NumSamples", 1e4); // number of samples for single level
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
-  pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
+  pt.put("GreedyTargetVariance", 0.1); // estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
-  pt.put("MLMCMC.Subsampling", 5);
+  //pt.put("MLMCMC.Subsampling", 5);
 
 
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
@@ -42,6 +42,8 @@ int main(){
   GreedyMLMCMC greedymlmcmc (pt, componentFactory);
   greedymlmcmc.Run();
   std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+
+  greedymlmcmc.WriteToFile("MultilevelGaussianSampling.h5");
 
 
   std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;

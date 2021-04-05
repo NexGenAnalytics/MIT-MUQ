@@ -21,6 +21,7 @@ namespace muq {
 
       // Set up root index sampling
       auto coarse_problem = componentFactory->SamplingProblem(rootIndex);
+      std::shared_ptr<MultiIndex> coarse_index = rootIndex;
       auto proposal_coarse = componentFactory->Proposal(rootIndex, coarse_problem);
 
       std::vector<std::shared_ptr<TransitionKernel>> coarse_kernels(1);
@@ -45,7 +46,7 @@ namespace muq {
 
         auto problem = componentFactory->SamplingProblem(index);
         auto proposal = componentFactory->Proposal(index, problem);
-        auto coarse_proposal = componentFactory->CoarseProposal(index, coarse_problem, coarse_chain);
+        auto coarse_proposal = componentFactory->CoarseProposal(index, coarse_index, coarse_problem, coarse_chain);
         auto proposalInterpolation = componentFactory->Interpolation(index);
         auto startingPoint = componentFactory->StartingPoint(index);
 
@@ -59,6 +60,7 @@ namespace muq {
         chain->SetState(startingPoint);
 
         coarse_problem = problem;
+        coarse_index = index;
         coarse_chain = chain;
       }
 
@@ -82,7 +84,7 @@ namespace muq {
 
         auto problem = componentFactory->SamplingProblem(index);
         auto proposal = componentFactory->Proposal(index, problem);
-        auto coarse_proposal = componentFactory->CoarseProposal(index, coarse_problem, coarse_chain);
+        auto coarse_proposal = componentFactory->CoarseProposal(index, coarse_index, coarse_problem, coarse_chain);
         auto proposalInterpolation = componentFactory->Interpolation(index);
         auto startingPoint = componentFactory->StartingPoint(index);
 
@@ -97,7 +99,7 @@ namespace muq {
 
         boxChains[boxIndices->MultiToIndex(boxIndex)] = chain;
 
-        if (boxIndex->Max() == 1)
+        if (*boxIndex == *boxSize)
           finestProblem = problem;
       }
     }
@@ -118,11 +120,17 @@ namespace muq {
         sampDiff[component] = Eigen::VectorXd::Zero(GetFinestProblem()->blockSizesQOI[component]);
       }
 
-      for (int i = 0; i < boxIndices->Size(); i++) {
+      // Advance chains
+      for (unsigned int i = 0; i < boxIndices->Size(); i++) {
         std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
         auto chain = boxChains[boxIndices->MultiToIndex(boxIndex)];
         chain->AddNumSamps(1);
         chain->Run();
+      }
+
+      for (unsigned int i = 0; i < boxIndices->Size(); i++) {
+        std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
+        auto chain = boxChains[boxIndices->MultiToIndex(boxIndex)];
 
         // Add new sample to difference according to chain's position in telescoping sum
         if (chain->GetQOIs()->size() > 0) {
@@ -160,7 +168,7 @@ namespace muq {
     Eigen::VectorXd MIMCMCBox::MeanQOI() {
       return QOIDiff->Mean();
     }
-    
+
     std::shared_ptr<SampleCollection> MIMCMCBox::GetQOIDiff(){
       return QOIDiff;
     }

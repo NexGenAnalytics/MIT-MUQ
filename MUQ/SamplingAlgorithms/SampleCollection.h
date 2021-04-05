@@ -77,6 +77,8 @@ namespace muq{
       virtual std::shared_ptr<SamplingState> at(unsigned i);
       virtual const std::shared_ptr<SamplingState> at(unsigned i) const;
 
+      virtual const std::shared_ptr<SamplingState> back() const;
+
       virtual unsigned size() const;
 
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order

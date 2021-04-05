@@ -33,13 +33,20 @@ int main(int argc, char **argv){
   MPI_Init(&argc, &argv);
 
   pt::ptree pt;
-  pt.put("NumSamples_0", 1e3);
-  pt.put("NumSamples_1", 5e2);
-  pt.put("NumSamples_2", 1e2);
-  pt.put("MCMC.burnin", 1e1);
+  pt.put("NumSamples_0_0", 1e3);
+  pt.put("NumSamples_0_1", 5e2);
+  pt.put("NumSamples_0_2", 1e2);
+  pt.put("NumSamples_1_0", 5e2);
+  pt.put("NumSamples_1_1", 5e2);
+  pt.put("NumSamples_1_2", 1e2);
+  pt.put("NumSamples_2_0", 1e2);
+  pt.put("NumSamples_2_1", 1e2);
+  pt.put("NumSamples_2_2", 1e2);
+  pt.put("MCMC.BurnIn", 1e1);
   pt.put("MLMCMC.Subsampling", 5);
+  pt.put("MLMCMC.Scheduling", true);
 
-  auto comm = std::make_shared<parcer::Communicator>();
+  auto comm = std::make_shared<parcer::Communicator>(MPI_COMM_WORLD);
 
 
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
