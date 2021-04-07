@@ -16,7 +16,7 @@ std::shared_ptr<WorkGraph> createWorkGraph(std::string host, std::string bearer_
   httplib::Headers headers;
   headers.insert(httplib::make_bearer_token_authentication_header(bearer_token));
 
-  auto model = std::make_shared<HTTPModPiece>(host, headers, level);
+  auto model = std::make_shared<HTTPModPiece>(host, headers, Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1)*4, level);
 
 /*
   const int input_dim = 2;
@@ -33,14 +33,14 @@ std::shared_ptr<WorkGraph> createWorkGraph(std::string host, std::string bearer_
   data(3) = 0.0006368000000000001;
   Eigen::MatrixXd likelihood_cov = Eigen::MatrixXd::Identity(output_dim, output_dim);
   if (level == 0) {
-    likelihood_cov(0, 0) = std::pow(250, 2);
-    likelihood_cov(1, 1) = std::pow(0.0003, 2);
-    likelihood_cov(2, 2) = std::pow(250, 2);
-    likelihood_cov(3, 3) = std::pow(0.0003, 2);
+    likelihood_cov(0, 0) = std::pow(300, 2);
+    likelihood_cov(1, 1) = std::pow(0.0005, 2);
+    likelihood_cov(2, 2) = std::pow(300, 2);
+    likelihood_cov(3, 3) = std::pow(0.0005, 2);
   } else if (level == 1) {
-    likelihood_cov(0, 0) = std::pow(150, 2);
+    likelihood_cov(0, 0) = std::pow(50, 2);
     likelihood_cov(1, 1) = std::pow(0.0002, 2);
-    likelihood_cov(2, 2) = std::pow(150, 2);
+    likelihood_cov(2, 2) = std::pow(50, 2);
     likelihood_cov(3, 3) = std::pow(0.0002, 2);
   } else {
     std::cerr << "WORKGRAPH REQUESTED FOR UNKNOWN LEVEL!" << std::endl;
@@ -72,6 +72,6 @@ std::shared_ptr<WorkGraph> createWorkGraph(std::string host, std::string bearer_
   //graph->AddEdge("prior", 0, "posterior", 0);
   //graph->AddEdge("likelihood", 0, "posterior", 1);
 
-  graph->Visualize("uq-graph.png");
+  //graph->Visualize("uq-graph.png");
   return graph;
 }

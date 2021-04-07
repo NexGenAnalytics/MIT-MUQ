@@ -7,6 +7,7 @@
 #include <MUQ/Modeling/ModPiece.h>
 #include <MUQ/Modeling/ModGraphPiece.h>
 
+#include <MUQ/SamplingAlgorithms/MHKernel.h>
 #include <MUQ/SamplingAlgorithms/SamplingProblem.h>
 #include <MUQ/SamplingAlgorithms/SingleChainMCMC.h>
 #include <MUQ/SamplingAlgorithms/MCMCFactory.h>
@@ -15,6 +16,7 @@
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
 #include "MUQ/SamplingAlgorithms/AMProposal.h"
+#include "MUQ/SamplingAlgorithms/ParallelFixedSamplesMIMCMC.h"
 
 #include "HTTPModPiece.h"
 #include "ExaHyPEModelGraph.h"
@@ -35,7 +37,8 @@ public:
 
 class MyMIComponentFactory : public ParallelizableMIComponentFactory {
 public:
-  MyMIComponentFactory(pt::ptree pt, std::shared_ptr<parcer::Communicator> globalComm) : _pt(pt), _globalComm(globalComm) {}
+  MyMIComponentFactory(pt::ptree pt, std::shared_ptr<parcer::Communicator> globalComm, std::string host, std::string bearer_token)
+   : _pt(pt), _globalComm(globalComm), host(host), bearer_token(bearer_token) {}
 
   virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> const& index, std::shared_ptr<AbstractSamplingProblem> const& samplingProblem) override {
     pt::ptree pt;
@@ -50,6 +53,7 @@ public:
 
     pt.put("AdaptStart", 100);
     pt.put("AdaptSteps", 100);
+    pt.put("AdaptEnd", 1000);
     pt.put("InitialVariance", 100);
     return std::make_shared<AMProposal>(pt, samplingProblem);
 
@@ -68,7 +72,7 @@ public:
 
   virtual std::shared_ptr<MultiIndex> FinestIndex() override {
     auto index = std::make_shared<MultiIndex>(1);
-    index->SetValue(0, 0);
+    index->SetValue(0, 1);
     return index;
   }
 
@@ -82,8 +86,11 @@ public:
   }
 
   virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> const& index) override {
-    // TODO!!
-    //return std::make_shared<MySamplingProblem>(_comm,_globalComm,index);
+    auto graph = createWorkGraph(host, bearer_token, index->GetValue(0));
+    auto posterior = graph->CreateModPiece("likelihood");
+    auto qoi = graph->CreateModPiece("qoi");
+
+    return std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(posterior, qoi);
   }
 
   virtual std::shared_ptr<MIInterpolation> Interpolation (std::shared_ptr<MultiIndex> const& index) override {
@@ -102,11 +109,12 @@ private:
   std::shared_ptr<parcer::Communicator> _comm;
   std::shared_ptr<parcer::Communicator> _globalComm;
   pt::ptree _pt;
-
+  std::string host, bearer_token;
 };
 
 int main(int argc, char* argv[])
 {
+
   if (argc <= 1) {
     std::cerr << "Call with: ./binary HOSTNAME:PORT [BEARER_TOKEN]" << std::endl;
     exit(-1);
@@ -119,36 +127,49 @@ int main(int argc, char* argv[])
   } else {
     std::cout << "No bearer token was passed. Proceeding without token.";
   }
-  int level = 0;
-  auto graph = createWorkGraph(host, bearer_token, level);
-  auto posterior = graph->CreateModPiece("likelihood");
-  auto qoi = graph->CreateModPiece("qoi");
 
-  auto samplingProblem = std::make_shared<SamplingProblem>(posterior, qoi);
+  MPI_Init(&argc, &argv);
+  auto comm = std::make_shared<parcer::Communicator>(MPI_COMM_WORLD);
+
+  std::time_t result = std::time(nullptr);
+  std::string timestamp = std::asctime(std::localtime(&result));
+  comm->Bcast(timestamp, 0);
+  auto tracer = std::make_shared<OTF2Tracer>("trace",timestamp);
+
+
+{ // Inverse UQ
+
 
   pt::ptree pt;
-  pt.put("NumSamples", 100); // number of MCMC steps
-  pt.put("BurnIn", 0);
-  pt.put("PrintLevel",3);
-  pt.put("KernelList", "Kernel1"); // Name of block that defines the transition kernel
-  pt.put("Kernel1.Method","MHKernel");  // Name of the transition kernel class
-  pt.put("Kernel1.Proposal", "MyProposal"); // Name of block defining the proposal distribution
-  pt.put("Kernel1.MyProposal.Method", "AMProposal"); // Name of proposal class
-  pt.put("Kernel1.MyProposal.InitialVariance", 500);
-  pt.put("Kernel1.MyProposal.AdaptSteps", 100);
-  pt.put("Kernel1.MyProposal.AdaptStart", 100);
-  pt.put("Kernel1.MyProposal.AdaptEnd", 1000);
 
-  Eigen::VectorXd startPt = Eigen::VectorXd::Zero(2);
-  auto mcmc = MCMCFactory::CreateSingleChain(pt, samplingProblem);
+  pt.put("verbosity", 1); // show some output
+  pt.put("MCMC.BurnIn", 50);
+  pt.put("NumSamples_0", 1e3);
+  pt.put("NumSamples_1", 1e2);
+  pt.put("MLMCMC.Scheduling", true);
+  pt.put("MLMCMC.Subsampling_0", 49);
+  pt.put("MLMCMC.Subsampling_1", 0);
 
-  mcmc->Run(startPt);
+  auto componentFactory = std::make_shared<MyMIComponentFactory>(pt, comm, host, bearer_token);
 
-  std::cout << "Sample mu: " << std::endl << mcmc->GetSamples()->Mean() << std::endl;
-  std::cout << "Sample sigma: " << std::endl << mcmc->GetSamples()->Variance() << std::endl;
 
-  mcmc->GetSamples()->WriteToFile("mcmc-samples.hdf5");
-  mcmc->GetQOIs()->WriteToFile("mcmc-qois.hdf5");
+  StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory, std::make_shared<RoundRobinStaticLoadBalancer>(), comm, tracer);
+  if (comm->GetRank() == 0) {
+    parallelMIMCMC.Run();
+    Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
+    std::cout << "mean QOI: " << meanQOI.transpose() << std::endl;
+  }
 
+  if (comm->GetRank() == 0)
+    remove("FullParallelMLMCMC.hdf5");
+
+  parallelMIMCMC.WriteToFile("FullParallelMLMCMC.hdf5");
+  parallelMIMCMC.Finalize();
+}
+
+  tracer->write();
+
+
+  MPI_Finalize();
   return 0;
 }

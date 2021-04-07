@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
   httplib::Headers headers;
   headers.insert(httplib::make_bearer_token_authentication_header(bearer_token));
 
-  const int level = 0;
+  const int level = 2;
   HTTPModPiece modPiece(host, headers, Eigen::VectorXi::Ones(1)*2, Eigen::VectorXi::Ones(1)*4, level);
 
 
   Eigen::VectorXd input = Eigen::VectorXd::Ones(2);
-  input(0) = 0.1;
-  input(1) = 0.1;
+  input(0) = 0.0;
+  input(1) = 0.0;
   std::vector<Eigen::VectorXd> in = {input};
 
   std::cout << "Evaluating..." << std::endl;
