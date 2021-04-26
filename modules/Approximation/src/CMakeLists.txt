@@ -103,3 +103,15 @@ CreateCompileGroup(
     GaussianProcesses/StateSpaceGP.cpp
     GaussianProcesses/GaussianProcess.cpp
 )
+
+CreateCompileGroup(
+    APPROXIMATION_GRAPH_BASED_ALGORITHMS
+    "Tools for estimating distributions using sample-based graphs."
+    muqApproximation
+    "MODELING_CORE"
+    "EIGEN3;BOOST;NLOPT"
+		""
+
+    SampleGraphs/SampleGraph.cpp
+		SampleGraphs/KolmogorovOperator.cpp
+)

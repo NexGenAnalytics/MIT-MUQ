@@ -1,0 +1,4 @@
+#ifndef KOLMOGOROVOPERATOR_H_
+#define KOLMOGOROVOPERATOR_H_
+
+#endif

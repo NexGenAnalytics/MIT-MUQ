@@ -50,3 +50,9 @@ CreateParallelTestGroup(
 
 	RegressionTests/LocalRegressionParallelTests.cpp
 )
+
+CreateTestGroup(
+  APPROXIMATION_GRAPH_BASED_ALGORITHMS
+
+  SampleGraphsTests/SampleGraphTests.cpp
+)
