@@ -59,12 +59,6 @@ Eigen::VectorXd SampleGraph::Point(std::size_t const i) const {
   return samples->at(i)->state[0];
 }
 
-Eigen::Ref<Eigen::VectorXd> SampleGraph::Point(std::size_t const i) {
-  assert(samples);
-  assert(i<samples->size());
-  return samples->at(i)->state[0];
-}
-
 std::size_t SampleGraph::NumSamples() const {
   assert(samples);
   return samples->size();
@@ -76,7 +70,7 @@ std::size_t SampleGraph::StateDimension() const {
   return samples->at(0)->state[0].size();
 }
 
-void SampleGraph::FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point, double const radius2, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag) const {
+void SampleGraph::FindNeighbors(Eigen::VectorXd const& point, double const radius2, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag) const {
   // make sure the state size matches
   assert(point.size()==StateDimension());
 
@@ -99,7 +93,7 @@ void SampleGraph::FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point, 
   neighbors.erase(it, neighbors.end());
 }
 
-double SampleGraph::FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point, std::size_t const k, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag) const {
+void SampleGraph::FindNeighbors(Eigen::VectorXd const& point, std::size_t const k, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag) const {
   // make sure the state size matches
   assert(point.size()==StateDimension());
   assert(k>0);
@@ -120,15 +114,17 @@ double SampleGraph::FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point
   // remove the ones that should have been ignored
   auto it = std::remove_if(neighbors.begin(), neighbors.end(), [lag](std::pair<std::size_t, double> const& neigh) { return neigh.first<lag; } );
   neighbors.erase(it, neighbors.end());
+}
 
-  // compute the average squared distance
-  double avg = 0.0;
-  int sub = 0 ;
-  for( const auto& neigh : neighbors ) {
-    if( neigh.second<1.0e-12 ) { ++sub; continue; } // don't include itself
-    avg += neigh.second;
-  }
-  return (sub==neighbors.size()? 0.0 : avg/(neighbors.size()-sub));
+double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const {
+  // find the k nearest neighbors
+  std::vector<std::pair<std::size_t, double> > neighbors;
+  FindNeighbors(x, k, neighbors);
+
+  // return the sum of the squared distance
+  double sum = 0.0;
+  std::for_each(neighbors.begin(), neighbors.end(), [&sum] (std::pair<std::size_t, double> const& it) { sum += it.second; } );
+  return sum;
 }
 
 SampleGraph::Cloud::Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::size_t const lag) :

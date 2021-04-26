@@ -26,4 +26,6 @@ CreateCompileGroup(
     wrappers/KLWrapper.cpp
     wrappers/QuadratureWrapper.cpp
     wrappers/PolynomialChaosWrapper.cpp
+    wrappers/SampleGraphWrapper.cpp
+    wrappers/DensityEstimationWrapper.cpp
 )

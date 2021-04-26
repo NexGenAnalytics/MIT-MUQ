@@ -113,5 +113,6 @@ CreateCompileGroup(
 		""
 
     SampleGraphs/SampleGraph.cpp
+		SampleGraphs/DensityEstimation.cpp
 		SampleGraphs/KolmogorovOperator.cpp
 )

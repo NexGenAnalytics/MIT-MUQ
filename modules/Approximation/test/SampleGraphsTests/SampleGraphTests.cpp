@@ -175,3 +175,20 @@ TEST_F(SampleGraphTests, SampleCollectionConstruction) {
     }
   }
 }
+
+
+TEST_F(SampleGraphTests, SquaredBandwidth) {
+  graph = std::make_shared<SampleGraph>(rv, options);
+
+  // compute the squared bandwith and a random point using 10 nearest neighbors
+  const Eigen::VectorXd point = rv->Sample();
+  const double squaredBandwidth = graph->SquaredBandwidth(point, 10);
+
+  double expected = 0.0;
+  { // compute the expected squared bandwidth
+    std::vector<std::pair<std::size_t, double> > neighbors;
+    graph->FindNeighbors(point, (std::size_t)10, neighbors);
+    for( const auto& it : neighbors ) { expected += it.second; }
+  }
+  EXPECT_NEAR(squaredBandwidth, expected, 1.0e-10);
+}

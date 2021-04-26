@@ -5,9 +5,9 @@
 
 #include <nanoflann.hpp>
 
-#include <MUQ/Modeling/Distributions/RandomVariable.h>
+#include "MUQ/Modeling/Distributions/RandomVariable.h"
 
-#include <MUQ/SamplingAlgorithms/SampleCollection.h>
+#include "MUQ/SamplingAlgorithms/SampleCollection.h"
 
 namespace muq {
 namespace Approximation {
@@ -53,13 +53,6 @@ public:
   */
   Eigen::VectorXd Point(std::size_t const i) const;
 
-  /// Get the \f$i^{th}\f$ sample
-  /**
-  @param[in] i We want this sample
-  \return Get the \f$i^{th}\f$ sample
-  */
-  Eigen::Ref<Eigen::VectorXd> Point(std::size_t const i);
-
   /// The number of samples that make up the graph
   std::size_t NumSamples() const;
 
@@ -76,7 +69,7 @@ public:
   @param[out] neighbors Each component is first: the index of the nearest neighbor and second: the squared distance to the nearest neighbor
   @param[in] lag Ignore the first <tt>lag</tt> points (defaults to \f$0\f$)
   */
-  void FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point, double const radius2, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag = 0) const;
+  void FindNeighbors(Eigen::VectorXd const& point, double const radius2, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag = 0) const;
 
   /// Find the closest \f$k\f$ neighbors
   /**
@@ -84,9 +77,17 @@ public:
   @param[in] k Find this many nearest neighbors
   @param[out] neighbors Each component is first: the index of the nearest neighbor and second: the squared distance to the nearest neighbor
   @param[in] lag Ignore the first <tt>lag</tt> points (defaults to \f$0\f$)
-  \return The average squared distnace from the input point to the nearest neighbors
   */
-  double FindNeighbors(Eigen::Ref<const Eigen::VectorXd> const& point, std::size_t const k, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag = 0) const;
+  void FindNeighbors(Eigen::VectorXd const& point, std::size_t const k, std::vector<std::pair<std::size_t, double> >& neighbors, std::size_t const& lag = 0) const;
+
+  /// Find the squared bandwidth parameter for each sample
+  /**
+  The squared bandwidth is defined as \f$b^2(x) = \sum_{j=1}^{k} \| x-x^{(I(i,j))} \|^2\f$ for each sample, where \f$I(x,j)\f$ is the index of the \f$j^{th}\f$ closest neighbor to \f$x\f$---note that \f$I(x,0)\f$ is the nearest neighbor.
+  @param[in] x The point \f$x\f$
+  @param[in] k The number of nearest neighbors (\f$k\f$)
+  \return The squared bandwidth \f$b^2(x)\f$
+  */
+  double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const;
 
 private:
 

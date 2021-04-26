@@ -15,4 +15,6 @@ PYBIND11_MODULE(pymuqApproximation, m) {
     KLWrapper(m);
     QuadratureWrapper(m);
     PolynomialChaosWrapper(m);
+    SampleGraphWrapper(m);
+    DensityEstimationWrapper(m);
 }
