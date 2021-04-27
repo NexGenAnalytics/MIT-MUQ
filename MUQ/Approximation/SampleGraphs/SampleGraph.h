@@ -26,8 +26,16 @@ Parameter Key | Type | Default Value | Description |
 "MaxLeaf"   | <tt>std::size_t</tt> | <tt>10</tt> | The maximum leaf size for the kd tree (nanoflann parameter). |
 "Stride"   | <tt>std::size_t</tt> | <tt>1</tt> | Build \f$i \in [0, m-1]\f$ \f$k\f$-\f$d\f$ trees that ignore the first \f$i d\f$ samples, where \f$d = n/(i+1)\f$ (the stride parameter is number \f$i\f$). |
 "NumThreads"   | <tt>std::size_t</tt> | <tt>1</tt> | The number of <tt>openMP</tt> threads available to this object. |
+"BandwidthCostOptimization.StepSize"   | <tt>double</tt> | <tt>1.0</tt> | The step size parameter for the KernelBandwidthCostFunction |
+"BandwidthCostOptimization.SparsityTolerance"   | <tt>double</tt> | <tt>0.1</tt> | The sparsity tolerance for the KernelBandwidthCostFunction. Note, this can be different than the tolerance used to actually estimate the density etc. since we really just need to tune the bandwidth parameter to be "good enough". |
+"BandwidthCostOptimization.Ftol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Absolute function tolerance for the optimization. |
+"BandwidthCostOptimization.Ftol.RelativeTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Relative function tolerance for the optimization. |
+"BandwidthCostOptimization.Xtol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Absolute tolerance for the optimization. |
+"BandwidthCostOptimization.Xtol.RelativeTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Relative tolerance for the optimization. |
+"BandwidthCostOptimization.MaxEvaluations"   | <tt>std::size_t</tt> | <tt>10000</tt> | The maximum number of function evaluations for the optimization. |
+"BandwidthCostOptimization.Algorithm"   | <tt>std::string</tt> | <tt>"LBFGS"</tt> | The nlopt algorithm used by the optimizers (derivatives are computed using finite difference). |
 */
-class SampleGraph {
+class SampleGraph : public std::enable_shared_from_this<SampleGraph> {
 public:
 
   /// Construct the sample graph by sampling a random variable from \f$\psi\f$
@@ -125,9 +133,17 @@ public:
   @param[in] bandwidthParameter The bandwidth parameter \f$\epsilon\f$.
   @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
   @param[out] kernel The kernel matrix \f$K\f$
+  @param[in] rebuildTrees <tt>true</tt> (default): Rebuild the \f$k\f$-\f$d\f$ trees using the bandwidth ordering, <tt>false</tt>: use the already constructed trees
   \return The rowsum of the kernel matrix \f$\sum_{j=1}^{n} K_{ij}\f$
   */
-  Eigen::VectorXd KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel) const;
+  Eigen::VectorXd KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel, bool const rebuildTrees = true) const;
+
+  /// Tune the kernel bandwidth parameter
+  /**
+  @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
+  \return First: The optimal kernel bandwidth parameter, Second: the cost at the optimal point (should be half the manifold dimension)
+  */
+  std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth) const;
 
 private:
 
@@ -189,13 +205,6 @@ private:
     template<class BBOX>
     inline bool kdtree_get_bbox(BBOX& bb) const { return false; }
 
-    /// Reorder the samples based on the bandwidth parameter
-    /**
-    We want the samples with the largest bandwidth to come first.
-    @param[in] bandwidth The sample bandwidth
-    */
-    void ReorderSamples(Eigen::VectorXd const& bandwidth);
-
     /// Ignore the first <tt>lag</tt> samples
     const std::size_t lag;
 
@@ -225,6 +234,9 @@ private:
 
   /// The number of <tt>openMP</tt> threads available to this object.
   const std::size_t numThreads;
+
+  /// Options for the bandwidth optimization
+  boost::property_tree::ptree bandwidthOptimizationOptions;
 };
 
 } // Approximation

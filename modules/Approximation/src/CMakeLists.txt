@@ -108,11 +108,12 @@ CreateCompileGroup(
     APPROXIMATION_GRAPH_BASED_ALGORITHMS
     "Tools for estimating distributions using sample-based graphs."
     muqApproximation
-    "MODELING_CORE"
+    "MODELING_CORE;OPTIMIZATION_CORE"
     "EIGEN3;BOOST;NLOPT"
 		""
 
     SampleGraphs/SampleGraph.cpp
+		SampleGraphs/KernelBandwidthCostFunction.cpp
 		SampleGraphs/DensityEstimation.cpp
 		SampleGraphs/KolmogorovOperator.cpp
 )

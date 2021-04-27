@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <omp.h>
+
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 
 #include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
@@ -48,7 +50,7 @@ public:
   }
 
   /// The dimension of state spaces
-  const std::size_t dim = 4;
+  const std::size_t dim = 1;
 
   /// The number of samples
   const std::size_t n = 2500;
@@ -234,7 +236,7 @@ TEST_F(SampleGraphTests, KernelMatrixComputation) {
 }
 
 TEST_F(SampleGraphTests, SharedMemoryKernelMatrixComputation) {
-  options.put("NumThreads", 5);
+  options.put("NumThreads", omp_get_max_threads());
   graph = std::make_shared<SampleGraph>(rv, options);
 
   // the bandwidth parameters
@@ -273,4 +275,19 @@ TEST_F(SampleGraphTests, SharedMemoryKernelMatrixComputation) {
     EXPECT_NEAR(rowsumDense(i), rowsum, 1.0e-10);
     EXPECT_NEAR(rowsumSparse(i), rowsumSparseExpected, 1.0e-10);
   }
+}
+
+
+TEST_F(SampleGraphTests, BandwidthParameterTuning) {
+  options.put("NumThreads", omp_get_max_threads());
+  graph = std::make_shared<SampleGraph>(rv, options);
+
+  // compute the squared bandwidth and a random point using 10 nearest neighbors
+  Eigen::VectorXd bandwidth(graph->NumSamples());
+  for( std::size_t i=0; i<graph->NumSamples(); ++i ) { bandwidth(i) = std::sqrt(graph->SquaredBandwidth(graph->Point(i), 25)); }
+
+  // tune the bandwidth parameter
+  double optPara, cost;
+  std::tie(optPara, cost) = graph->TuneKernelBandwidth(bandwidth);
+  EXPECT_NEAR(2.0*cost, dim, 1.0e-1);
 }

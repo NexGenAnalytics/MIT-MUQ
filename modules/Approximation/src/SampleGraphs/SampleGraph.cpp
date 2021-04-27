@@ -2,8 +2,13 @@
 
 #include <numeric>
 
+#include "MUQ/Optimization/NLoptOptimizer.h"
+
+#include "MUQ/Approximation/SampleGraphs/KernelBandwidthCostFunction.h"
+
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
+using namespace muq::Optimization;
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Approximation;
 
@@ -45,6 +50,18 @@ void SampleGraph::Initialize(pt::ptree const& options) {
 
   // create the kd trees
   BuildKDTrees();
+
+  // set the defaults for the bandwidth parameter optimization
+  if( auto opts = options.get_child_optional("BandwidthCostOptimization") ) { bandwidthOptimizationOptions = *opts; }
+  bandwidthOptimizationOptions.put("StepSize", bandwidthOptimizationOptions.get<double>("StepSize", 0.1));
+  bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-1));
+  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-2));
+  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-2));
+  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-2));
+  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-2));
+  bandwidthOptimizationOptions.put("MaxEvaluations", bandwidthOptimizationOptions.get<std::size_t>("MaxEvaluations", 10000));
+  bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "LBFGS"));
+  bandwidthOptimizationOptions.put("Minimize", false);
 }
 
 std::shared_ptr<SampleCollection> SampleGraph::SampleRandomVariable(std::shared_ptr<RandomVariable> const& rv, std::size_t const n) {
@@ -70,7 +87,7 @@ void SampleGraph::BuildKDTrees() const {
 Eigen::VectorXd SampleGraph::Point(std::size_t const i) const {
   assert(samples);
   assert(i<samples->size());
-  return samples->at(indices[i])->state[0];
+  return samples->at(i)->state[0];
 }
 
 std::size_t SampleGraph::NumSamples() const {
@@ -160,7 +177,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::Vect
   return kernel.rowwise().sum();
 }
 
-Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel) const {
+Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel, bool const rebuildTrees) const {
   assert(sparsityTol<1.0);
   assert(bandwidth.size()==NumSamples());
   assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
@@ -169,7 +186,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
   bandwidthParameter *= bandwidthParameter;
 
   // re build the kd trees based on the bandwidth ordering
-  BuildKDTrees(bandwidth);
+  if( rebuildTrees ) { BuildKDTrees(bandwidth); }
 
   // the number of samples
   const std::size_t n = samples->size();
@@ -222,6 +239,22 @@ double SampleGraph::Kernel(double const scale, Eigen::VectorXd const& xi, Eigen:
   assert(xi.size()==xj.size());
   const Eigen::VectorXd diff = xi-xj;
   return std::exp(-diff.dot(diff)/scale);
+}
+
+std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const& bandwidth) const {
+  BuildKDTrees(bandwidth);
+
+  // create the cost function
+  auto cost = std::make_shared<KernelBandwidthCostFunction>(shared_from_this(), bandwidth, bandwidthOptimizationOptions);
+  auto opt = std::make_shared<NLoptOptimizer>(cost, bandwidthOptimizationOptions);
+
+  // the initial condition for the optimization is the current parameter value
+  double bandwidthParameter = 1.0;
+  const std::vector<Eigen::VectorXd> inputs(1, Eigen::VectorXd::Constant(1, std::log2(bandwidthParameter)));
+
+  // solve the optimization and update the parameters
+  std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);
+  return std::pair<double, double>(std::sqrt(std::pow(2.0, soln.first(0))), soln.second);
 }
 
 SampleGraph::Cloud::Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::vector<std::size_t> const& indices, std::size_t const lag) :
