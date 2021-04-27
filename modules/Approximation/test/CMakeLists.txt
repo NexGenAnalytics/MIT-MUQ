@@ -55,4 +55,5 @@ CreateTestGroup(
   APPROXIMATION_GRAPH_BASED_ALGORITHMS
 
   SampleGraphsTests/SampleGraphTests.cpp
+  SampleGraphsTests/DensityEstimationTests.cpp
 )

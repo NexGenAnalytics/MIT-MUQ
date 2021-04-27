@@ -10,5 +10,7 @@ DensityEstimation::DensityEstimation(std::shared_ptr<RandomVariable> const& rv, 
 DensityEstimation::DensityEstimation(std::shared_ptr<SampleCollection> const& samples, pt::ptree const& options) : SampleGraph(samples, options) {}
 
 Eigen::VectorXd DensityEstimation::Estimate(bool const tune) {
+  if( tune ) {}
+
   return Eigen::VectorXd();
 }
