@@ -70,7 +70,7 @@ void SampleGraph::BuildKDTrees() const {
 Eigen::VectorXd SampleGraph::Point(std::size_t const i) const {
   assert(samples);
   assert(i<samples->size());
-  return samples->at(i)->state[0];
+  return samples->at(indices[i])->state[0];
 }
 
 std::size_t SampleGraph::NumSamples() const {
@@ -174,8 +174,8 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
   // the number of samples
   const std::size_t n = samples->size();
 
+  // compute the entries to the kernel matrix
   std::vector<Eigen::Triplet<double> > entries;
-
   #pragma omp parallel num_threads(numThreads)
   {
     std::vector<Eigen::Triplet<double> > entries_private;
