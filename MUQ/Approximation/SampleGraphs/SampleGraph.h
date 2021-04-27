@@ -3,6 +3,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include <Eigen/Sparse>
+
 #include <nanoflann.hpp>
 
 #include "MUQ/Modeling/Distributions/RandomVariable.h"
@@ -23,6 +25,7 @@ Parameter Key | Type | Default Value | Description |
 "NumSamples"   | <tt>std::size_t</tt> | - | In the case where a random variable is passed to the constructor, we draw \f$n\f$ samples from the distribution.   |
 "MaxLeaf"   | <tt>std::size_t</tt> | <tt>10</tt> | The maximum leaf size for the kd tree (nanoflann parameter). |
 "Stride"   | <tt>std::size_t</tt> | <tt>1</tt> | Build \f$i \in [0, m-1]\f$ \f$k\f$-\f$d\f$ trees that ignore the first \f$i d\f$ samples, where \f$d = n/(i+1)\f$ (the stride parameter is number \f$i\f$). |
+"NumThreads"   | <tt>std::size_t</tt> | <tt>1</tt> | The number of <tt>openMP</tt> threads available to this object. |
 */
 class SampleGraph {
 public:
@@ -43,8 +46,15 @@ public:
 
   virtual ~SampleGraph() = default;
 
-  // Construct the \f$k\f$-\f$d\f$-trees
+  /// Construct the \f$k\f$-\f$d\f$ trees
   void BuildKDTrees() const;
+
+  /// Construct the \f$k\f$-\f$d\f$ trees
+  /**
+  Before (re-)building the \f$k\f$-\f$d\f$ trees, reorder the points in the cloud so that the ones with the largest bandwidth come first. This makes seaching for the nearest neighbors based on the bandwidth radius more efficient.
+  @param[in] bandwidth The bandwidth function at each sample
+  */
+  void BuildKDTrees(Eigen::VectorXd const& bandwidth) const;
 
   /// Get the \f$i^{th}\f$ sample
   /**
@@ -89,12 +99,42 @@ public:
   */
   double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const;
 
+  /// Compute the kernel matrix using the brute-force algorithm
+  /**
+  Compute the kernel using nested <tt>for</tt> loops. Since we are going to store a dense matrix, don't bother setting entries to zero if they are below a sparsity threshold. This method is impractical and should only be used for testing or toy examples.
+
+  The \f$(i,j)\f$ entry of the kernel matrix is
+  \f{equation*}{
+  K_{ij} = \exp{\left( -\frac{\|x_i - x_j\|^2}{\epsilon^{2} b(x_i)b(x_j)} \right)}
+  \f}
+  @param[in] bandwidthParameter The bandwidth parameter \f$\epsilon\f$.
+  @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
+  @param[out] kernel The kernel matrix \f$K\f$
+  \return The rowsum of the kernel matrix \f$\sum_{j=1}^{n} K_{ij}\f$
+  */
+  Eigen::VectorXd KernelMatrix(double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::Ref<Eigen::MatrixXd> kernel) const;
+
+  /// Compute the kernel matrix using the \f$k\f$-\f$d\f$ trees
+  /**
+  The \f$(i,j)\f$ entry of the kernel matrix is
+  \f{equation*}{
+  K_{ij} = \exp{\left( -\frac{\|x_i - x_j\|^2}{\epsilon^{2} b(x_i)b(x_j)} \right)}
+  \f}
+  However, if the entry is less than the sparsity tolerance, we set it equal to zero.
+  @param[in] sparsityTol The sparsity tolerance
+  @param[in] bandwidthParameter The bandwidth parameter \f$\epsilon\f$.
+  @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
+  @param[out] kernel The kernel matrix \f$K\f$
+  \return The rowsum of the kernel matrix \f$\sum_{j=1}^{n} K_{ij}\f$
+  */
+  Eigen::VectorXd KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel) const;
+
 private:
 
   /// Create a sample collection by sampling a random variable
   /**
-    @param[in] rv The random variable that we wish to sample
-    @param[in] n Sample the random variable \f$n\f$ times
+  @param[in] rv The random variable that we wish to sample
+  @param[in] n Sample the random variable \f$n\f$ times
   */
   static std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> SampleRandomVariable(std::shared_ptr<muq::Modeling::RandomVariable> const& rv, std::size_t const n);
 
@@ -104,14 +144,27 @@ private:
   */
   void Initialize(boost::property_tree::ptree const& options);
 
+  /// Evaluate the kernel
+  /**
+  \f{equation*}{
+  K(\epsilon, x_i, x_j) = \exp{\left( -\frac{\|x_i - x_j\|^2}{\epsilon} \right)}
+  \f}
+  @param[in] scale The scale parameter \f$\epsilon\f$
+  @param[in] xi The point \f$x_i\f$
+  @param[in] xj The point \f$x_j\f$
+  \return The kernel evaluation
+  */
+  double Kernel(double const scale, Eigen::VectorXd const& xi, Eigen::VectorXd const& xj) const;
+
   /// A point cloud used by nanoflann to find the nearest neighbors
   class Cloud {
   public:
     /**
     @param[in] samples Samples from the underlying distribution \f$\psi\f$
+    @param[in] indices The order of the samples (sorted by the bandwidth)
     @param[in] lag Ignore the first <tt>lag</tt> samples
     */
-    Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::size_t const lag);
+    Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::vector<std::size_t> const& indices, std::size_t const lag);
 
     virtual ~Cloud() = default;
 
@@ -136,6 +189,13 @@ private:
     template<class BBOX>
     inline bool kdtree_get_bbox(BBOX& bb) const { return false; }
 
+    /// Reorder the samples based on the bandwidth parameter
+    /**
+    We want the samples with the largest bandwidth to come first.
+    @param[in] bandwidth The sample bandwidth
+    */
+    void ReorderSamples(Eigen::VectorXd const& bandwidth);
+
     /// Ignore the first <tt>lag</tt> samples
     const std::size_t lag;
 
@@ -143,7 +203,13 @@ private:
 
     /// Samples from the distribution \f$\psi\f$
     std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> samples;
+
+    /// The order of the samples in the \f$k\f$-\f$d\f$ tree
+    const std::vector<std::size_t>& indices;
   };
+
+  /// The order of the samples in the \f$k\f$-\f$d\f$ tree
+  mutable std::vector<std::size_t> indices;
 
   /// The point clouds
 	std::vector<Cloud> clouds;
@@ -156,6 +222,9 @@ private:
 
   /// Samples from the distribution \f$\psi\f$
   std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> samples;
+
+  /// The number of <tt>openMP</tt> threads available to this object.
+  const std::size_t numThreads;
 };
 
 } // Approximation

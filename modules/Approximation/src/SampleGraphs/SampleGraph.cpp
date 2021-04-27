@@ -1,18 +1,22 @@
 #include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
 
+#include <numeric>
+
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Approximation;
 
 SampleGraph::SampleGraph(std::shared_ptr<RandomVariable> const& rv, pt::ptree const& options) :
-samples(SampleRandomVariable(rv, options.get<std::size_t>("NumSamples")))
+samples(SampleRandomVariable(rv, options.get<std::size_t>("NumSamples"))),
+numThreads(options.get<std::size_t>("NumThreads", 1))
 {
   Initialize(options);
 }
 
 SampleGraph::SampleGraph(std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> const& samples, pt::ptree const& options) :
-samples(samples)
+samples(samples),
+numThreads(options.get<std::size_t>("NumThreads", 1))
 {
   Initialize(options);
 }
@@ -25,9 +29,13 @@ void SampleGraph::Initialize(pt::ptree const& options) {
   clouds.reserve(NumSamples()/stride+1);
   kdtrees.reserve(clouds.size());
 
+  // the initial order is just however they are stored
+  indices.resize(samples->size());
+  std::iota(indices.begin(), indices.end(), 0);
+
   // create a bunch of point clouds
   for( std::size_t lag=0; lag<NumSamples(); lag+=stride ) {
-    clouds.emplace_back(samples, lag);
+    clouds.emplace_back(samples, indices, lag);
     kdtrees.push_back(
       std::make_shared<NanoflannKDTree>(
         StateDimension(),
@@ -43,6 +51,12 @@ std::shared_ptr<SampleCollection> SampleGraph::SampleRandomVariable(std::shared_
   auto samples = std::make_shared<SampleCollection>();
   for( std::size_t i=0; i<n; ++i ) { samples->Add(std::make_shared<SamplingState>(rv->Sample())); }
   return samples;
+}
+
+void SampleGraph::BuildKDTrees(Eigen::VectorXd const& bandwidth) const {
+  std::sort(indices.begin(), indices.end(), [&bandwidth](std::size_t const i, std::size_t const j) { return bandwidth(i)>bandwidth(j); });
+
+  BuildKDTrees();
 }
 
 void SampleGraph::BuildKDTrees() const {
@@ -127,9 +141,93 @@ double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const
   return sum;
 }
 
-SampleGraph::Cloud::Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::size_t const lag) :
+Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::Ref<Eigen::MatrixXd> kernel) const {
+  assert(bandwidth.size()==NumSamples());
+  assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
+
+  // compute the squared bandwidth paramter
+  bandwidthParameter *= bandwidthParameter;
+
+  #pragma omp parallel for num_threads(numThreads)
+  for( std::size_t i=0; i<samples->size(); ++i ) {
+    const double scale = bandwidthParameter*bandwidth(i);
+    for( std::size_t j=i; j<samples->size(); ++j ) {
+      kernel(i, j) = Kernel(scale*bandwidth(j), Point(i), Point(j));
+      if( i!=j ) { kernel(j, i) = kernel(i, j); }
+    }
+  }
+
+  return kernel.rowwise().sum();
+}
+
+Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel) const {
+  assert(sparsityTol<1.0);
+  assert(bandwidth.size()==NumSamples());
+  assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
+
+  // compute the squared bandwidth paramter
+  bandwidthParameter *= bandwidthParameter;
+
+  // re build the kd trees based on the bandwidth ordering
+  BuildKDTrees(bandwidth);
+
+  // the number of samples
+  const std::size_t n = samples->size();
+
+  std::vector<Eigen::Triplet<double> > entries;
+
+  #pragma omp parallel num_threads(numThreads)
+  {
+    std::vector<Eigen::Triplet<double> > entries_private;
+
+    #pragma omp for nowait
+    for( std::size_t i=0; i<n; ++i ) {
+      const std::size_t ind = indices[i];
+
+      // we need to find neighbors within this distnace
+      double neighDist = bandwidth(ind);
+      neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
+      assert(neighDist>0.0);
+
+      // find the nearest neighbors
+      std::vector<std::pair<std::size_t, double> > neighbors;
+      FindNeighbors(Point(ind), neighDist, neighbors, i);
+
+      // add the kernel evaluations to the kernel matrix
+      const double scale = bandwidthParameter*bandwidth(ind);
+      for( const auto& neigh : neighbors ) {
+        const std::size_t jnd = indices[neigh.first];
+        assert(i<=neigh.first);
+        const double eval = std::exp(-neigh.second/(scale*bandwidth(jnd)));
+        if( eval>=sparsityTol ) {
+          entries_private.emplace_back(ind, jnd, eval);
+          if( ind!=jnd ) { entries_private.emplace_back(jnd, ind, eval); }
+        }
+      }
+    }
+
+    #pragma omp critical
+    entries.insert(entries.end(), std::make_move_iterator(entries_private.begin()), std::make_move_iterator(entries_private.end()));
+  }
+  kernel.setFromTriplets(entries.begin(), entries.end());
+
+  // the sum of each row in the kernel matrix
+  Eigen::VectorXd rowsum = Eigen::VectorXd::Zero(n);
+  for( const auto& entry : entries ) { rowsum(entry.row()) += entry.value(); }
+
+  return rowsum;
+}
+
+double SampleGraph::Kernel(double const scale, Eigen::VectorXd const& xi, Eigen::VectorXd const& xj) const {
+  assert(xi.size()==xj.size());
+  const Eigen::VectorXd diff = xi-xj;
+  return std::exp(-diff.dot(diff)/scale);
+}
+
+SampleGraph::Cloud::Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::vector<std::size_t> const& indices, std::size_t const lag) :
+lag(lag),
 samples(samples),
-lag(lag)
+indices(indices)
 {
   assert(samples->size()>lag);
 }
@@ -141,5 +239,5 @@ std::size_t SampleGraph::Cloud::kdtree_get_point_count() const {
 
 double SampleGraph::Cloud::kdtree_get_pt(std::size_t const p, std::size_t const i) const {
   assert(samples);
-  return samples->at(lag+p)->state[0] [i];
+  return samples->at(indices[lag+p])->state[0] [i];
 }

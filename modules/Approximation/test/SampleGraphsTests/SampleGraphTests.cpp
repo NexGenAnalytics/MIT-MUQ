@@ -51,7 +51,7 @@ public:
   const std::size_t dim = 4;
 
   /// The number of samples
-  const std::size_t n = 25000;
+  const std::size_t n = 2500;
 
   /// The max leaf size for the kd tree
   const std::size_t maxLeaf = 15;
@@ -176,11 +176,10 @@ TEST_F(SampleGraphTests, SampleCollectionConstruction) {
   }
 }
 
-
 TEST_F(SampleGraphTests, SquaredBandwidth) {
   graph = std::make_shared<SampleGraph>(rv, options);
 
-  // compute the squared bandwith and a random point using 10 nearest neighbors
+  // compute the squared bandwidth and a random point using 10 nearest neighbors
   const Eigen::VectorXd point = rv->Sample();
   const double squaredBandwidth = graph->SquaredBandwidth(point, 10);
 
@@ -191,4 +190,87 @@ TEST_F(SampleGraphTests, SquaredBandwidth) {
     for( const auto& it : neighbors ) { expected += it.second; }
   }
   EXPECT_NEAR(squaredBandwidth, expected, 1.0e-10);
+}
+
+TEST_F(SampleGraphTests, KernelMatrixComputation) {
+  graph = std::make_shared<SampleGraph>(rv, options);
+
+  // the bandwidth parameters
+  const double eps = 0.5;
+  const Eigen::VectorXd bandwidth = Eigen::VectorXd::Random(graph->NumSamples()).array().abs();
+
+  // the sparsity tolerance
+  const double delta = 1.0e-1;
+
+  // compute the kernel matrix
+  Eigen::MatrixXd kernel(graph->NumSamples(), graph->NumSamples());
+  const Eigen::VectorXd rowsumDense = graph->KernelMatrix(eps, bandwidth, kernel);
+  EXPECT_EQ(rowsumDense.size(), graph->NumSamples());
+  Eigen::SparseMatrix<double> sparseKernel(graph->NumSamples(), graph->NumSamples());
+  const Eigen::VectorXd rowsumSparse = graph->KernelMatrix(delta, eps, bandwidth, sparseKernel);
+  EXPECT_EQ(rowsumSparse.size(), graph->NumSamples());
+
+  for( std::size_t i=0; i<graph->NumSamples(); ++i ) {
+    double rowsum = 0.0;
+    double rowsumSparseExpected = 0.0;
+    for( std::size_t j=0; j<graph->NumSamples(); ++j ) {
+      const Eigen::VectorXd diff = graph->Point(i)-graph->Point(j);
+      EXPECT_NEAR(kernel(i, j), std::exp(-diff.dot(diff)/(eps*eps*bandwidth(i)*bandwidth(j))), 1.0e-10);
+      EXPECT_NEAR(kernel(j, i), std::exp(-diff.dot(diff)/(eps*eps*bandwidth(i)*bandwidth(j))), 1.0e-10);
+      rowsum += kernel(i, j);
+
+      if( kernel(i, j)>=delta ) {
+        EXPECT_NEAR(sparseKernel.coeff(i, j), kernel(i, j), 1.0e-10);
+        EXPECT_NEAR(sparseKernel.coeff(j, i), kernel(j, i), 1.0e-10);
+        rowsumSparseExpected += kernel(i, j);
+      } else {
+        EXPECT_DOUBLE_EQ(sparseKernel.coeff(i, j), 0.0);
+        EXPECT_DOUBLE_EQ(sparseKernel.coeff(j, i), 0.0);
+      }
+    }
+    EXPECT_NEAR(rowsumDense(i), rowsum, 1.0e-10);
+    EXPECT_NEAR(rowsumSparse(i), rowsumSparseExpected, 1.0e-10);
+  }
+}
+
+TEST_F(SampleGraphTests, SharedMemoryKernelMatrixComputation) {
+  options.put("NumThreads", 5);
+  graph = std::make_shared<SampleGraph>(rv, options);
+
+  // the bandwidth parameters
+  const double eps = 0.5;
+  const Eigen::VectorXd bandwidth = Eigen::VectorXd::Random(graph->NumSamples()).array().abs();
+
+  // the sparsity tolerance
+  const double delta = 1.0e-1;
+
+  // compute the kernel matrix
+  Eigen::MatrixXd kernel(graph->NumSamples(), graph->NumSamples());
+  const Eigen::VectorXd rowsumDense = graph->KernelMatrix(eps, bandwidth, kernel);
+  EXPECT_EQ(rowsumDense.size(), graph->NumSamples());
+  Eigen::SparseMatrix<double> sparseKernel(graph->NumSamples(), graph->NumSamples());
+  const Eigen::VectorXd rowsumSparse = graph->KernelMatrix(delta, eps, bandwidth, sparseKernel);
+  EXPECT_EQ(rowsumSparse.size(), graph->NumSamples());
+
+  for( std::size_t i=0; i<graph->NumSamples(); ++i ) {
+    double rowsum = 0.0;
+    double rowsumSparseExpected = 0.0;
+    for( std::size_t j=0; j<graph->NumSamples(); ++j ) {
+      const Eigen::VectorXd diff = graph->Point(i)-graph->Point(j);
+      EXPECT_NEAR(kernel(i, j), std::exp(-diff.dot(diff)/(eps*eps*bandwidth(i)*bandwidth(j))), 1.0e-10);
+      EXPECT_NEAR(kernel(j, i), std::exp(-diff.dot(diff)/(eps*eps*bandwidth(i)*bandwidth(j))), 1.0e-10);
+      rowsum += kernel(i, j);
+
+      if( kernel(i, j)>=delta ) {
+        EXPECT_NEAR(sparseKernel.coeff(i, j), kernel(i, j), 1.0e-10);
+        EXPECT_NEAR(sparseKernel.coeff(j, i), kernel(j, i), 1.0e-10);
+        rowsumSparseExpected += kernel(i, j);
+      } else {
+        EXPECT_DOUBLE_EQ(sparseKernel.coeff(i, j), 0.0);
+        EXPECT_DOUBLE_EQ(sparseKernel.coeff(j, i), 0.0);
+      }
+    }
+    EXPECT_NEAR(rowsumDense(i), rowsum, 1.0e-10);
+    EXPECT_NEAR(rowsumSparse(i), rowsumSparseExpected, 1.0e-10);
+  }
 }
