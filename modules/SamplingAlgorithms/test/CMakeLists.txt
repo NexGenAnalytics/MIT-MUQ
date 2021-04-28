@@ -30,6 +30,13 @@ CreateTestGroup(
   ExpensiveSamplingProblemTests.cpp
 )
 
+CreateTestGroup(
+  SAMPLING_ALGORITHMS_GRAPH_BASED_ALGORITHMS
+
+  SampleGraphsTests/SampleGraphTests.cpp
+  SampleGraphsTests/DensityEstimationTests.cpp
+)
+
 CreateParallelTestGroup(
     SAMPLING_ALGORITHM
 

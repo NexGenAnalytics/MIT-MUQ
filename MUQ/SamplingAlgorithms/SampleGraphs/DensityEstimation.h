@@ -1,12 +1,20 @@
 #ifndef DENSITYESTIMATION_H_
 #define DENSITYESTIMATION_H_
 
-#include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/SampleGraph.h"
 
 namespace muq {
-namespace Approximation {
+namespace SamplingAlgorithms {
 
 /// Estimate the probability density function \f$\psi(x)\f$ given samples
+/**
+<B>Configuration Parameters:</B>
+Parameter Key | Type | Default Value | Description |
+------------- | ------------- | ------------- | ------------- |
+"NumNearestNeighbors"   | <tt>std::size_t</tt> | <tt>25</tt> | The number of nearest neighbors used to compute the bandwidth parameter.   |
+"ManifoldDimension"   | <tt>double</tt> | <tt>1.0</tt> | The manifold dimension (if this is not known, then we can estimate it).   |
+"SparsityTolerance"   | <tt>double</tt> | <tt>0.1</tt> | The sparsity tolerance for kernel matrix construction (note this may be different than the sparsity tolerance for the optimization).   |
+*/
 class DensityEstimation : public SampleGraph {
 public:
 
@@ -38,15 +46,29 @@ public:
 
   The optimal \f$\epsilon\f$ maximizes \f$\Sigma_{\epsilon}^{\prime}\f$ and the corresponding manifold dimension estimate is \f$m = 2 \max{(\Sigma_{\epsilon}^{\prime})}\f$.
 
+  @param[in] epsilon The bandwidth parameter. If we use the automatic tuning, then this is the initial guess for the optimizer.
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
   \return The density estimation at each sample \f$\psi^{(i)} \approx \psi(\boldsymbol{x}^{(i)})\f$
+  @param[in] estimate dimension  <tt>true</tt>: Use the computed dimension as the manifold dimension and update the stored dimension; <tt>false</tt> (defalt): use the stored manifold dimension
+  \return The density estimation at each sample \f$\psi^{(i)} \approx \psi(\boldsymbol{x}^{(i)})\f$
   */
-  Eigen::VectorXd Estimate(bool const tune = true);
+  Eigen::VectorXd EstimateDensity(double epsilon = 1.0, bool const tune = true, bool const tuneDimension = false) const;
+
+protected:
+
+  /// The manifold dimension (estimated if not known)
+  mutable double manifoldDim;
+
+  /// The sparsity tolerance for kernel matrix construction (note this may be different than the sparsity tolerance for the optimization).
+  const double sparsityTol;
 
 private:
+
+  /// The number of nearest neighbors used to compute the bandwidth parameter
+  const std::size_t numNearestNeighbors;
 };
 
-} // Approximation
+} // SamplingAlgorithms
 } // namespace muq
 
 #endif

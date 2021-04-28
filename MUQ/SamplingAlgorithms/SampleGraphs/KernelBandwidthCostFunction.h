@@ -3,10 +3,10 @@
 
 #include "MUQ/Optimization/CostFunction.h"
 
-#include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/SampleGraph.h"
 
 namespace muq {
-namespace Approximation {
+namespace SamplingAlgorithms {
 
 /// The cost function used to tune the bandwidth parameter
 /**
@@ -59,7 +59,7 @@ private:
   const double sparsityTol;
 };
 
-} // Approximation
+} // SamplingAlgorithms
 } // namespace muq
 
 #endif

@@ -25,4 +25,6 @@ CreateCompileGroup(
     SampleWrapper.cpp
     MCMCWrapper.cpp
     ProblemWrapper.cpp
+    SampleGraphWrapper.cpp
+    DensityEstimationWrapper.cpp
 )

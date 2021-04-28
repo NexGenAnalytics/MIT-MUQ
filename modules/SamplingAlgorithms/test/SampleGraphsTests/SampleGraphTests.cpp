@@ -4,12 +4,11 @@
 
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 
-#include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/SampleGraph.h"
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
-using namespace muq::Approximation;
 
 class SampleGraphTests : public::testing::Test {
 public:

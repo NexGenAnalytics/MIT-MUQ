@@ -14,4 +14,6 @@ PYBIND11_MODULE(pymuqSamplingAlgorithms, m) {
     SampleWrapper(m);
     MCMCWrapper(m);
     ProblemWrapper(m);
+    SampleGraphWrapper(m);
+    DensityEstimationWrapper(m);
 }

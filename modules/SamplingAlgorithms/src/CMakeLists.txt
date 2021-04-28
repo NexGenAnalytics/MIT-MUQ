@@ -84,6 +84,20 @@ CreateCompileGroup(
     CrankNicolsonProposal.cpp
 )
 
+CreateCompileGroup(
+    SAMPLING_ALGORITHMS_GRAPH_BASED_ALGORITHMS
+    "Tools for estimating distributions using sample-based graphs."
+    muqSamplingAlgorithms
+    "MODELING_CORE;OPTIMIZATION_CORE;SAMPLING_ALGORITHM"
+    "EIGEN3;BOOST;NLOPT"
+		""
+
+    SampleGraphs/SampleGraph.cpp
+		SampleGraphs/KernelBandwidthCostFunction.cpp
+		SampleGraphs/DensityEstimation.cpp
+		SampleGraphs/KolmogorovOperator.cpp
+)
+
 if(MUQ_USE_MPI)
 
   CreateCompileGroup(

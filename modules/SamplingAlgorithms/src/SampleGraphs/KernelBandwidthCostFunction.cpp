@@ -1,8 +1,8 @@
-#include "MUQ/Approximation/SampleGraphs/KernelBandwidthCostFunction.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/KernelBandwidthCostFunction.h"
 
 namespace pt = boost::property_tree;
 using namespace muq::Optimization;
-using namespace muq::Approximation;
+using namespace muq::SamplingAlgorithms;
 
 KernelBandwidthCostFunction::KernelBandwidthCostFunction(std::shared_ptr<const SampleGraph> const& graph, Eigen::VectorXd const& bandwidth, pt::ptree const& pt) : CostFunction(Eigen::VectorXi::Ones(1)), graph(graph), bandwidth(bandwidth), delta(pt.get<double>("StepSize", 1.0)), sparsityTol(pt.get<double>("SparsityTolerance", 0.1)) {
   assert(delta>0.0);

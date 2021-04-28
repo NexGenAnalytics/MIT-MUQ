@@ -1,16 +1,15 @@
-#include "MUQ/Approximation/SampleGraphs/SampleGraph.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/SampleGraph.h"
 
 #include <numeric>
 
 #include "MUQ/Optimization/NLoptOptimizer.h"
 
-#include "MUQ/Approximation/SampleGraphs/KernelBandwidthCostFunction.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/KernelBandwidthCostFunction.h"
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::Optimization;
 using namespace muq::SamplingAlgorithms;
-using namespace muq::Approximation;
 
 SampleGraph::SampleGraph(std::shared_ptr<RandomVariable> const& rv, pt::ptree const& options) :
 samples(SampleRandomVariable(rv, options.get<std::size_t>("NumSamples"))),
@@ -241,7 +240,7 @@ double SampleGraph::Kernel(double const scale, Eigen::VectorXd const& xi, Eigen:
   return std::exp(-diff.dot(diff)/scale);
 }
 
-std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const& bandwidth) const {
+std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double const epsilon) const {
   BuildKDTrees(bandwidth);
 
   // create the cost function
@@ -249,8 +248,7 @@ std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const
   auto opt = std::make_shared<NLoptOptimizer>(cost, bandwidthOptimizationOptions);
 
   // the initial condition for the optimization is the current parameter value
-  double bandwidthParameter = 1.0;
-  const std::vector<Eigen::VectorXd> inputs(1, Eigen::VectorXd::Constant(1, std::log2(bandwidthParameter)));
+  const std::vector<Eigen::VectorXd> inputs(1, Eigen::VectorXd::Constant(1, std::log2(epsilon*epsilon)));
 
   // solve the optimization and update the parameters
   std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);

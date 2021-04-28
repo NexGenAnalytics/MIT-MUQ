@@ -12,7 +12,7 @@
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
 
 namespace muq {
-namespace Approximation {
+namespace SamplingAlgorithms {
 
 /// Given samples from a distribution, create a graph that connects nearest neighbors
 /**
@@ -141,9 +141,10 @@ public:
   /// Tune the kernel bandwidth parameter
   /**
   @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
+  @param[in] epsilon The initial guess for the bandwidth parameter
   \return First: The optimal kernel bandwidth parameter, Second: the cost at the optimal point (should be half the manifold dimension)
   */
-  std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth) const;
+  std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double const epsilon = 1.0) const;
 
 private:
 
@@ -239,7 +240,7 @@ private:
   boost::property_tree::ptree bandwidthOptimizationOptions;
 };
 
-} // Approximation
+} // SamplingAlgorithms
 } // namespace muq
 
 #endif

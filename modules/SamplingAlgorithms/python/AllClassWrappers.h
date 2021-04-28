@@ -12,6 +12,9 @@ namespace muq{
       void SampleWrapper(pybind11::module &m);
       void MCMCWrapper(pybind11::module &m);
       void ProblemWrapper(pybind11::module &m);
+      void SampleGraphWrapper(pybind11::module &m);
+      void DensityEstimationWrapper(pybind11::module &m);
+      
     }
   }
 }

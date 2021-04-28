@@ -13,8 +13,6 @@ namespace muq{
       void KLWrapper(pybind11::module &m);
       void QuadratureWrapper(pybind11::module &m);
       void PolynomialChaosWrapper(pybind11::module &m);
-      void SampleGraphWrapper(pybind11::module &m);
-      void DensityEstimationWrapper(pybind11::module &m);
 
     }
   }
