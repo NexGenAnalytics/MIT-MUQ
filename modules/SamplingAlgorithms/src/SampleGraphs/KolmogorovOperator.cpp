@@ -1,5 +1,8 @@
 #include "MUQ/SamplingAlgorithms/SampleGraphs/KolmogorovOperator.h"
 
+#include <Spectra/SymEigsSolver.h>
+#include <Spectra/MatOp/SparseGenMatProd.h>
+
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;

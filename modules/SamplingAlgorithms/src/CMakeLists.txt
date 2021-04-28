@@ -89,7 +89,7 @@ CreateCompileGroup(
     "Tools for estimating distributions using sample-based graphs."
     muqSamplingAlgorithms
     "MODELING_CORE;OPTIMIZATION_CORE;SAMPLING_ALGORITHM"
-    "EIGEN3;BOOST;NLOPT"
+    "EIGEN3;SPECTRA;BOOST;NLOPT"
 		""
 
     SampleGraphs/SampleGraph.cpp

@@ -82,6 +82,7 @@ FILE(APPEND ${_log_summary}
 "#  Required dependencies: \n"
 )
 PrintRequired(EIGEN3 " ---")
+PrintRequired(SPECTRA " --")
 PrintRequired(BOOST " ----")
 PrintRequired(HDF5 " -----")
 PrintRequired(NANOFLANN " ")
