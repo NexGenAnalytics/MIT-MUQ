@@ -14,6 +14,7 @@ Parameter Key | Type | Default Value | Description |
 "NumNearestNeighbors"   | <tt>std::size_t</tt> | <tt>25</tt> | The number of nearest neighbors used to compute the bandwidth parameter.   |
 "ManifoldDimension"   | <tt>double</tt> | <tt>1.0</tt> | The manifold dimension (if this is not known, then we can estimate it).   |
 "SparsityTolerance"   | <tt>double</tt> | <tt>0.1</tt> | The sparsity tolerance for kernel matrix construction (note this may be different than the sparsity tolerance for the optimization).   |
+"TuneDimension"   | <tt>bool</tt> | <tt>false</tt> | Use the parameter tuning to tune the manifold dimension   |
 */
 class DensityEstimation : public SampleGraph {
 public:
@@ -49,10 +50,8 @@ public:
   @param[in] epsilon The bandwidth parameter. If we use the automatic tuning, then this is the initial guess for the optimizer.
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
   \return The density estimation at each sample \f$\psi^{(i)} \approx \psi(\boldsymbol{x}^{(i)})\f$
-  @param[in] estimate dimension  <tt>true</tt>: Use the computed dimension as the manifold dimension and update the stored dimension; <tt>false</tt> (defalt): use the stored manifold dimension
-  \return The density estimation at each sample \f$\psi^{(i)} \approx \psi(\boldsymbol{x}^{(i)})\f$
   */
-  Eigen::VectorXd EstimateDensity(double epsilon = 1.0, bool const tune = true, bool const tuneDimension = false) const;
+  Eigen::VectorXd EstimateDensity(double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true) const;
 
 protected:
 
@@ -62,7 +61,13 @@ protected:
   /// The sparsity tolerance for kernel matrix construction (note this may be different than the sparsity tolerance for the optimization).
   const double sparsityTol;
 
+  /// <tt>true</tt>: Use the computed dimension as the manifold dimension and update the stored dimension; <tt>false</tt> (defalt): use the stored manifold dimension
+  const bool tuneDimension;
+
 private:
+
+  /// The bandwidth tuning parameter for the density estimation problem
+  mutable double densityBandwidthParameter = 1.0;
 
   /// The number of nearest neighbors used to compute the bandwidth parameter
   const std::size_t numNearestNeighbors;

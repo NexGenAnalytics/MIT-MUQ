@@ -5,13 +5,13 @@
 #include "MUQ/Modeling/Distributions/Density.h"
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 
-#include "MUQ/SamplingAlgorithms/SampleGraphs/DensityEstimation.h"
+#include "MUQ/SamplingAlgorithms/SampleGraphs/KolmogorovOperator.h"
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
 
-class DensityEstimationTests : public::testing::Test {
+class KolmogorovOperatorTests : public::testing::Test {
 public:
   // Set up information to test the nearest neighbor construction
   virtual void SetUp() override {
@@ -36,7 +36,7 @@ public:
     for( std::size_t i=0; i<n; ++i ) { samples->Add(std::make_shared<SamplingState>(rv->Sample())); }
 
     // create the graph laplacian
-    density = std::make_shared<DensityEstimation>(samples, options);
+    kolmogorov = std::make_shared<KolmogorovOperator>(samples, options);
 
     // return the samples
     return samples;
@@ -44,10 +44,10 @@ public:
 
   /// Make sure everything is constructed correctly
   virtual void TearDown() override {
-    EXPECT_TRUE(density);
+    EXPECT_TRUE(kolmogorov);
 
-    EXPECT_EQ(density->NumSamples(), n);
-    EXPECT_EQ(density->StateDimension(), dim);
+    EXPECT_EQ(kolmogorov->NumSamples(), n);
+    EXPECT_EQ(kolmogorov->StateDimension(), dim);
   }
 
   /// The dimension of state spaces
@@ -62,12 +62,12 @@ public:
   /// The random variable that lets us sample from the underlying distribution
   std::shared_ptr<RandomVariable> rv;
 
-  /// The density estimator
-  std::shared_ptr<DensityEstimation> density;
+  /// The Kolmogorov operator
+  std::shared_ptr<KolmogorovOperator> kolmogorov;
 };
 
-TEST_F(DensityEstimationTests, RandomVariableConstruction) {
-  density = std::make_shared<DensityEstimation>(rv, options);
+TEST_F(KolmogorovOperatorTests, RandomVariableConstruction) {
+  kolmogorov = std::make_shared<KolmogorovOperator>(rv, options);
 
   // choose a random point
   const Eigen::VectorXd x = rv->Sample();
@@ -76,7 +76,7 @@ TEST_F(DensityEstimationTests, RandomVariableConstruction) {
   {
     const double radius = 0.1;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, radius*radius, neighbors);
+    kolmogorov->FindNeighbors(x, radius*radius, neighbors);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first<n);
       EXPECT_TRUE(neigh.second<radius*radius);
@@ -87,7 +87,7 @@ TEST_F(DensityEstimationTests, RandomVariableConstruction) {
   for( std::size_t lag=0; lag<n; lag+=10 ) {
     const double radius = 1.0;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, radius*radius, neighbors, lag);
+    kolmogorov->FindNeighbors(x, radius*radius, neighbors, lag);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first>=lag);
       EXPECT_TRUE(neigh.first<n);
@@ -99,7 +99,7 @@ TEST_F(DensityEstimationTests, RandomVariableConstruction) {
   {
     const std::size_t k = 10;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, k, neighbors);
+    kolmogorov->FindNeighbors(x, k, neighbors);
     EXPECT_EQ(neighbors.size(), k);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first<n);
@@ -110,7 +110,7 @@ TEST_F(DensityEstimationTests, RandomVariableConstruction) {
   for( std::size_t lag=0; lag<n; lag+=10 ) {
     const std::size_t k = 10;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, k, neighbors, lag);
+    kolmogorov->FindNeighbors(x, k, neighbors, lag);
     EXPECT_TRUE(neighbors.size()<=k);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first>=lag);
@@ -119,12 +119,12 @@ TEST_F(DensityEstimationTests, RandomVariableConstruction) {
   }
 }
 
-TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
+TEST_F(KolmogorovOperatorTests, SampleCollectionConstruction) {
   auto samples = CreateFromSamples();
   EXPECT_TRUE(samples);
 
   // check to make sure the samples match
-  for( std::size_t i=0; i<n; ++i ) { EXPECT_NEAR((samples->at(i)->state[0]-density->Point(i)).norm(), 0.0, 1.0e-10); }
+  for( std::size_t i=0; i<n; ++i ) { EXPECT_NEAR((samples->at(i)->state[0]-kolmogorov->Point(i)).norm(), 0.0, 1.0e-10); }
 
   // choose a random point
   const Eigen::VectorXd x = rv->Sample();
@@ -133,7 +133,7 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
   {
     const double radius = 0.1;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, radius*radius, neighbors);
+    kolmogorov->FindNeighbors(x, radius*radius, neighbors);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first<n);
       EXPECT_TRUE(neigh.second<radius*radius);
@@ -144,7 +144,7 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
   for( std::size_t lag=0; lag<n; lag+=10 ) {
     const double radius = 1.0;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, radius*radius, neighbors, lag);
+    kolmogorov->FindNeighbors(x, radius*radius, neighbors, lag);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first>=lag);
       EXPECT_TRUE(neigh.first<n);
@@ -156,7 +156,7 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
   {
     const std::size_t k = 10;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, k, neighbors);
+    kolmogorov->FindNeighbors(x, k, neighbors);
     EXPECT_EQ(neighbors.size(), k);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first<n);
@@ -167,7 +167,7 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
   for( std::size_t lag=0; lag<n; lag+=10 ) {
     const std::size_t k = 10;
     std::vector<std::pair<std::size_t, double> > neighbors;
-    density->FindNeighbors(x, k, neighbors, lag);
+    kolmogorov->FindNeighbors(x, k, neighbors, lag);
     EXPECT_TRUE(neighbors.size()<=k);
     for( const auto& neigh : neighbors ) {
       EXPECT_TRUE(neigh.first>=lag);
@@ -176,17 +176,19 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
   }
 }
 
-TEST_F(DensityEstimationTests, EstimateGuassian) {
-  density = std::make_shared<DensityEstimation>(rv, options);
+TEST_F(KolmogorovOperatorTests, DiscreteOperatorComputation) {
+  kolmogorov = std::make_shared<KolmogorovOperator>(rv, options);
 
-  // estimate the density
-  const Eigen::VectorXd estimate = density->EstimateDensity(3.5, false);
+  Eigen::SparseMatrix<double> Lhat;
+  Eigen::VectorXd similarity(kolmogorov->NumSamples());
+  kolmogorov->DiscreteOperator(Lhat, similarity);
+  EXPECT_EQ(Lhat.rows(), kolmogorov->NumSamples());
+  EXPECT_EQ(Lhat.cols(), kolmogorov->NumSamples());
 
-  // create a standard Gaussian random variable
-  auto trueDens = std::make_shared<Gaussian>(dim)->AsDensity();
-  Eigen::VectorXd expected(density->NumSamples());
-  for( std::size_t i=0; i<density->NumSamples(); ++i ) { expected(i) = std::exp(trueDens->LogDensity(density->Point(i))); }
-
-  // on average the error is small, but the pointwise error could be large (especially in the tails)
-  EXPECT_NEAR((estimate-expected).norm()/density->NumSamples(), 0.0, 1.0e-2);
+  // make sure the matrix is symmetric
+  for( std::size_t i=0; i<kolmogorov->NumSamples(); ++i ) {
+    for( std::size_t j=0; j<kolmogorov->NumSamples(); ++j ) {
+      EXPECT_NEAR(Lhat.coeff(i, j), Lhat.coeff(j, i), 1.0e-10);
+    }
+  }
 }

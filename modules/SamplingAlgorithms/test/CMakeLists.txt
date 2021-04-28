@@ -35,6 +35,7 @@ CreateTestGroup(
 
   SampleGraphsTests/SampleGraphTests.cpp
   SampleGraphsTests/DensityEstimationTests.cpp
+  SampleGraphsTests/KolmogorovOperatorTests.cpp
 )
 
 CreateParallelTestGroup(
