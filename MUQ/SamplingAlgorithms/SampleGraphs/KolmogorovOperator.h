@@ -20,51 +20,75 @@ Parameter Key | Type | Default Value | Description |
 ------------- | ------------- | ------------- | ------------- |
 "VariableBandwidth"   | <tt>double</tt> | <tt>-0.5</tt> | The variable bandwidth parameter \f$\beta\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.   |
 "OperatorParameter"   | <tt>double</tt> | <tt>1.0</tt> | The parameter \f$c\f$---determines how much the density function is weighted in the Kolmogorov operator.   |
+"NumEigenpairs"   | <tt>std::size_t</tt> | <tt>5 log(n)</tt> | The number of eigenpairs to compute and store---defaults to \f$5 log{(n)}\f$, where \f$n\f$ is the number of samples.   |
 */
 class KolmogorovOperator : public DensityEstimation {
 public:
 
-  /// Construct the sample graph by sampling a random variable from \f$\psi\f$
+  /// Construct the Kolmogorov operator by sampling a random variable from \f$\psi\f$
   /**
   @param[in] rv The random variable that we wish to sample
   @param[in] options Setup options
   */
   KolmogorovOperator(std::shared_ptr<muq::Modeling::RandomVariable> const& rv, boost::property_tree::ptree const& options);
 
-  /// Construct the sample graph given samples from the underlying distribution \f$\psi\f$
+  /// Construct the Kolmogorov operator given samples from the underlying distribution \f$\psi\f$
   /**
   @param[in] samples Samples from the underlying distribution \f$\psi\f$
   @param[in] options Setup options
   */
   KolmogorovOperator(std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> const& samples, boost::property_tree::ptree const& options);
 
+  /// Construct the Kolmogorov operator given samples from the underlying distribution \f$\psi\f$
+  /**
+  @param[in] mat Each column is a sample from the underlying distribution \f$\psi\f$
+  @param[in] options Setup options
+  */
+  KolmogorovOperator(Eigen::MatrixXd const& mat, boost::property_tree::ptree const& options);
+
   virtual ~KolmogorovOperator() = default;
+
+  /// Compute the eigendecomposition of the discrete Kolmogorov operator
+  /**
+  @param[in] density The density \f$\psi\f$ evaluated at each sample
+  @param[in] epsilonOperator The bandwidth parameter for the operator estimation. If we use the automatic tuning, then this is the initial guess for the optimizer.
+  @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
+  */
+  std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd> Eigendecomposition(Eigen::VectorXd const& density, double epsilonOperator = std::numeric_limits<double>::quiet_NaN(), bool const tune = true);
 
   /// Compute the discrete Kolmogorov operator
   /**
-  @param[out] Lhat The symmetirc discrete Kolmogorov operator---this is related to the discrete Kolmogorov operator by a similarity transformation
-  @param[out] similarity The diagonal of the matrix that defines the similarity transformation
-  @param[in] epsilonOperator The bandwidth parameter for the operator estimation. If we use the automatic tuning, then this is the initial guess for the optimizer.
-  @param[in] epsilonDensity The bandwidth parameter for the density estimation. If we use the automatic tuning, then this is the initial guess for the optimizer.
+  @param[in] density The density \f$\psi\f$ evaluated at each sample
+  @param[in] epsilon The bandwidth parameter for the operator estimation. If we use the automatic tuning, then this is the initial guess for the optimizer.
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
   */
-  void DiscreteOperator(Eigen::SparseMatrix<double>& Lhat, Eigen::Ref<Eigen::VectorXd> similarity, double epsilonOperator = std::numeric_limits<double>::quiet_NaN(), double epsilonDensity = std::numeric_limits<double>::quiet_NaN(), bool const tune = true) const;
-private:
-
-private:
+  void DiscreteOperator(Eigen::VectorXd const& density, double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true);
 
   /// The variable bandwidth parameter \f$\beta\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
   const double beta;
+
+private:
 
   /// The parameter \f$c\f$---determines how much the density function is weighted in the Kolmogorov operator.
   const double operatorParameter;
 
   /// The second variable bandwidth parameter \f$\alpha\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
-  mutable double alpha;
+  double alpha;
+
+  /// The number of eigenpairs to compute and store
+  const std::size_t neigs;
 
   /// The bandwidth tuning parameter for the operator estimation problem
-  mutable double operatorBandwidthParameter = 1.0e-4;
+  mutable double operatorBandwidthParameter = 1.0e-1;
 
+  /// A sparse matrix to store the discrete Kolmogorov operator
+  /**
+  This matrix is actually \f$\hat{L}\f$, a symmetric matrix that is related to the discrete Kolmogorov operator by a similarity transformation \f$L = S \hat{L} S^{-1}\f$ (\f$S\f$ is diagonal).
+  */
+  Eigen::SparseMatrix<double> matrix;
+
+  /// The diagonal of the matrix that relates the symmetric matrix \f$\hat{L}\f$ to the discrete Kolmogorov operator \f$L\f$
+  Eigen::VectorXd similarity;
 };
 
 } // namespace SamplingAlgorithms

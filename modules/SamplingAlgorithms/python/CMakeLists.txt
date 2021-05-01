@@ -27,4 +27,5 @@ CreateCompileGroup(
     ProblemWrapper.cpp
     SampleGraphWrapper.cpp
     DensityEstimationWrapper.cpp
+    KolmogorovOperatorWrapper.cpp
 )

@@ -52,6 +52,13 @@ public:
   */
   SampleGraph(std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> const& samples, boost::property_tree::ptree const& options);
 
+  /// Construct the sample graph given samples from the underlying distribution \f$\psi\f$
+  /**
+  @param[in] mat Each column is a sample from the underlying distribution \f$\psi\f$
+  @param[in] options Setup options
+  */
+  SampleGraph(Eigen::MatrixXd const& mat, boost::property_tree::ptree const& options);
+
   virtual ~SampleGraph() = default;
 
   /// Construct the \f$k\f$-\f$d\f$ trees
@@ -105,7 +112,7 @@ public:
   @param[in] k The number of nearest neighbors (\f$k\f$)
   \return The squared bandwidth \f$b^2(x)\f$
   */
-  double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const;
+  double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t k) const;
 
   /// Compute the kernel matrix using the brute-force algorithm
   /**
@@ -138,6 +145,22 @@ public:
   */
   Eigen::VectorXd KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel, bool const rebuildTrees = true) const;
 
+  /// Compute the kernel matrix using the \f$k\f$-\f$d\f$ trees
+  /**
+  The \f$(i,j)\f$ entry of the kernel matrix is
+  \f{equation*}{
+  K_{ij} = \exp{\left( -\frac{\|x_i - x_j\|^2}{\epsilon^{2} b(x_i)b(x_j)} \right)}
+  \f}
+  However, if the entry is less than the sparsity tolerance, we set it equal to zero.
+  @param[in] sparsityTol The sparsity tolerance
+  @param[in] bandwidthParameter The bandwidth parameter \f$\epsilon\f$.
+  @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
+  @param[out] entries The entries of a sparse matrix
+  @param[in] rebuildTrees <tt>true</tt> (default): Rebuild the \f$k\f$-\f$d\f$ trees using the bandwidth ordering, <tt>false</tt>: use the already constructed trees
+  \return The rowsum of the kernel matrix \f$\sum_{j=1}^{n} K_{ij}\f$
+  */
+  Eigen::VectorXd KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, std::vector<Eigen::Triplet<double> >& entries, bool const rebuildTrees) const;
+
   /// Tune the kernel bandwidth parameter
   /**
   @param[in] bandwidth The bandwidth function evaluated (or approximated) at each sample \f$b(x_i)\f$.
@@ -146,6 +169,19 @@ public:
   */
   std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double const epsilon = 1.0) const;
 
+  /// Compute the cost of the bandwidth parameter
+  /**
+  @param[in] bandwidth The bandwidth function evaluated at each sample
+  @param[in] epsilon The proposed bandwidth parameter
+  \return The bandwidth cost
+  */
+  double BandwidthParameterCost(Eigen::VectorXd const& bandwidth, double const epsilon) const;
+
+protected:
+
+  /// The number of <tt>openMP</tt> threads available to this object.
+  const std::size_t numThreads;
+
 private:
 
   /// Create a sample collection by sampling a random variable
@@ -153,7 +189,13 @@ private:
   @param[in] rv The random variable that we wish to sample
   @param[in] n Sample the random variable \f$n\f$ times
   */
-  static std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> SampleRandomVariable(std::shared_ptr<muq::Modeling::RandomVariable> const& rv, std::size_t const n);
+  static std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> BuildSamples(std::shared_ptr<muq::Modeling::RandomVariable> const& rv, std::size_t const n);
+
+  /// Create a sample collection using a matrix
+  /**
+  @param[in] mat Each column is a sample from the underlying distribution \f$\psi\f$
+  */
+  static std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> BuildSamples(Eigen::MatrixXd const& mat);
 
   /// Initialize the sample graph object
   /**
@@ -232,9 +274,6 @@ private:
 
   /// Samples from the distribution \f$\psi\f$
   std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> samples;
-
-  /// The number of <tt>openMP</tt> threads available to this object.
-  const std::size_t numThreads;
 
   /// Options for the bandwidth optimization
   boost::property_tree::ptree bandwidthOptimizationOptions;

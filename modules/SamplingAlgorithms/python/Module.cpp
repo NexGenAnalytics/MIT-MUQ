@@ -16,4 +16,6 @@ PYBIND11_MODULE(pymuqSamplingAlgorithms, m) {
     ProblemWrapper(m);
     SampleGraphWrapper(m);
     DensityEstimationWrapper(m);
+    KolmogorovOperatorWrapper(m);
+    
 }

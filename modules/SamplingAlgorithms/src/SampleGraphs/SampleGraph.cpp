@@ -12,7 +12,7 @@ using namespace muq::Optimization;
 using namespace muq::SamplingAlgorithms;
 
 SampleGraph::SampleGraph(std::shared_ptr<RandomVariable> const& rv, pt::ptree const& options) :
-samples(SampleRandomVariable(rv, options.get<std::size_t>("NumSamples"))),
+samples(BuildSamples(rv, options.get<std::size_t>("NumSamples"))),
 numThreads(options.get<std::size_t>("NumThreads", 1))
 {
   Initialize(options);
@@ -20,6 +20,13 @@ numThreads(options.get<std::size_t>("NumThreads", 1))
 
 SampleGraph::SampleGraph(std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> const& samples, pt::ptree const& options) :
 samples(samples),
+numThreads(options.get<std::size_t>("NumThreads", 1))
+{
+  Initialize(options);
+}
+
+SampleGraph::SampleGraph(Eigen::MatrixXd const& mat, pt::ptree const& options) :
+samples(BuildSamples(mat)),
 numThreads(options.get<std::size_t>("NumThreads", 1))
 {
   Initialize(options);
@@ -52,25 +59,31 @@ void SampleGraph::Initialize(pt::ptree const& options) {
 
   // set the defaults for the bandwidth parameter optimization
   if( auto opts = options.get_child_optional("BandwidthCostOptimization") ) { bandwidthOptimizationOptions = *opts; }
-  bandwidthOptimizationOptions.put("StepSize", bandwidthOptimizationOptions.get<double>("StepSize", 0.1));
-  bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-1));
-  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-2));
-  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-2));
-  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-2));
-  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-2));
+  bandwidthOptimizationOptions.put("StepSize", bandwidthOptimizationOptions.get<double>("StepSize", 1.0));
+  bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-4));
+  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-6));
+  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-6));
+  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-6));
+  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-6));
   bandwidthOptimizationOptions.put("MaxEvaluations", bandwidthOptimizationOptions.get<std::size_t>("MaxEvaluations", 10000));
-  bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "LBFGS"));
+  bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "SBPLX"));
   bandwidthOptimizationOptions.put("Minimize", false);
 }
 
-std::shared_ptr<SampleCollection> SampleGraph::SampleRandomVariable(std::shared_ptr<RandomVariable> const& rv, std::size_t const n) {
+std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> SampleGraph::BuildSamples(Eigen::MatrixXd const& mat) {
+  auto samples = std::make_shared<SampleCollection>();
+  for( std::size_t i=0; i<mat.cols(); ++i ) { samples->Add(std::make_shared<SamplingState>(mat.col(i))); }
+  return samples;
+}
+
+std::shared_ptr<SampleCollection> SampleGraph::BuildSamples(std::shared_ptr<RandomVariable> const& rv, std::size_t const n) {
   auto samples = std::make_shared<SampleCollection>();
   for( std::size_t i=0; i<n; ++i ) { samples->Add(std::make_shared<SamplingState>(rv->Sample())); }
   return samples;
 }
 
 void SampleGraph::BuildKDTrees(Eigen::VectorXd const& bandwidth) const {
-  std::sort(indices.begin(), indices.end(), [&bandwidth](std::size_t const i, std::size_t const j) { return bandwidth(i)>bandwidth(j); });
+  //std::sort(indices.begin(), indices.end(), [&bandwidth](std::size_t const i, std::size_t const j) { return bandwidth(i)>bandwidth(j); });
 
   BuildKDTrees();
 }
@@ -146,15 +159,18 @@ void SampleGraph::FindNeighbors(Eigen::VectorXd const& point, std::size_t const 
   neighbors.erase(it, neighbors.end());
 }
 
-double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const {
+double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t k) const {
   // find the k nearest neighbors
   std::vector<std::pair<std::size_t, double> > neighbors;
   FindNeighbors(x, k, neighbors);
 
   // return the sum of the squared distance
   double sum = 0.0;
-  std::for_each(neighbors.begin(), neighbors.end(), [&sum] (std::pair<std::size_t, double> const& it) { sum += it.second; } );
-  return sum;
+  for( const auto& neigh : neighbors ) {
+    if( neigh.second<1.0e-12 ) { --k; }
+    sum += neigh.second;
+  }
+  return sum/k;
 }
 
 Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::Ref<Eigen::MatrixXd> kernel) const {
@@ -162,7 +178,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::Vect
   assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
 
   // compute the squared bandwidth paramter
-  bandwidthParameter *= bandwidthParameter;
+  //bandwidthParameter *= bandwidthParameter;
 
   #pragma omp parallel for num_threads(numThreads)
   for( std::size_t i=0; i<samples->size(); ++i ) {
@@ -176,13 +192,12 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::Vect
   return kernel.rowwise().sum();
 }
 
-Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel, bool const rebuildTrees) const {
+Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, std::vector<Eigen::Triplet<double> >& entries, bool const rebuildTrees) const {
   assert(sparsityTol<1.0);
   assert(bandwidth.size()==NumSamples());
-  assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
 
   // compute the squared bandwidth paramter
-  bandwidthParameter *= bandwidthParameter;
+  //bandwidthParameter *= bandwidthParameter;
 
   // re build the kd trees based on the bandwidth ordering
   if( rebuildTrees ) { BuildKDTrees(bandwidth); }
@@ -191,7 +206,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
   const std::size_t n = samples->size();
 
   // compute the entries to the kernel matrix
-  std::vector<Eigen::Triplet<double> > entries;
+  entries.clear();
   #pragma omp parallel num_threads(numThreads)
   {
     std::vector<Eigen::Triplet<double> > entries_private;
@@ -200,8 +215,11 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
     for( std::size_t i=0; i<n; ++i ) {
       const std::size_t ind = indices[i];
 
+      assert(ind==i);
+
       // we need to find neighbors within this distnace
-      double neighDist = bandwidth(ind);
+      //double neighDist = bandwidth(ind);
+      double neighDist = bandwidth.maxCoeff();
       neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
       assert(neighDist>0.0);
 
@@ -225,11 +243,22 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
     #pragma omp critical
     entries.insert(entries.end(), std::make_move_iterator(entries_private.begin()), std::make_move_iterator(entries_private.end()));
   }
-  kernel.setFromTriplets(entries.begin(), entries.end());
 
   // the sum of each row in the kernel matrix
   Eigen::VectorXd rowsum = Eigen::VectorXd::Zero(n);
   for( const auto& entry : entries ) { rowsum(entry.row()) += entry.value(); }
+
+  return rowsum;
+}
+
+
+Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::SparseMatrix<double>& kernel, bool const rebuildTrees) const {
+  assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
+
+  // compute the triplets
+  std::vector<Eigen::Triplet<double> > entries;
+  const Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, bandwidthParameter, bandwidth, entries, rebuildTrees);
+  kernel.setFromTriplets(entries.begin(), entries.end());
 
   return rowsum;
 }
@@ -248,11 +277,18 @@ std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const
   auto opt = std::make_shared<NLoptOptimizer>(cost, bandwidthOptimizationOptions);
 
   // the initial condition for the optimization is the current parameter value
-  const std::vector<Eigen::VectorXd> inputs(1, Eigen::VectorXd::Constant(1, std::log2(epsilon*epsilon)));
+  const std::vector<Eigen::VectorXd> inputs(1, Eigen::VectorXd::Constant(1, std::log2(epsilon)));
 
   // solve the optimization and update the parameters
   std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);
-  return std::pair<double, double>(std::sqrt(std::pow(2.0, soln.first(0))), soln.second);
+  return std::pair<double, double>(std::pow(2.0, soln.first(0)), soln.second);
+}
+
+double SampleGraph::BandwidthParameterCost(Eigen::VectorXd const& bandwidth, double const epsilon) const {
+  BuildKDTrees(bandwidth);
+
+  auto cost = std::make_shared<KernelBandwidthCostFunction>(shared_from_this(), bandwidth, bandwidthOptimizationOptions);
+  return cost->BandwidthCost(log2(epsilon*epsilon));
 }
 
 SampleGraph::Cloud::Cloud(std::shared_ptr<const muq::SamplingAlgorithms::SampleCollection> const& samples, std::vector<std::size_t> const& indices, std::size_t const lag) :

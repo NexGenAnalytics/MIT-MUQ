@@ -42,6 +42,23 @@ public:
     return samples;
   }
 
+  /// Create the nearest neighbor searcher from a matrix of samples
+  /**
+  \return The sample matrix
+  */
+  inline Eigen::MatrixXd CreateFromMatrix() {
+    // add random samples into a sample collection
+    Eigen::MatrixXd samples(dim, n);
+    assert(rv);
+    for( std::size_t i=0; i<n; ++i ) { samples.col(i) = rv->Sample(); }
+
+    // create the graph laplacian
+    density = std::make_shared<DensityEstimation>(samples, options);
+
+    // return the samples
+    return samples;
+  }
+
   /// Make sure everything is constructed correctly
   virtual void TearDown() override {
     EXPECT_TRUE(density);
@@ -125,6 +142,62 @@ TEST_F(DensityEstimationTests, SampleCollectionConstruction) {
 
   // check to make sure the samples match
   for( std::size_t i=0; i<n; ++i ) { EXPECT_NEAR((samples->at(i)->state[0]-density->Point(i)).norm(), 0.0, 1.0e-10); }
+
+  // choose a random point
+  const Eigen::VectorXd x = rv->Sample();
+
+  // find the nearest neighbors to the point
+  {
+    const double radius = 0.1;
+    std::vector<std::pair<std::size_t, double> > neighbors;
+    density->FindNeighbors(x, radius*radius, neighbors);
+    for( const auto& neigh : neighbors ) {
+      EXPECT_TRUE(neigh.first<n);
+      EXPECT_TRUE(neigh.second<radius*radius);
+    }
+  }
+
+  // find the nearest neighbors to the point with lag
+  for( std::size_t lag=0; lag<n; lag+=10 ) {
+    const double radius = 1.0;
+    std::vector<std::pair<std::size_t, double> > neighbors;
+    density->FindNeighbors(x, radius*radius, neighbors, lag);
+    for( const auto& neigh : neighbors ) {
+      EXPECT_TRUE(neigh.first>=lag);
+      EXPECT_TRUE(neigh.first<n);
+      EXPECT_TRUE(neigh.second<radius*radius);
+    }
+  }
+
+  // find the nearest neighbors to the point
+  {
+    const std::size_t k = 10;
+    std::vector<std::pair<std::size_t, double> > neighbors;
+    density->FindNeighbors(x, k, neighbors);
+    EXPECT_EQ(neighbors.size(), k);
+    for( const auto& neigh : neighbors ) {
+      EXPECT_TRUE(neigh.first<n);
+    }
+  }
+
+  // find the nearest neighbors to the point with lag
+  for( std::size_t lag=0; lag<n; lag+=10 ) {
+    const std::size_t k = 10;
+    std::vector<std::pair<std::size_t, double> > neighbors;
+    density->FindNeighbors(x, k, neighbors, lag);
+    EXPECT_TRUE(neighbors.size()<=k);
+    for( const auto& neigh : neighbors ) {
+      EXPECT_TRUE(neigh.first>=lag);
+      EXPECT_TRUE(neigh.first<n);
+    }
+  }
+}
+
+TEST_F(DensityEstimationTests, MatrixConstruction) {
+  const Eigen::MatrixXd samples = CreateFromMatrix();
+
+  // check to make sure the samples match
+  for( std::size_t i=0; i<n; ++i ) { EXPECT_NEAR((samples.col(i)-density->Point(i)).norm(), 0.0, 1.0e-10); }
 
   // choose a random point
   const Eigen::VectorXd x = rv->Sample();

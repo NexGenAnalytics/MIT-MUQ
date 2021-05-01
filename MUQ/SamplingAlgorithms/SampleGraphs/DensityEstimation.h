@@ -19,19 +19,26 @@ Parameter Key | Type | Default Value | Description |
 class DensityEstimation : public SampleGraph {
 public:
 
-  /// Construct the sample graph by sampling a random variable from \f$\psi\f$
+  /// Construct the density estimation by sampling a random variable from \f$\psi\f$
   /**
   @param[in] rv The random variable that we wish to sample
   @param[in] options Setup options
   */
   DensityEstimation(std::shared_ptr<muq::Modeling::RandomVariable> const& rv, boost::property_tree::ptree const& options);
 
-  /// Construct the sample graph given samples from the underlying distribution \f$\psi\f$
+  /// Construct the density estimation given samples from the underlying distribution \f$\psi\f$
   /**
   @param[in] samples Samples from the underlying distribution \f$\psi\f$
   @param[in] options Setup options
   */
   DensityEstimation(std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> const& samples, boost::property_tree::ptree const& options);
+
+  /// Construct the density estimation given samples from the underlying distribution \f$\psi\f$
+  /**
+  @param[in] mat Each column is a sample from the underlying distribution \f$\psi\f$
+  @param[in] options Setup options
+  */
+  DensityEstimation(Eigen::MatrixXd const& mat, boost::property_tree::ptree const& options);
 
   virtual ~DensityEstimation() = default;
 

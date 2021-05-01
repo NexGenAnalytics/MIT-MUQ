@@ -15,6 +15,6 @@ using namespace muq::SamplingAlgorithms;
 void muq::SamplingAlgorithms::PythonBindings::DensityEstimationWrapper(py::module& m) {
   py::class_<DensityEstimation, SampleGraph, std::shared_ptr<DensityEstimation> > densEstimation(m, "DensityEstimation");
   densEstimation.def(py::init( [](std::shared_ptr<RandomVariable> const& rv, py::dict const& d) { return new DensityEstimation(rv, ConvertDictToPtree(d)); } ));
-  //densEstimation.def(py::init( [](std::shared_ptr<SampleCollection> const& samples, py::dict const& d) { return new DensityEstimation(samples, ConvertDictToPtree(d)); } ));
-  densEstimation.def("EstimateDensity", &DensityEstimation::EstimateDensity, "Estimate the probability density function.", py::arg("epsilon") = 1.0, py::arg("tune") = true);
+  densEstimation.def(py::init( [](Eigen::MatrixXd const& mat, py::dict const& d) { return new DensityEstimation(mat, ConvertDictToPtree(d)); } ));
+  densEstimation.def("EstimateDensity", &DensityEstimation::EstimateDensity, "Estimate the probability density function.", py::arg("epsilon") = std::numeric_limits<double>::quiet_NaN(), py::arg("tune") = true);
 }

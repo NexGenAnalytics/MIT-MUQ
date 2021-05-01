@@ -14,7 +14,8 @@ namespace muq{
       void ProblemWrapper(pybind11::module &m);
       void SampleGraphWrapper(pybind11::module &m);
       void DensityEstimationWrapper(pybind11::module &m);
-      
+      void KolmogorovOperatorWrapper(pybind11::module &m);
+
     }
   }
 }

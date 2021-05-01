@@ -8,7 +8,7 @@ DensityEstimation::DensityEstimation(std::shared_ptr<RandomVariable> const& rv, 
 SampleGraph(rv, options),
 manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
 numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
-sparsityTol(options.get<double>("SparsityTolerance", 0.1)),
+sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
 tuneDimension(options.get<bool>("TuneDimension", false))
 {}
 
@@ -16,7 +16,15 @@ DensityEstimation::DensityEstimation(std::shared_ptr<SampleCollection> const& sa
 SampleGraph(samples, options),
 manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
 numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
-sparsityTol(options.get<double>("SparsityTolerance", 0.1)),
+sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
+tuneDimension(options.get<bool>("TuneDimension", false))
+{}
+
+DensityEstimation::DensityEstimation(Eigen::MatrixXd const& mat, pt::ptree const& options) :
+SampleGraph(mat, options),
+manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
+numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
+sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
 tuneDimension(options.get<bool>("TuneDimension", false))
 {}
 
@@ -43,8 +51,8 @@ Eigen::VectorXd DensityEstimation::EstimateDensity(double epsilon, bool const tu
   KernelMatrix(sparsityTol, epsilon, bandwidth, kernel, !tune);
 
   // comptue the normalization (store it in the bandwidth vector since we don't need it anymore)
-  for( std::size_t i=0; i<NumSamples(); ++i ) { bandwidth(i) = NumSamples()*std::pow(M_PI*epsilon*epsilon*bandwidth(i)*bandwidth(i), manifoldDim/2.0); }
+  for( std::size_t i=0; i<NumSamples(); ++i ) { bandwidth(i) = NumSamples()*std::pow(M_PI*epsilon*bandwidth(i)*bandwidth(i), manifoldDim/2.0); }
 
   // compute the density estimate
-  return bandwidth.array().inverse().matrix().asDiagonal()*kernel*Eigen::VectorXd::Ones(NumSamples());
+  return kernel*bandwidth.array().inverse().matrix();
 }
