@@ -72,24 +72,51 @@ void KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, double
   Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, epsilon, scaledDens, entries, !tune);
   similarity = rowsum.array()/scaledDens.array().pow(beta*manifoldDim);
 
-  //std::cout << similarity.transpose() << std::endl;
+  /*{
+    Eigen::SparseMatrix<double> kernel(NumSamples(), NumSamples());
+    //matrix.resize(NumSamples(), NumSamples());
+    //matrix.setZero();
+    kernel.setFromTriplets(entries.begin(), entries.end());
+
+    Eigen::MatrixXd mat(kernel);
+    std::cout << mat << std::endl;
+  }*/
+
+  //std::cout << "rowsum: " << rowsum.transpose() << std::endl;
+  //std::cout << "similarity: " << similarity.transpose() << std::endl;
 
   // loop through the non-zeros
-  #pragma omp parallel num_threads(numThreads)
-  for( auto& entry : entries ) { entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()/std::pow(similarity(entry.row())*similarity(entry.col()), alpha)); }
+  //#pragma omp parallel num_threads(numThreads)
+  for( auto& entry : entries ) {
+    //std::cout << entry.value() << std::endl;
+    entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()/std::pow(similarity(entry.row())*similarity(entry.col()), alpha));
+    //std::cout << entry.value() << std::endl;
+    //std::cout << std::endl;
+  }
 
   Eigen::SparseMatrix<double> kernel(NumSamples(), NumSamples());
   //matrix.resize(NumSamples(), NumSamples());
   //matrix.setZero();
   kernel.setFromTriplets(entries.begin(), entries.end());
 
+  //Eigen::MatrixXd mat(kernel);
+  //std::cout << mat << std::endl;
+
   // recompute the normalization (in the bandwidth vector)
   rowsum = Eigen::VectorXd::Zero(NumSamples());
   for( const auto& entry : entries ) { rowsum(entry.row()) += entry.value(); }
 
+  //std::cout << "rowsum: " << rowsum.transpose() << std::endl;
+
+  //std::cout << "scaled density: " << scaledDens.transpose() << std::endl;
+
   similarity = scaledDens.array()*rowsum.array().sqrt();
   rowsum = similarity.array().inverse(); // hold the inverse for computational efficiency
   //matrix = (scaledDens.array()*scaledDens.array()).inverse().matrix().asDiagonal();
+
+  std::cout << "similarity: " << similarity.transpose() << std::endl;
+  //std::cout << rowsum.transpose() << std::endl;
+
 
   //std::cout << rowsum.transpose() << std::endl;
 

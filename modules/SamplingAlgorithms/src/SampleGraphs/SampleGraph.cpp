@@ -83,7 +83,7 @@ std::shared_ptr<SampleCollection> SampleGraph::BuildSamples(std::shared_ptr<Rand
 }
 
 void SampleGraph::BuildKDTrees(Eigen::VectorXd const& bandwidth) const {
-  //std::sort(indices.begin(), indices.end(), [&bandwidth](std::size_t const i, std::size_t const j) { return bandwidth(i)>bandwidth(j); });
+  std::sort(indices.begin(), indices.end(), [&bandwidth](std::size_t const i, std::size_t const j) { return bandwidth(i)>bandwidth(j); });
 
   BuildKDTrees();
 }
@@ -215,11 +215,11 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
     for( std::size_t i=0; i<n; ++i ) {
       const std::size_t ind = indices[i];
 
-      assert(ind==i);
+      //assert(ind==i);
 
       // we need to find neighbors within this distnace
-      //double neighDist = bandwidth(ind);
-      double neighDist = bandwidth.maxCoeff();
+      double neighDist = bandwidth(ind);
+      //double neighDist = bandwidth.maxCoeff();
       neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
       assert(neighDist>0.0);
 
