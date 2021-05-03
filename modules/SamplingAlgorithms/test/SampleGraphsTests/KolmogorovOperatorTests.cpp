@@ -267,5 +267,14 @@ TEST_F(KolmogorovOperatorTests, DiscreteOperatorComputation) {
   }*/
 
   std::cout << "computing eigen decomp" << std::endl;
-  kolmogorov->Eigendecomposition(psi, 5.0e-2, true);
+  Eigen::VectorXd similarity, eigvals;
+  Eigen::MatrixXd eigvecs;
+  std::tie(similarity, eigvals, eigvecs) = kolmogorov->Eigendecomposition(psi, 5.0e-2, true);
+
+  Eigen::VectorXd u(kolmogorov->NumSamples());
+  for( std::size_t i=0; i<kolmogorov->NumSamples(); ++i ) { u(i) = kolmogorov->Point(i) (0); }
+
+  const Eigen::MatrixXd grad = kolmogorov->GradientVectorField(eigvals, eigvecs, u);
+
+  std::cout << std::endl << std::endl << grad << std::endl << std::endl;
 }

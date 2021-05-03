@@ -129,7 +129,6 @@ void KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, double
   matrix = rowsum.asDiagonal()*kernel*rowsum.asDiagonal();
   matrix -= (scaledDens.array()*scaledDens.array()).inverse().matrix().asDiagonal();
   matrix /= epsilon/4.0;
-  //matrix /= epsilon;
 }
 
 #include <Eigen/Eigenvalues>
@@ -165,5 +164,56 @@ std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd> KolmogorovOperator
   //Eigen::MatrixXd mat(matrix);
   //std::cout << mat.eigenvalues() << std::endl;
 
+  assert(similarity.size()==eigsolver.eigenvectors().rows());
+
   return std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd>(similarity, eigsolver.eigenvalues(), eigsolver.eigenvectors());
+}
+
+Eigen::MatrixXd KolmogorovOperator::GradientVectorField(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1) const {
+  const std::size_t n = NumSamples();
+  assert(n>0);
+  const std::size_t dim = Point(0).size();
+
+  Eigen::MatrixXd v(n, dim);
+  for( std::size_t i=0; i<n; ++i ) { v.row(i) = Point(i); }
+
+  return GradientVectorInnerProduct(eigvals, eigvecs, func1, v);
+}
+
+Eigen::MatrixXd KolmogorovOperator::GradientVectorInnerProduct(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1, Eigen::MatrixXd const& func2) const {
+  assert(eigvecs.rows()==func1.size());
+  assert(eigvecs.rows()==func2.rows());
+  assert(eigvecs.cols()==eigvals.size());
+  assert(eigvals.size()==neigs);
+
+  const Eigen::MatrixXd eigvecsRight = similarity.array().inverse().matrix().asDiagonal()*eigvecs;
+  const Eigen::MatrixXd eigvecsLeft = similarity.asDiagonal()*eigvecs;
+
+  // compute the coefficients for the functions
+  const Eigen::VectorXd ucoeff = eigvecsLeft.transpose()*func1;
+  const Eigen::MatrixXd vcoeff = eigvecsLeft.transpose()*func2;
+
+  // compute the coordinate coefficients
+  const std::size_t n = NumSamples();
+  Eigen::MatrixXd gradient = Eigen::MatrixXd::Zero(n, func2.cols());
+  for( std::size_t j=0; j<neigs; ++j ) {
+    for( std::size_t k=j; k<neigs; ++k ) {
+      const Eigen::VectorXd phijk = eigvecsRight.col(j).array()*eigvecsRight.col(k).array();
+      assert(phijk.size()==n);
+      for( std::size_t l=0; l<neigs; ++l ) {
+        const double Cjkl = phijk.dot(eigvecsLeft.col(l))/2.0;
+        const double scale = Cjkl*(eigvals(l)-eigvals(k)-eigvals(j));
+        const double scalej = ucoeff(j)*scale;
+
+        for( std::size_t col=0; col<gradient.cols(); ++col ) { gradient.col(col) += (scalej*vcoeff(k, col))*eigvecsRight.col(l); }
+
+        if( j!=k ) {
+          const double scalek = ucoeff(k)*scale;
+          for( std::size_t col=0; col<gradient.cols(); ++col ) { gradient.col(col) += (scalek*vcoeff(j, col))*eigvecsRight.col(l); }
+        }
+      }
+    }
+  }
+
+  return gradient;
 }

@@ -53,6 +53,7 @@ public:
   @param[in] density The density \f$\psi\f$ evaluated at each sample
   @param[in] epsilonOperator The bandwidth parameter for the operator estimation. If we use the automatic tuning, then this is the initial guess for the optimizer.
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
+  \return First: The similarity transformation between \f$\hat{L}\f$ and \f$L\f$, Second: The eigenvalues of the discrete Kolmogorov operator, Third: The eigenvectors of the discrete Kolmogorov operator
   */
   std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd> Eigendecomposition(Eigen::VectorXd const& density, double epsilonOperator = std::numeric_limits<double>::quiet_NaN(), bool const tune = true);
 
@@ -63,6 +64,25 @@ public:
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
   */
   void DiscreteOperator(Eigen::VectorXd const& density, double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true);
+
+  /// Compute the the inner product between gradient vector fields
+  /**
+  @param[in] eigvals The eigenvalues of the discrete Kolmogorov operator
+  @param[in] eigvecs The eigenvectors of the discrete Kolmogorov operator
+  @param[in] func1 A function \f$u\f$ evaluated at each sample
+  @param[in] func2 The \f$j^{th}\f$ column is a function \f$v_j\f$ evaluated at each sample
+  \return The \f$j^{th}\f$ column is the field \f$\nabla u \cdot \nabla v_j\f$ evaluated at each sample
+  */
+  Eigen::MatrixXd GradientVectorInnerProduct(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1, Eigen::MatrixXd const& func2) const;
+
+  /// Compute the the inner product between gradient vector fields
+  /**
+  @param[in] eigvals The eigenvalues of the discrete Kolmogorov operator
+  @param[in] eigvecs The eigenvectors of the discrete Kolmogorov operator
+  @param[in] func1 A function \f$u\f$ evaluated at each sample
+  \return Each row is the graident \f$\nabla u\f$ evaluated at a sample
+  */
+  Eigen::MatrixXd GradientVectorField(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1) const;
 
   /// The variable bandwidth parameter \f$\beta\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
   const double beta;
@@ -81,13 +101,13 @@ private:
   /// The bandwidth tuning parameter for the operator estimation problem
   mutable double operatorBandwidthParameter = 1.0e-1;
 
-  /// A sparse matrix to store the discrete Kolmogorov operator
+  /// A sparse matrix to store the discrete Kolmogorov operator \f$\hat{L}\f$ (which is related to \f$L\f$ by a similarity transformation)
   /**
   This matrix is actually \f$\hat{L}\f$, a symmetric matrix that is related to the discrete Kolmogorov operator by a similarity transformation \f$L = S \hat{L} S^{-1}\f$ (\f$S\f$ is diagonal).
   */
   Eigen::SparseMatrix<double> matrix;
 
-  /// The diagonal of the matrix that relates the symmetric matrix \f$\hat{L}\f$ to the discrete Kolmogorov operator \f$L\f$
+  /// The similarity transformation between \f$\hat{L}\f$ and \f$L\f$
   Eigen::VectorXd similarity;
 };
 
