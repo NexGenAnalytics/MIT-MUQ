@@ -71,7 +71,7 @@ public:
   const std::size_t dim = 2;
 
   /// The number of samples
-  const std::size_t n = 5000;
+  const std::size_t n = 1000;
 
   /// The options for the graph Laplacian
   pt::ptree options;
@@ -253,30 +253,16 @@ TEST_F(KolmogorovOperatorTests, DiscreteOperatorComputation) {
   kolmogorov = std::make_shared<KolmogorovOperator>(rv, options);
 
   // estimate the density function
-  const Eigen::VectorXd psi = kolmogorov->EstimateDensity(1.0, false);
+  const Eigen::VectorXd psi = kolmogorov->EstimateDensity();
 
-  //kolmogorov->DiscreteOperator(5.0e-2, 1.0, false);
-  //EXPECT_EQ(Lhat.rows(), kolmogorov->NumSamples());
-  //EXPECT_EQ(Lhat.cols(), kolmogorov->NumSamples());
-
-  // make sure the matrix is symmetric
-  /*for( std::size_t i=0; i<kolmogorov->NumSamples(); ++i ) {
-    for( std::size_t j=0; j<kolmogorov->NumSamples(); ++j ) {
-      EXPECT_NEAR(Lhat.coeff(i, j), Lhat.coeff(j, i), 1.0e-10);
-    }
-  }*/
-
-  std::cout << "computing eigen decomp" << std::endl;
+  // compute the kolmogorov eigen decomposition
   Eigen::VectorXd similarity, eigvals;
   Eigen::MatrixXd eigvecs;
-  std::tie(similarity, eigvals, eigvecs) = kolmogorov->Eigendecomposition(psi, 5.0e-2, true);
+  std::tie(similarity, eigvals, eigvecs) = kolmogorov->Eigendecomposition(psi);
+  EXPECT_EQ(similarity.size(), n);
+  EXPECT_EQ(eigvecs.rows(), n);
+  EXPECT_EQ(eigvals.size(), eigvecs.cols());
+  EXPECT_NEAR(eigvals(0), 0.0, 1.0e-10);
+  for( std::size_t i=1; i<eigvals.size(); ++i ) { EXPECT_TRUE(eigvals(i)<0.0); }
 
-  Eigen::VectorXd u(kolmogorov->NumSamples());
-  for( std::size_t i=0; i<kolmogorov->NumSamples(); ++i ) { u(i) = kolmogorov->Point(i) (0); }
-
-  const Eigen::MatrixXd grad = kolmogorov->GradientVectorField(similarity, eigvals, eigvecs, u);
-
-  const Eigen::VectorXd soln = kolmogorov->KolmogorovProblemSolution(similarity, eigvals, eigvecs, u);
-
-  std::cout << std::endl << std::endl << grad << std::endl << std::endl;
 }

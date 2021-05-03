@@ -15,6 +15,11 @@ Let \f$\Omega \subseteq \mathbb{R}^{m}\f$ be a smooth, \f$d\f$-dimensional Riema
 \f}
 where \f$\Delta\f$ and \f$\nabla\f$ denote the Laplacian and gradient operators, respectively, and the dot operator \f$\cdot\f$ denotes the Riemannian inner product between tangent vectors on \f$\Omega\f$.
 
+References:
+- <a href="https://www.sciencedirect.com/science/article/pii/S1063520315000020">"Variable bandwidth diffusion kernels" by T. Berry & J. Harlim</a>
+- <a href="https://www.sciencedirect.com/science/article/pii/S1063520317300982">"Data-driven spectral decomposition and forecasting of ergodic dynamical systems" by D. Giannakis</a>
+- <a href="https://arxiv.org/abs/2104.15124">"Graph-theoretic algorithms for Kolmogorov operators: Approximating solutions and their gradients in elliptic and parabolic problems on manifolds" by A.D. Davis & D. Giannakis</a>
+
 <B>Configuration Parameters:</B>
 Parameter Key | Type | Default Value | Description |
 ------------- | ------------- | ------------- | ------------- |

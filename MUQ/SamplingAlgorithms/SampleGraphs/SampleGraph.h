@@ -17,7 +17,14 @@ namespace SamplingAlgorithms {
 /// Given samples from a distribution, create a graph that connects nearest neighbors
 /**
 Given \f$\{x_i\}_{i=1}^{n}\f$ samples from the distribution \f$\psi\f$, this class finds the
-\f$k\f$ nearest neighbors \f$\{x_j\}_{j=1}^{k}\f$ to a given point \f$x\f$.
+\f$k\f$ nearest neighbors \f$\{x_j\}_{j=1}^{k}\f$ for each sample \f$x_i\f$. Samples are connected to their nearest neighbors, forming a sample graph.
+
+Children of this class use this graph to estimate the probability density function and differential operators.
+
+References:
+- <a href="https://www.sciencedirect.com/science/article/pii/S1063520315000020">"Variable bandwidth diffusion kernels" by T. Berry & J. Harlim</a>
+- <a href="https://www.sciencedirect.com/science/article/pii/S1063520317300982">"Data-driven spectral decomposition and forecasting of ergodic dynamical systems" by D. Giannakis</a>
+- <a href="https://arxiv.org/abs/2104.15124">"Graph-theoretic algorithms for Kolmogorov operators: Approximating solutions and their gradients in elliptic and parabolic problems on manifolds" by A.D. Davis & D. Giannakis</a>
 
 <B>Configuration Parameters:</B>
 Parameter Key | Type | Default Value | Description |
