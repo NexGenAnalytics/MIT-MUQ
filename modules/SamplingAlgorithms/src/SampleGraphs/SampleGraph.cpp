@@ -60,11 +60,11 @@ void SampleGraph::Initialize(pt::ptree const& options) {
   // set the defaults for the bandwidth parameter optimization
   if( auto opts = options.get_child_optional("BandwidthCostOptimization") ) { bandwidthOptimizationOptions = *opts; }
   bandwidthOptimizationOptions.put("StepSize", bandwidthOptimizationOptions.get<double>("StepSize", 1.0));
-  bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-4));
-  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-6));
-  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-6));
-  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-6));
-  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-6));
+  bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-1));
+  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-3));
+  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-3));
+  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-3));
+  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-3));
   bandwidthOptimizationOptions.put("MaxEvaluations", bandwidthOptimizationOptions.get<std::size_t>("MaxEvaluations", 10000));
   bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "SBPLX"));
   bandwidthOptimizationOptions.put("Minimize", false);
@@ -159,26 +159,20 @@ void SampleGraph::FindNeighbors(Eigen::VectorXd const& point, std::size_t const 
   neighbors.erase(it, neighbors.end());
 }
 
-double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t k) const {
+double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const {
   // find the k nearest neighbors
   std::vector<std::pair<std::size_t, double> > neighbors;
   FindNeighbors(x, k, neighbors);
 
   // return the sum of the squared distance
   double sum = 0.0;
-  for( const auto& neigh : neighbors ) {
-    if( neigh.second<1.0e-12 ) { --k; }
-    sum += neigh.second;
-  }
-  return sum/k;
+  for( const auto& neigh : neighbors ) { sum += neigh.second; }
+  return sum;
 }
 
 Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::VectorXd const& bandwidth, Eigen::Ref<Eigen::MatrixXd> kernel) const {
   assert(bandwidth.size()==NumSamples());
   assert(kernel.rows()==NumSamples()); assert(kernel.cols()==NumSamples());
-
-  // compute the squared bandwidth paramter
-  //bandwidthParameter *= bandwidthParameter;
 
   #pragma omp parallel for num_threads(numThreads)
   for( std::size_t i=0; i<samples->size(); ++i ) {
@@ -196,9 +190,6 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
   assert(sparsityTol<1.0);
   assert(bandwidth.size()==NumSamples());
 
-  // compute the squared bandwidth paramter
-  //bandwidthParameter *= bandwidthParameter;
-
   // re build the kd trees based on the bandwidth ordering
   if( rebuildTrees ) { BuildKDTrees(bandwidth); }
 
@@ -215,11 +206,8 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
     for( std::size_t i=0; i<n; ++i ) {
       const std::size_t ind = indices[i];
 
-      //assert(ind==i);
-
       // we need to find neighbors within this distnace
       double neighDist = bandwidth(ind);
-      //double neighDist = bandwidth.maxCoeff();
       neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
       assert(neighDist>0.0);
 

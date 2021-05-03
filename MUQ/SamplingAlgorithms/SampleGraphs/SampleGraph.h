@@ -28,10 +28,10 @@ Parameter Key | Type | Default Value | Description |
 "NumThreads"   | <tt>std::size_t</tt> | <tt>1</tt> | The number of <tt>openMP</tt> threads available to this object. |
 "BandwidthCostOptimization.StepSize"   | <tt>double</tt> | <tt>1.0</tt> | The step size parameter for the KernelBandwidthCostFunction |
 "BandwidthCostOptimization.SparsityTolerance"   | <tt>double</tt> | <tt>0.1</tt> | The sparsity tolerance for the KernelBandwidthCostFunction. Note, this can be different than the tolerance used to actually estimate the density etc. since we really just need to tune the bandwidth parameter to be "good enough". |
-"BandwidthCostOptimization.Ftol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Absolute function tolerance for the optimization. |
-"BandwidthCostOptimization.Ftol.RelativeTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Relative function tolerance for the optimization. |
-"BandwidthCostOptimization.Xtol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Absolute tolerance for the optimization. |
-"BandwidthCostOptimization.Xtol.RelativeTolerance"   | <tt>double</tt> | <tt>0.01</tt> | Relative tolerance for the optimization. |
+"BandwidthCostOptimization.Ftol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.001</tt> | Absolute function tolerance for the optimization. |
+"BandwidthCostOptimization.Ftol.RelativeTolerance"   | <tt>double</tt> | <tt>0.001</tt> | Relative function tolerance for the optimization. |
+"BandwidthCostOptimization.Xtol.AbsoluteTolerance"   | <tt>double</tt> | <tt>0.001</tt> | Absolute tolerance for the optimization. |
+"BandwidthCostOptimization.Xtol.RelativeTolerance"   | <tt>double</tt> | <tt>0.001</tt> | Relative tolerance for the optimization. |
 "BandwidthCostOptimization.MaxEvaluations"   | <tt>std::size_t</tt> | <tt>10000</tt> | The maximum number of function evaluations for the optimization. |
 "BandwidthCostOptimization.Algorithm"   | <tt>std::string</tt> | <tt>"LBFGS"</tt> | The nlopt algorithm used by the optimizers (derivatives are computed using finite difference). |
 */
@@ -112,7 +112,7 @@ public:
   @param[in] k The number of nearest neighbors (\f$k\f$)
   \return The squared bandwidth \f$b^2(x)\f$
   */
-  double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t k) const;
+  double SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const k) const;
 
   /// Compute the kernel matrix using the brute-force algorithm
   /**

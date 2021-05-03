@@ -40,136 +40,69 @@ neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())
   alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0;
 }
 
-void KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, double epsilon, bool const tune) {
+Eigen::VectorXd KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, Eigen::SparseMatrix<double>& matrix, double epsilon, bool const tune) {
+  const std::size_t n = NumSamples();
+
   // compute the bandwidth function
   const Eigen::VectorXd scaledDens = density.array().pow(beta);
-
-  //std::cout << scaledDens.transpose() << std::endl;
 
   // if not supplied, use the stored value---the scaling means that the parameter the kernel requries is actually 2*eps
   epsilon = (std::isnan(epsilon)? 4.0*operatorBandwidthParameter : 4.0*epsilon);
 
   // get the optimal kolmogorov bandwidth parameter
   if( tune ) {
-    std::cout << "TUNING DISCRETE OPERATOR" << std::endl;
     double dimensionEstimate;
     std::tie(epsilon, dimensionEstimate) = TuneKernelBandwidth(scaledDens, epsilon);
-    std::cout << "operator dimension estimate: " << 2.0*dimensionEstimate << std::endl;
 
     // update the stored values
     operatorBandwidthParameter = epsilon/4.0;
     if( tuneDimension ) { alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0; }
   }
 
-  std::cout << "epsilon: " << epsilon/4.0 << std::endl;
-  //std::cout << "epsilon2: " << epsilon*epsilon/4.0 << std::endl;
-  std::cout << "beta: " << beta << std::endl;
-  std::cout << "alpha: " << alpha << std::endl;
-  std::cout << "dim: " << manifoldDim << std::endl;
-
   // compute the unnormalized kernel and store the normalization in the bandwidth vector
   std::vector<Eigen::Triplet<double> > entries;
   Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, epsilon, scaledDens, entries, !tune);
-  similarity = rowsum.array()/scaledDens.array().pow(beta*manifoldDim);
-
-  /*{
-    Eigen::SparseMatrix<double> kernel(NumSamples(), NumSamples());
-    //matrix.resize(NumSamples(), NumSamples());
-    //matrix.setZero();
-    kernel.setFromTriplets(entries.begin(), entries.end());
-
-    Eigen::MatrixXd mat(kernel);
-    std::cout << mat << std::endl;
-  }*/
-
-  //std::cout << "rowsum: " << rowsum.transpose() << std::endl;
-  //std::cout << "similarity: " << similarity.transpose() << std::endl;
+  Eigen::VectorXd similarity = rowsum.array()/scaledDens.array().pow(beta*manifoldDim);
 
   // loop through the non-zeros
-  //#pragma omp parallel num_threads(numThreads)
   for( auto& entry : entries ) {
-    //std::cout << entry.value() << std::endl;
     entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()/std::pow(similarity(entry.row())*similarity(entry.col()), alpha));
-    //std::cout << entry.value() << std::endl;
-    //std::cout << std::endl;
   }
 
-  Eigen::SparseMatrix<double> kernel(NumSamples(), NumSamples());
-  //matrix.resize(NumSamples(), NumSamples());
-  //matrix.setZero();
-  kernel.setFromTriplets(entries.begin(), entries.end());
-
-  //Eigen::MatrixXd mat(kernel);
-  //std::cout << mat << std::endl;
+  matrix.resize(n, n);
+  matrix.setFromTriplets(entries.begin(), entries.end());
 
   // recompute the normalization (in the bandwidth vector)
   rowsum = Eigen::VectorXd::Zero(NumSamples());
   for( const auto& entry : entries ) { rowsum(entry.row()) += entry.value(); }
 
-  //std::cout << "rowsum: " << rowsum.transpose() << std::endl;
-
-  //std::cout << "scaled density: " << scaledDens.transpose() << std::endl;
-
   similarity = scaledDens.array()*rowsum.array().sqrt();
   rowsum = similarity.array().inverse(); // hold the inverse for computational efficiency
-  //matrix = (scaledDens.array()*scaledDens.array()).inverse().matrix().asDiagonal();
 
-  std::cout << "similarity: " << similarity.transpose() << std::endl;
-  //std::cout << rowsum.transpose() << std::endl;
-
-
-  //std::cout << rowsum.transpose() << std::endl;
-
-  //std::cout << "BANDWIDTH: " << epsilon/4.0 << std::endl;
-
-  //Eigen::MatrixXd mat(kernel);
-  //std::cout << kernel << std::endl;
-
-  //matrix = (rowsum.asDiagonal()*kernel*rowsum.asDiagonal()-matrix)/(epsilon/4.0);
-  matrix = rowsum.asDiagonal()*kernel*rowsum.asDiagonal();
+  matrix = rowsum.asDiagonal()*matrix*rowsum.asDiagonal();
   matrix -= (scaledDens.array()*scaledDens.array()).inverse().matrix().asDiagonal();
   matrix /= epsilon/4.0;
+
+  return similarity;
 }
 
-#include <Eigen/Eigenvalues>
-
 std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd> KolmogorovOperator::Eigendecomposition(Eigen::VectorXd const& density, double epsilon, bool const tune) {
-  //std::cout << density << std::endl;
-
   // compute and store the discrete Kolmogorov operator
-  DiscreteOperator(density, epsilon, tune);
-
-
-
-  //Spectra::SymEigsSolver<double, Spectra::SMALLEST_MAGN, Spectra::SparseGenMatProd<double> > eigsolverf;
-
-
-
-  //std::cout << similarity.transpose() << std::endl;
-
-  //std::cout << "neigs: " << neigs << std::endl;
+  Eigen::SparseMatrix<double> matrix;
+  const Eigen::VectorXd similarity = DiscreteOperator(density, matrix, epsilon, tune);
 
   // compute the eigen decomposition
   Spectra::SparseGenMatProd<double> matrixvec(matrix);
   Spectra::SymEigsSolver<Spectra::SparseGenMatProd<double> > eigsolver(matrixvec, neigs, std::min(10*neigs+1, NumSamples()));
   eigsolver.init();
   const std::size_t nconvergedEigs = eigsolver.compute(Spectra::SortRule::SmallestMagn, 1000, 1.0e-10);
-  std::cout << "Number of converged eigs: " << nconvergedEigs << std::endl;
-
-  std::cout << "eigs: " << eigsolver.eigenvalues().transpose() << std::endl;
-
-  std::cout << std::endl;
-  //std::cout << eigsolver.eigenvectors() << std::endl;
-
-  //Eigen::MatrixXd mat(matrix);
-  //std::cout << mat.eigenvalues() << std::endl;
 
   assert(similarity.size()==eigsolver.eigenvectors().rows());
 
   return std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::MatrixXd>(similarity, eigsolver.eigenvalues(), eigsolver.eigenvectors());
 }
 
-Eigen::MatrixXd KolmogorovOperator::GradientVectorField(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1) const {
+Eigen::MatrixXd KolmogorovOperator::GradientVectorField(Eigen::VectorXd const& similarity, Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1) const {
   const std::size_t n = NumSamples();
   assert(n>0);
   const std::size_t dim = Point(0).size();
@@ -177,10 +110,10 @@ Eigen::MatrixXd KolmogorovOperator::GradientVectorField(Eigen::VectorXd const& e
   Eigen::MatrixXd v(n, dim);
   for( std::size_t i=0; i<n; ++i ) { v.row(i) = Point(i); }
 
-  return GradientVectorInnerProduct(eigvals, eigvecs, func1, v);
+  return GradientVectorInnerProduct(similarity, eigvals, eigvecs, func1, v);
 }
 
-Eigen::MatrixXd KolmogorovOperator::GradientVectorInnerProduct(Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1, Eigen::MatrixXd const& func2) const {
+Eigen::MatrixXd KolmogorovOperator::GradientVectorInnerProduct(Eigen::VectorXd const& similarity, Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func1, Eigen::MatrixXd const& func2) const {
   assert(eigvecs.rows()==func1.size());
   assert(eigvecs.rows()==func2.rows());
   assert(eigvecs.cols()==eigvals.size());
@@ -216,4 +149,22 @@ Eigen::MatrixXd KolmogorovOperator::GradientVectorInnerProduct(Eigen::VectorXd c
   }
 
   return gradient;
+}
+
+Eigen::VectorXd KolmogorovOperator::KolmogorovProblemSolution(Eigen::VectorXd const& similarity, Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func) const {
+  assert(eigvecs.rows()==func.size());
+  assert(eigvecs.cols()==eigvals.size());
+  assert(eigvals.size()==neigs);
+
+  // compute the coefficients for the functions
+  const Eigen::VectorXd coeff = eigvecs.transpose()*similarity.asDiagonal()*func;
+  assert(coeff.size()==neigs);
+
+  // the coefficients of the solution
+  Eigen::VectorXd solnCoeff = Eigen::VectorXd::Zero(neigs);
+  for( std::size_t i=0; i<neigs; ++i ) {
+    if( std::abs(eigvals(i))>1.0e-10 ) { solnCoeff(i) = coeff(i)/eigvals(i); }
+  }
+
+  return similarity.array().inverse().matrix().asDiagonal()*eigvecs*solnCoeff;
 }

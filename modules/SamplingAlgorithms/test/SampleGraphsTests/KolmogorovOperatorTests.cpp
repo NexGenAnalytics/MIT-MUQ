@@ -274,7 +274,9 @@ TEST_F(KolmogorovOperatorTests, DiscreteOperatorComputation) {
   Eigen::VectorXd u(kolmogorov->NumSamples());
   for( std::size_t i=0; i<kolmogorov->NumSamples(); ++i ) { u(i) = kolmogorov->Point(i) (0); }
 
-  const Eigen::MatrixXd grad = kolmogorov->GradientVectorField(eigvals, eigvecs, u);
+  const Eigen::MatrixXd grad = kolmogorov->GradientVectorField(similarity, eigvals, eigvecs, u);
+
+  const Eigen::VectorXd soln = kolmogorov->KolmogorovProblemSolution(similarity, eigvals, eigvecs, u);
 
   std::cout << std::endl << std::endl << grad << std::endl << std::endl;
 }
