@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
   pt.put("Kernel1.MyProposal.AdaptSteps", 250);
   pt.put("Kernel1.MyProposal.AdaptStart", 250);
 
-  Eigen::VectorXd startPt = Eigen::VectorXd::Zero(1);
+  Eigen::VectorXd startPt = Eigen::VectorXd::Zero(modelModPiece->inputSizes[0]);
   auto mcmc = MCMCFactory::CreateSingleChain(pt, samplingProblem);
 
   mcmc->Run(startPt);
