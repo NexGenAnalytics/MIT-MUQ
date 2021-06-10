@@ -12,16 +12,6 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) # Only look for MUQ when 
 endif()
 
 
-add_executable(DockerModPiece DockerModPiece.cpp)
-target_link_libraries(DockerModPiece ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
-
-add_executable(DockerModPieceClient DockerModPieceClient.cpp)
-target_link_libraries(DockerModPieceClient ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
-
-
-add_executable(HTTPModPieceServer HTTPModPieceServer.cpp)
-target_link_libraries(HTTPModPieceServer ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
-
 add_executable(HTTPModPieceClientTest HTTPModPieceClientTest.cpp)
 target_link_libraries(HTTPModPieceClientTest ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES} ssl crypto)
 
