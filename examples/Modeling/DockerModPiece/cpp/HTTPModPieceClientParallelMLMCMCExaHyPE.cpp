@@ -54,7 +54,7 @@ public:
     pt.put("AdaptStart", 100);
     pt.put("AdaptSteps", 100);
     pt.put("AdaptEnd", 1000);
-    pt.put("InitialVariance", 100);
+    pt.put("InitialVariance", 10);
     return std::make_shared<AMProposal>(pt, samplingProblem);
 
     /*auto mu = Eigen::VectorXd::Zero(NUM_PARAM);
@@ -72,7 +72,7 @@ public:
 
   virtual std::shared_ptr<MultiIndex> FinestIndex() override {
     auto index = std::make_shared<MultiIndex>(1);
-    index->SetValue(0, 1);
+    index->SetValue(0, 2);
     return index;
   }
 
@@ -100,8 +100,8 @@ public:
   virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> const& index) override {
     //Starting guess: zero
     Eigen::VectorXd start = Eigen::VectorXd::Ones(2);
-    start(0) = 10.0;
-    start(1) = 10.0;
+    start(0) = 30.0;
+    start(1) = 30.0;
     return start;
   }
 
@@ -144,11 +144,13 @@ int main(int argc, char* argv[])
 
   pt.put("verbosity", 1); // show some output
   pt.put("MCMC.BurnIn", 50);
-  pt.put("NumSamples_0", 1e3);
-  pt.put("NumSamples_1", 1e2);
+  pt.put("NumSamples_0", 80);
+  pt.put("NumSamples_1", 40);
+  pt.put("NumSamples_3", 20);
   pt.put("MLMCMC.Scheduling", true);
-  pt.put("MLMCMC.Subsampling_0", 49);
-  pt.put("MLMCMC.Subsampling_1", 0);
+  pt.put("MLMCMC.Subsampling_0", 24);
+  pt.put("MLMCMC.Subsampling_1", 4);
+  pt.put("MLMCMC.Subsampling_2", 0);
 
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt, comm, host, bearer_token);
 

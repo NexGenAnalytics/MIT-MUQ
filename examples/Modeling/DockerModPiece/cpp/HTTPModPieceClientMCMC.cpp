@@ -49,8 +49,8 @@ int main(int argc, char* argv[])
   pt.put("Kernel1.Proposal", "MyProposal"); // Name of block defining the proposal distribution
   pt.put("Kernel1.MyProposal.Method", "AMProposal"); // Name of proposal class
   pt.put("Kernel1.MyProposal.InitialVariance", 1);
-  pt.put("Kernel1.MyProposal.AdaptSteps", 250);
-  pt.put("Kernel1.MyProposal.AdaptStart", 250);
+  pt.put("Kernel1.MyProposal.AdaptSteps", 50);
+  pt.put("Kernel1.MyProposal.AdaptStart", 50);
 
   Eigen::VectorXd startPt = Eigen::VectorXd::Zero(modelModPiece->inputSizes[0]);
   auto mcmc = MCMCFactory::CreateSingleChain(pt, samplingProblem);
