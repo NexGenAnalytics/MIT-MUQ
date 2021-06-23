@@ -28,6 +28,18 @@ sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
 tuneDimension(options.get<bool>("TuneDimension", false))
 {}
 
+double DensityEstimation::DensityBandwidthParameter() const { return densityBandwidthParameter; }
+
+void DensityEstimation::TuneDensityBandwidth() const {
+  // compute the squared bandwidth and a random point using 10 nearest neighbors
+  Eigen::VectorXd bandwidth(NumSamples());
+  for( std::size_t i=0; i<NumSamples(); ++i ) { bandwidth(i) = std::sqrt(SquaredBandwidth(Point(i), numNearestNeighbors)); }
+
+  double dimensionEstimate;
+  std::tie(densityBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(bandwidth, densityBandwidthParameter);
+  if( tuneDimension ) { manifoldDim = 2.0*dimensionEstimate; }
+}
+
 Eigen::VectorXd DensityEstimation::EstimateDensity(double epsilon, bool const tune) const {
   // compute the squared bandwidth and a random point using 10 nearest neighbors
   Eigen::VectorXd bandwidth(NumSamples());

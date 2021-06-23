@@ -70,7 +70,7 @@ public:
   @param[in] tune <tt>true</tt> (default): Tune the bandwidth parameter values; <tt>false</tt>: use the stored parameters
   \return The similarity transformation between \f$\hat{L}\f$ and \f$L\f$
   */
-  Eigen::VectorXd DiscreteOperator(Eigen::VectorXd const& density, Eigen::SparseMatrix<double>& matrix, double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true);
+  Eigen::VectorXd DiscreteOperator(Eigen::VectorXd const& density, Eigen::SparseMatrix<double>& matrix, double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true) const;
 
   /// Compute the the inner product between gradient vector fields
   /**
@@ -105,6 +105,15 @@ public:
   */
   Eigen::VectorXd KolmogorovProblemSolution(Eigen::VectorXd const& similarity, Eigen::VectorXd const& eigvals, Eigen::MatrixXd const& eigvecs, Eigen::VectorXd const& func) const;
 
+  /// Tune the density bandwidth parameter (and the parameter \f$\alpha\f$ if <tt>tuneDimension</tt> is <tt>true</tt>)
+  /**
+  @param[in] density The probability density function (or an approximation of it) evaluated at each sample
+  */
+  void TuneOperatorBandwidth(Eigen::VectorXd const& density) const;
+
+  /// The operator bandwidth parameter
+  double OperatorBandwidthParameter() const;
+
   /// The variable bandwidth parameter \f$\beta\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
   const double beta;
 
@@ -114,7 +123,7 @@ private:
   const double operatorParameter;
 
   /// The second variable bandwidth parameter \f$\alpha\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
-  double alpha;
+  mutable double alpha;
 
   /// The number of eigenpairs to compute and store
   const std::size_t neigs;

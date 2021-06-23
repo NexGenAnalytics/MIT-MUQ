@@ -65,6 +65,12 @@ public:
   */
   Eigen::VectorXd EstimateDensity(double epsilon = std::numeric_limits<double>::quiet_NaN(), bool const tune = true) const;
 
+  /// Tune the density bandwidth parameter (and the manifold dimension estimate if <tt>tuneDimension</tt> is <tt>true</tt>)
+  void TuneDensityBandwidth() const;
+
+  /// The density bandwidth parameter
+  double DensityBandwidthParameter() const;
+
 protected:
 
   /// The manifold dimension (estimated if not known)

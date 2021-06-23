@@ -40,7 +40,18 @@ neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())
   alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0;
 }
 
-Eigen::VectorXd KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, Eigen::SparseMatrix<double>& matrix, double epsilon, bool const tune) {
+double KolmogorovOperator::OperatorBandwidthParameter() const { return operatorBandwidthParameter; }
+
+void KolmogorovOperator::TuneOperatorBandwidth(Eigen::VectorXd const& density) const {
+  // compute the bandwidth function
+  const Eigen::VectorXd scaledDens = density.array().pow(beta);
+
+  double dimensionEstimate;
+  std::tie(operatorBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(scaledDens, operatorBandwidthParameter);
+  if( tuneDimension ) { alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0; }
+}
+
+Eigen::VectorXd KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& density, Eigen::SparseMatrix<double>& matrix, double epsilon, bool const tune) const {
   const std::size_t n = NumSamples();
 
   // compute the bandwidth function
