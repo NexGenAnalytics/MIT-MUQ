@@ -2,8 +2,11 @@
 
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
 #include "MUQ/SamplingAlgorithms/SamplingState.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
 #include "MUQ/Utilities/AnyHelpers.h"
+
+#include "MUQ/Utilities/PyDictConversion.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -15,6 +18,8 @@
 #include <vector>
 
 using namespace muq::SamplingAlgorithms;
+using namespace muq::Utilities;
+
 namespace py = pybind11;
 
 void PythonBindings::SampleWrapper(py::module &m)
@@ -49,7 +54,17 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("Weights", &SampleCollection::Weights)
     .def("AsMatrix", &SampleCollection::AsMatrix, py::arg("blockDim")=-1)
     .def("GetMeta", (Eigen::MatrixXd (SampleCollection::*)(std::string const&) const) &SampleCollection::GetMeta)
-    .def("WriteToFile", (void (SampleCollection::*)(std::string const&, std::string const&) const) &SampleCollection::WriteToFile, py::arg("filename"), py::arg("dataset") = "/");
+    .def("ListMeta", &SampleCollection::ListMeta, py::arg("requireAll")=true)
+    .def("WriteToFile", (void (SampleCollection::*)(std::string const&, std::string const&) const) &SampleCollection::WriteToFile, py::arg("filename"), py::arg("dataset") = "/")
+    .def("head", &SampleCollection::head)
+    .def("tail", &SampleCollection::tail)
+    .def("segment", &SampleCollection::segment, py::arg("startInd"),py::arg("length"),py::arg("skipBy")=1);
+
+  m.def_submodule("Diagnostics")
+    .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::Rhat(collections);})
+    .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
+    .def("ComputeRanks", &Diagnostics::ComputeRanks);
+
 
   py::class_<SamplingState, std::shared_ptr<SamplingState>> sampState(m, "SamplingState");
   sampState

@@ -1,5 +1,28 @@
 cmake_minimum_required (VERSION 3.10)
 
+# Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
+# Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
+IF(APPLE)
+
+	# Only run these checks is the OSX Architecture isn't already specified
+  if(NOT CMAKE_OSX_ARCHITECTURES)
+
+		# Use sysctl to detect for arm64 instructions in the hardware
+		set(ARM_TEST 0)
+	  execute_process(COMMAND sysctl hw.optional.arm64 OUTPUT_VARIABLE ARM_TEST OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+		# If arm64 is supported, set the CMAKE_OSX_ARCHITECTURES variable
+	  if(${ARM_TEST} STREQUAL "hw.optional.arm64: 1")
+	    message(STATUS "FOUND APPLE M1.  Setting architecture to ARM64")
+			set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Architecture" FORCE)
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch arm64 -arch x86_64")
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64 -arch x86_64")
+			set(BUILD_SHARED_LIBS ON)
+	  endif()
+
+	endif()
+ENDIF(APPLE)
+
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/finds)
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/checks)
@@ -8,6 +31,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/builds)
 INCLUDE(CheckCXXSourceCompiles)
 INCLUDE(CheckCXXSourceRuns)
 INCLUDE(CheckFunctionExists)
+
 
 # define the project name
 project(MUQ)
@@ -140,17 +164,20 @@ MESSAGE("${MUQ_LOG_SUMMARY}")
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
+
 	message(STATUS "To build documentation, run 'make doc'")
 
 	option(MUQDOC_INCLUDE_ANALYTICS OFF)
 	if(MUQDOC_INCLUDE_ANALYTICS)
 		message(STATUS "Will include google analytics header information in doxygen output.")
 		set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/analytics_header.html)
+	else()
+		set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/noanalytics_header.html)
 	endif()
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/documentation/muq.doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile @ONLY)
     add_custom_target(doc
-        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/documentation/scripts/doxygen_preprocessing.py ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/documentation/scripts/doxygen_preprocessing.py ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM

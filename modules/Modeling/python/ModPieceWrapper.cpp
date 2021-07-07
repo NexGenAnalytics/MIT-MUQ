@@ -9,6 +9,7 @@
 #include "MUQ/Modeling/ReplicateOperator.h"
 #include "MUQ/Modeling/SplitVector.h"
 #include "MUQ/Modeling/WorkGraph.h"
+#include "MUQ/Modeling/SumPiece.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -130,6 +131,10 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
   py::class_<ReplicateOperator, ModPiece, WorkPiece, std::shared_ptr<ReplicateOperator>> ro(m, "ReplicateOperator");
   ro
     .def(py::init<unsigned int, unsigned int>());
+
+  py::class_<SumPiece, ModPiece, WorkPiece, std::shared_ptr<SumPiece>>(m, "SumPiece")
+    .def(py::init<unsigned int, unsigned int>(), py::arg("dim"),py::arg("numInputs")=2);
+
 
   py::class_<ModGraphPiece, ModPiece, WorkPiece, std::shared_ptr<ModGraphPiece>> mgp(m, "ModGraphPiece");
   mgp

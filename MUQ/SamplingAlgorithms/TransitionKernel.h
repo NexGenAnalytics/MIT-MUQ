@@ -23,8 +23,8 @@
 namespace muq {
   namespace SamplingAlgorithms {
 
-    /** @defgroup MCMCKernels
-        @ingroup MCMC
+    /** @defgroup MCMCKernels MCMC Kernels
+        @ingroup mcmc
         @brief Transition kernels used in MCMC algorithms.
     */
 

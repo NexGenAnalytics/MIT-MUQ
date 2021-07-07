@@ -1,4 +1,5 @@
 #include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
+#include "spdlog/spdlog.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
@@ -25,9 +26,11 @@ namespace muq {
     }
 
     std::shared_ptr<SampleCollection> GreedyMLMCMC::GetSamples() const {
+      spdlog::warn("GetSamples() called on GreedyMLMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetBox() instead to access chains.");
       return nullptr;
     }
     std::shared_ptr<SampleCollection> GreedyMLMCMC::GetQOIs() const {
+      spdlog::warn("GetQOIs() called on GreedyMLMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetBox() instead to access chains.");
       return nullptr;
     }
 

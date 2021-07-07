@@ -113,3 +113,16 @@ double MarkovChain::SingleComponentESS(Eigen::Ref<const Eigen::VectorXd> const& 
   frac = fmin(1.0, frac);
   return size * frac;
 }
+
+
+std::shared_ptr<SampleCollection> MarkovChain::segment(unsigned int startInd, unsigned int length, unsigned int skipBy) const
+{
+  assert(startInd<size());
+  assert(startInd+length<=size());
+
+  std::shared_ptr<SampleCollection> output = std::make_shared<MarkovChain>();
+  for(unsigned int i=startInd; i<startInd+length; i+=skipBy)
+    output->Add(at(i));
+
+  return output;
+}

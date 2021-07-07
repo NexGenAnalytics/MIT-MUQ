@@ -9,13 +9,43 @@ On Linux or OSX, there are three primary ways of installing MUQ:
  3. Installing MUQ from source. (See \subpage source_install )
 
 
-# Conda
+## Conda
 A conda package containing the c++ and python components of MUQ is available via conda-forge.   To install and use MUQ using conda, use
 ```
 conda install -c conda-forge muq
+```
+If using MUQ with c++, you will also need to install CMake in order to link with MUQ:
+```
+conda install -c conda-forge muq cmake
 ```
 
 You may run into conflicts when installing MUQ and Fenics with conda if they are installed one at a time.  To avoid this, we recommend installing MUQ and Fenics at the same time:
 ```
 conda install -c conda-forge muq fenics
 ```
+
+
+# Linking against MUQ in c++
+MUQ leverages CMake to configure its build.  For a C++ project building on MUQ, CMake is therefore the most natural way to link to the MUQ libraries.   Here's a minimal of example of a <code>CMakeLists.txt</code> file for linking against MUQ.
+@codeblock{cmake,CMakeLists.txt}
+cmake_minimum_required(VERSION 3.10)
+
+project(GaussianProcess_CO2)
+set(CMAKE_CXX_STANDARD 17)
+
+find_package(MUQ REQUIRED)
+include_directories(${MUQ_INCLUDE_DIRS})
+
+add_executable(my_muq_exe MyCode.cpp)
+target_link_libraries(my_muq_exe ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+@endcodeblock
+
+Compiling the <code>my_muq_exe</code> executable involves the typical CMake configure and build steps.  On the command line, this might be
+@codeblock{bash,Bash}
+mkdir build
+cd build
+cmake ..
+make
+@endcodeblock
+
+Note: On newer Macs with the Apple M1 processor, you might have to set <code>-DCMAKE_OSX_ARCHITECTURES=x86_64</code> when running cmake.

@@ -36,6 +36,12 @@ if(NOT is_config)
   set(optional_global GLOBAL)
 endif()
 
+# If not run in Python mode, we still would like this to at least
+# include pybind11's include directory:
+set(pybind11_INCLUDE_DIRS
+    "${pybind11_INCLUDE_DIR}"
+    CACHE INTERNAL "Include directory for pybind11 (Python not requested)")
+
 # --------------------- Shared targets ----------------------------
 
 # Build an interface library target:
@@ -109,28 +115,32 @@ endif()
 
 add_library(pybind11::windows_extras IMPORTED INTERFACE ${optional_global})
 
-if(MSVC)
-  # /MP enables multithreaded builds (relevant when there are many files), /bigobj is
-  # needed for bigger binding projects due to the limit to 64k addressable sections
+if(MSVC) # That's also clang-cl
+  # /bigobj is needed for bigger binding projects due to the limit to 64k
+  # addressable sections
   set_property(
     TARGET pybind11::windows_extras
     APPEND
     PROPERTY INTERFACE_COMPILE_OPTIONS /bigobj)
 
-  if(CMAKE_VERSION VERSION_LESS 3.11)
-    set_property(
-      TARGET pybind11::windows_extras
-      APPEND
-      PROPERTY INTERFACE_COMPILE_OPTIONS $<$<NOT:$<CONFIG:Debug>>:/MP>)
-  else()
-    # Only set these options for C++ files.  This is important so that, for
-    # instance, projects that include other types of source files like CUDA
-    # .cu files don't get these options propagated to nvcc since that would
-    # cause the build to fail.
-    set_property(
-      TARGET pybind11::windows_extras
-      APPEND
-      PROPERTY INTERFACE_COMPILE_OPTIONS $<$<NOT:$<CONFIG:Debug>>:$<$<COMPILE_LANGUAGE:CXX>:/MP>>)
+  # /MP enables multithreaded builds (relevant when there are many files) for MSVC
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") # no Clang no Intel
+    if(CMAKE_VERSION VERSION_LESS 3.11)
+      set_property(
+        TARGET pybind11::windows_extras
+        APPEND
+        PROPERTY INTERFACE_COMPILE_OPTIONS $<$<NOT:$<CONFIG:Debug>>:/MP>)
+    else()
+      # Only set these options for C++ files.  This is important so that, for
+      # instance, projects that include other types of source files like CUDA
+      # .cu files don't get these options propagated to nvcc since that would
+      # cause the build to fail.
+      set_property(
+        TARGET pybind11::windows_extras
+        APPEND
+        PROPERTY INTERFACE_COMPILE_OPTIONS
+                 $<$<NOT:$<CONFIG:Debug>>:$<$<COMPILE_LANGUAGE:CXX>:/MP>>)
+    endif()
   endif()
 endif()
 
@@ -327,7 +337,9 @@ function(_pybind11_generate_lto target prefer_thin_lto)
 
   # Enable LTO flags if found, except for Debug builds
   if(PYBIND11_LTO_CXX_FLAGS)
-    set(not_debug "$<NOT:$<CONFIG:Debug>>")
+    # CONFIG takes multiple values in CMake 3.19+, until then we have to use OR
+    set(is_debug "$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>")
+    set(not_debug "$<NOT:${is_debug}>")
     set(cxx_lang "$<COMPILE_LANGUAGE:CXX>")
     if(MSVC AND CMAKE_VERSION VERSION_LESS 3.11)
       set(genex "${not_debug}")

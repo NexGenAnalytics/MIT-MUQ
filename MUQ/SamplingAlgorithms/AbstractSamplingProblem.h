@@ -14,7 +14,8 @@ namespace muq{
 
     class SamplingState;
 
-    /** @brief Abstract base class for MCMC and Importance Sampling problems.
+    /** @class AbstractSamplingProblem
+        @brief Abstract base class for MCMC and Importance Sampling problems.
         @details Assumes we are interested in sampling some probability density
         \f$\pi(x_1, x_2, \ldots, x_N)\f$, where each input \f$x_i\f$ is a vector
         valued block.  For instance, \f$x_1\f$ could be a Gaussian random variable

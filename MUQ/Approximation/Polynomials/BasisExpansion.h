@@ -14,6 +14,7 @@ namespace muq{
     class MonotoneExpansion;
 
     /** @defgroup Polynomials
+        @ingroup polychaos
         @brief Tools for constructing multivariate (orthogonal) polynomial expansions
     */
 

@@ -31,32 +31,36 @@ int main(int argc, char **argv){
   spdlog::set_level(spdlog::level::debug);
 
   MPI_Init(&argc, &argv);
-  auto comm = std::make_shared<parcer::Communicator>();
+  auto comm = std::make_shared<parcer::Communicator>(MPI_COMM_WORLD);
 
   // Name trace according to current time stamp
   std::time_t result = std::time(nullptr);
   std::string timestamp = std::asctime(std::localtime(&result));
+  comm->Bcast(timestamp, 0);
   auto tracer = std::make_shared<OTF2Tracer>("trace", timestamp);
 
   pt::ptree pt;
-  pt.put("NumSamples_0", 1e3);
-  pt.put("NumSamples_1", 5e2);
+  pt.put("NumSamples_0", 10);
+  pt.put("NumSamples_1", 1);
   pt.put("NumSamples_2", 1e2);
-  pt.put("NumSamples_3", 1e2);
-  pt.put("MCMC.BurnIn", 100);
-  pt.put("MLMCMC.Subsampling", 10);
-  pt.put("MLMCMC.Scheduling", true);
+  pt.put("NumSamples_3", 2e1);
+  pt.put("MCMC.BurnIn", 0);
+  pt.put("MLMCMC.Scheduling", false);
+  pt.put("MLMCMC.Subsampling_0", 10);
+  pt.put("MLMCMC.Subsampling_1", 1);
+  pt.put("MLMCMC.Subsampling_2", 3);
+  pt.put("MLMCMC.Subsampling_3", 0);
 
 
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
-  StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory, std::make_shared<RoundRobinStaticLoadBalancer>(), std::make_shared<parcer::Communicator>(), tracer);
+  StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory, std::make_shared<RoundRobinStaticLoadBalancer>(), comm, tracer);
 
   if (comm->GetRank() == 0) {
     parallelMIMCMC.Run();
     Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
     std::cout << "mean QOI: " << meanQOI.transpose() << std::endl;
   }
-  parallelMIMCMC.WriteToFile("parallelMIMCMC.h5");
+  parallelMIMCMC.WriteToFile("FullParallelGaussianSampling.h5");
   parallelMIMCMC.Finalize();
   tracer->write();
 

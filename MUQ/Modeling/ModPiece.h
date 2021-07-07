@@ -149,6 +149,10 @@ namespace muq{
 
   public:
 
+    ModPiece(std::vector<int> const& inputSizes,
+             std::vector<int> const& outputSizes) : ModPiece(Eigen::Map<const Eigen::VectorXi>(&inputSizes[0],inputSizes.size()),
+                                                             Eigen::Map<const Eigen::VectorXi>(&outputSizes[0],outputSizes.size())){};
+
     ModPiece(Eigen::VectorXi const& inputSizes,
              Eigen::VectorXi const& outputSizes);
 

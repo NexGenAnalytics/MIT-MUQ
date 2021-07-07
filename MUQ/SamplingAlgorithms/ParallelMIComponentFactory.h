@@ -100,10 +100,11 @@ namespace muq {
         return componentFactory->FinestIndex();
       }
 
-      virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& index,
+      virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& fineIndex,
+                                                            std::shared_ptr<MultiIndex> const& coarseIndex,
                                                             std::shared_ptr<AbstractSamplingProblem> const& coarseProblem,
                                                             std::shared_ptr<SingleChainMCMC> const& coarseChain) override {
-        return componentFactory->CoarseProposal(index, coarseProblem, coarseChain);
+        return componentFactory->CoarseProposal(fineIndex, coarseIndex, coarseProblem, coarseChain);
       }
 
       virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> const& index) override {

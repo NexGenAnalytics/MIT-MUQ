@@ -1,4 +1,4 @@
-## MUQ Infrastructure
+\page infrastructure Developer Infrastructure Notes
 
 ### Git
 - Hosted at https://bitbucket.org/mituq/muq2
