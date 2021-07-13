@@ -1,13 +1,7 @@
 #include "MUQ/SamplingAlgorithms/InfMALAProposal.h"
 
-/*#include "MUQ/SamplingAlgorithms/SamplingProblem.h"*/
+#include "MUQ/Modeling/Distributions/Gaussian.h"
 
-/*#include "MUQ/Modeling/WorkGraph.h"*/
-/*#include "MUQ/Modeling/ModGraphPiece.h"*/
-/*#include "MUQ/Modeling/Distributions/Density.h"*/
-/*#include "MUQ/Modeling/Distributions/Gaussian.h"*/
-/*#include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"*/
-/*#include "MUQ/Modeling/WorkPiece.h"*/
 #include "MUQ/Utilities/AnyHelpers.h"
 
 using namespace muq::SamplingAlgorithms;
@@ -15,6 +9,21 @@ using namespace muq::Modeling;
 using namespace muq::Utilities;
 
 REGISTER_MCMC_PROPOSAL(InfMALAProposal)
+
+InfMALAProposal::InfMALAProposal(boost::property_tree::ptree       const& pt,
+                                 std::shared_ptr<AbstractSamplingProblem> prob) : 
+                                 MCMCProposal(pt,prob),
+                                 stepSize(pt.get("StepSize",1.0))
+{
+  rho = (4.0 - stepSize) / (4.0 + stepSize);
+  
+  unsigned int dim = prob->blockSizes(blockInd);
+  
+  const Eigen::VectorXd cov = Eigen::VectorXd::Ones(dim);
+  zDist = std::make_shared<Gaussian>(Eigen::VectorXd::Zero(dim), cov);
+}
+
+
 
 InfMALAProposal::InfMALAProposal(boost::property_tree::ptree       const& pt,
                                  std::shared_ptr<AbstractSamplingProblem> prob,

@@ -42,6 +42,10 @@ namespace muq {
     public:
 
       InfMALAProposal(boost::property_tree::ptree           const& pt,
+                      std::shared_ptr<AbstractSamplingProblem>     prob);
+
+
+      InfMALAProposal(boost::property_tree::ptree           const& pt,
                       std::shared_ptr<AbstractSamplingProblem>     prob,
                       std::shared_ptr<muq::Modeling::GaussianBase> zDistIn);
 
