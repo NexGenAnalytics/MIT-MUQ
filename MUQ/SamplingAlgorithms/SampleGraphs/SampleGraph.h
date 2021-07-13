@@ -184,6 +184,9 @@ public:
   */
   double BandwidthParameterCost(Eigen::VectorXd const& bandwidth, double const epsilon) const;
 
+  /// Reset the ordering of the indices
+  void ResetIndices();
+
 protected:
 
   /// The number of <tt>openMP</tt> threads available to this object.

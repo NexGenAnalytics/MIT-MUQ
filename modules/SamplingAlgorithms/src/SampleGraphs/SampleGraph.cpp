@@ -41,8 +41,7 @@ void SampleGraph::Initialize(pt::ptree const& options) {
   kdtrees.reserve(clouds.size());
 
   // the initial order is just however they are stored
-  indices.resize(samples->size());
-  std::iota(indices.begin(), indices.end(), 0);
+  ResetIndices();
 
   // create a bunch of point clouds
   for( std::size_t lag=0; lag<NumSamples(); lag+=stride ) {
@@ -68,6 +67,11 @@ void SampleGraph::Initialize(pt::ptree const& options) {
   bandwidthOptimizationOptions.put("MaxEvaluations", bandwidthOptimizationOptions.get<std::size_t>("MaxEvaluations", 10000));
   bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "SBPLX"));
   bandwidthOptimizationOptions.put("Minimize", false);
+}
+
+void SampleGraph::ResetIndices() {
+  indices.resize(samples->size());
+  std::iota(indices.begin(), indices.end(), 0);
 }
 
 std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> SampleGraph::BuildSamples(Eigen::MatrixXd const& mat) {
