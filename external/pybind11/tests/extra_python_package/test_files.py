@@ -25,6 +25,7 @@ main_headers = {
     "include/pybind11/embed.h",
     "include/pybind11/eval.h",
     "include/pybind11/functional.h",
+    "include/pybind11/gil.h",
     "include/pybind11/iostream.h",
     "include/pybind11/numpy.h",
     "include/pybind11/operators.h",
@@ -41,6 +42,7 @@ detail_headers = {
     "include/pybind11/detail/descr.h",
     "include/pybind11/detail/init.h",
     "include/pybind11/detail/internals.h",
+    "include/pybind11/detail/type_caster_base.h",
     "include/pybind11/detail/typeid.h",
 }
 
@@ -58,8 +60,11 @@ py_files = {
     "__init__.py",
     "__main__.py",
     "_version.py",
+    "_version.pyi",
     "commands.py",
+    "py.typed",
     "setup_helpers.py",
+    "setup_helpers.pyi",
 }
 
 headers = main_headers | detail_headers

@@ -16,8 +16,21 @@ bool SamplingState::HasMeta(std::string const& metaKey) {
 int SamplingState::TotalDim() const {
   int sum = 0;
   for(auto& s : state){
-    Eigen::VectorXd const& temp = AnyConstCast(s);
-    sum += temp.size();
+    sum += s.size();
   }
   return sum;
+}
+
+double SamplingState::StateValue(unsigned int totalInd) const
+{
+  unsigned int sum = 0;
+  for(auto& s : state){
+
+    if(totalInd < sum + s.size())
+      return s(totalInd - sum);
+
+    sum += s.size();
+  }
+
+  return std::numeric_limits<double>::quiet_NaN();
 }

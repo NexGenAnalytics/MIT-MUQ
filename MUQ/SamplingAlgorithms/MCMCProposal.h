@@ -22,6 +22,17 @@
 namespace muq {
   namespace SamplingAlgorithms {
 
+    /** @addtogroup MCMCProposals
+    @{
+
+
+    @}
+    */
+
+    /**
+    @class MCMCProposal
+    @ingroup MCMCProposals
+    */
     class MCMCProposal : public std::enable_shared_from_this<MCMCProposal> {
     public:
 

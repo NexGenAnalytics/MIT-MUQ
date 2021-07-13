@@ -9,7 +9,6 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     /**
-    @ingroup SamplingAlgorithms
     @class SamplingProblem
     @brief Class for sampling problems based purely on a density function.
     */

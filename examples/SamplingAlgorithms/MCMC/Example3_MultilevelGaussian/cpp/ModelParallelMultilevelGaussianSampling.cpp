@@ -33,7 +33,10 @@ int main(int argc, char **argv){
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
-  pt.put("MLMCMC.Subsampling", 5);
+  pt.put("MLMCMC.Subsampling_0", 8);
+  pt.put("MLMCMC.Subsampling_1", 4);
+  pt.put("MLMCMC.Subsampling_2", 2);
+  pt.put("MLMCMC.Subsampling_3", 0);
 
   auto localFactory = std::make_shared<MyMIComponentFactory>(pt);
 

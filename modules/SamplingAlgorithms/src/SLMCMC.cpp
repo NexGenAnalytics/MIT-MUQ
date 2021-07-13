@@ -31,10 +31,10 @@ namespace muq {
      : SLMCMC(pt,componentFactory, componentFactory->FinestIndex()) { }
 
     std::shared_ptr<SampleCollection> SLMCMC::GetSamples() const {
-      return nullptr;
+      return single_chain->GetSamples();
     }
     std::shared_ptr<SampleCollection> SLMCMC::GetQOIs() const {
-      return nullptr;
+      return single_chain->GetQOIs();
     }
 
     std::shared_ptr<SampleCollection> SLMCMC::RunImpl(std::vector<Eigen::VectorXd> const& x0) {

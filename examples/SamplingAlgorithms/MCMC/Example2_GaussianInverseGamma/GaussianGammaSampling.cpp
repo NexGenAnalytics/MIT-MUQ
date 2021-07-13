@@ -90,6 +90,9 @@ To sample the Gaussian target, the code needs to do four things:
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
+
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -235,11 +238,9 @@ correspond to the Gaussian and Inverse Gamma densities.
 
   pt.put("Kernel1.Method","MHKernel");  // Name of the transition kernel class
   pt.put("Kernel1.Proposal", "MyProposal"); // Name of block defining the proposal distribution
-  pt.put("Kernel1.MyProposal.Method", "CrankNicolsonProposal"); // Name of proposal class
-  pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // Variance of the isotropic MH proposal
-  pt.put("Kernel1.MyProposal.Beta", 0.25); // Variance of the isotropic MH proposal
-  pt.put("Kernel1.MyProposal.PriorNode", "Gaussian Density");
-
+  pt.put("Kernel1.MyProposal.Method", "MHProposal"); // Name of proposal class
+  pt.put("Kernel1.MyProposal.ProposalVariance", 1.0); // Variance of the isotropic MH proposal
+  
   pt.put("Kernel2.Method","MHKernel");  // Name of the transition kernel class
   pt.put("Kernel2.Proposal", "GammaProposal"); // Name of block defining the proposal distribution
 
@@ -282,6 +283,31 @@ correspond to the Gaussian and Inverse Gamma densities.
 
   Eigen::VectorXd sampMom3 = samps->CentralMoment(3);
   std::cout << "\nSample Third Moment = \n" << sampMom3 << std::endl << std::endl;
+
+
+  /***
+  ### 5. Compute convergence diagnostics
+  To quantitatively assess whether the chain has converged, we need to run multiple
+  chains and then compare the results.  Below we run 3 more independent chains (for a total of 4)
+  and then analyze convergence using the commonly employed \f$\hat{R}\f$ diagnostic.
+
+  Notice that a new MCMC sampler is defined each time.  If we simply called `mcmc->Run()`
+  multiple times, the sampler would always pick up where it left off.
+  */
+  int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> chains(numChains);
+  chains.at(0) = samps;
+
+  for(int i=1; i<numChains; ++i){
+    startPt.at(0) = mu + RandomGenerator::GetNormal(mu.size()); // Start the Gaussian block at the mean
+    startPt.at(1) = RandomGenerator::GetNormal(1).array().exp(); // Set the starting value of the variance to 1
+
+    mcmc = MCMCFactory::CreateSingleChain(pt, problem);
+    chains.at(i) = mcmc->Run(startPt);
+  }
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(chains);
+  std::cout << "Rhat = " << rhat.transpose() << std::endl;
 
   return 0;
 }

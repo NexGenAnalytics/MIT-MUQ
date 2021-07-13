@@ -50,7 +50,7 @@ implied transfer of ownership, i.e.:
 
 .. code-block:: cpp
 
-    m.def("get_data", &get_data, return_value_policy::reference);
+    m.def("get_data", &get_data, py::return_value_policy::reference);
 
 On the other hand, this is not the right policy for many other situations,
 where ignoring ownership could lead to resource leaks.
@@ -182,6 +182,9 @@ relies on the ability to create a *weak reference* to the nurse object. When
 the nurse object is not a pybind11-registered type and does not support weak
 references, an exception will be thrown.
 
+If you use an incorrect argument index, you will get a ``RuntimeError`` saying
+``Could not activate keep_alive!``. You should review the indices you're using.
+
 Consider the following example: here, the binding code for a list append
 operation ties the lifetime of the newly added element to the underlying
 container:
@@ -251,7 +254,7 @@ For instance, the following statement iterates over a Python ``dict``:
 
 .. code-block:: cpp
 
-    void print_dict(py::dict dict) {
+    void print_dict(const py::dict& dict) {
         /* Easily interact with Python types */
         for (auto item : dict)
             std::cout << "key=" << std::string(py::str(item.first)) << ", "
@@ -289,7 +292,7 @@ Such functions can also be created using pybind11:
 
 .. code-block:: cpp
 
-   void generic(py::args args, py::kwargs kwargs) {
+   void generic(py::args args, const py::kwargs& kwargs) {
        /// .. do something with args
        if (kwargs)
            /// .. do something with kwargs
@@ -523,6 +526,8 @@ The default behaviour when the tag is unspecified is to allow ``None``.
     is included) are copied when converted to C++ (see :doc:`/advanced/cast/overview`) and will
     not allow ``None`` as argument.  To pass optional argument of these copied types consider
     using ``std::optional<T>``
+
+.. _overload_resolution:
 
 Overload resolution order
 =========================

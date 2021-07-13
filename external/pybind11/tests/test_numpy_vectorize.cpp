@@ -62,7 +62,7 @@ TEST_SUBMODULE(numpy_vectorize, m) {
     // test_method_vectorization
     struct VectorizeTestClass {
         VectorizeTestClass(int v) : value{v} {};
-        float method(int x, float y) { return y + (float) (x + value); }
+        float method(int x, float y) const { return y + (float) (x + value); }
         int value = 0;
     };
     py::class_<VectorizeTestClass> vtc(m, "VectorizeTestClass");
@@ -83,8 +83,8 @@ TEST_SUBMODULE(numpy_vectorize, m) {
                 py::array_t<float, py::array::forcecast> arg2,
                 py::array_t<double, py::array::forcecast> arg3
                 ) {
-        ssize_t ndim;
-        std::vector<ssize_t> shape;
+        py::ssize_t ndim;
+        std::vector<py::ssize_t> shape;
         std::array<py::buffer_info, 3> buffers {{ arg1.request(), arg2.request(), arg3.request() }};
         return py::detail::broadcast(buffers, ndim, shape);
     });

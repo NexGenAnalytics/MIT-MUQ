@@ -24,7 +24,8 @@ TEST_SUBMODULE(modules, m) {
         ~A() { print_destroyed(this); }
         A(const A&) { print_copy_created(this); }
         A& operator=(const A &copy) { print_copy_assigned(this); v = copy.v; return *this; }
-        std::string toString() { return "A[" + std::to_string(v) + "]"; }
+        std::string toString() const { return "A[" + std::to_string(v) + "]"; }
+
     private:
         int v;
     };
@@ -62,7 +63,8 @@ TEST_SUBMODULE(modules, m) {
         class Dupe3 { };
         class DupeException { };
 
-        auto dm = py::module_("dummy");
+        // Go ahead and leak, until we have a non-leaking py::module_ constructor
+        auto dm = py::module_::create_extension_module("dummy", nullptr, new py::module_::module_def);
         auto failures = py::list();
 
         py::class_<Dupe1>(dm, "Dupe1");

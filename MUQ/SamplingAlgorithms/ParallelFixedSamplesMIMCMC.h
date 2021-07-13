@@ -97,7 +97,7 @@ namespace muq {
       StaticLoadBalancingMIMCMC (pt::ptree pt,
                                  std::shared_ptr<ParallelizableMIComponentFactory> componentFactory,
                                  std::shared_ptr<StaticLoadBalancer> loadBalancing = std::make_shared<RoundRobinStaticLoadBalancer>(),
-                                 std::shared_ptr<parcer::Communicator> comm = std::make_shared<parcer::Communicator>(),
+                                 std::shared_ptr<parcer::Communicator> comm = std::make_shared<parcer::Communicator>(MPI_COMM_WORLD),
                                  std::shared_ptr<muq::Utilities::OTF2TracerBase> tracer = std::make_shared<OTF2TracerDummy>())
        : SamplingAlgorithm(nullptr),
          pt(pt),

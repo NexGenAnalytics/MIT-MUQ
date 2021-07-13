@@ -47,6 +47,13 @@ namespace muq {
         @param[in] size The size of each segment
         @param[in] insize The size of the input vector
       */
+      SplitVector(std::vector<int> const& ind,std::vector<int> const& size, unsigned int const insize);
+
+      /**
+        @param[in] ind The first index of the segment for each output
+        @param[in] size The size of each segment
+        @param[in] insize The size of the input vector
+      */
       SplitVector(Eigen::VectorXi const& ind, Eigen::VectorXi const& size, unsigned int const insize);
 
       virtual ~SplitVector() = default;

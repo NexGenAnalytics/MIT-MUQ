@@ -14,7 +14,7 @@ namespace Approximation {
 
   /**
    @class PolynomialChaosExpansion
-   @ingroup PolynomialChaos
+   @ingroup polychaos
    @brief A class for representing and using expansions of orthogonal multivariate polynomials
    @details
    * A particular polynomial chaos expansion for a function from R^n->R^m. This class uses

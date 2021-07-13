@@ -31,6 +31,8 @@ namespace muq {
 
       static double SingleComponentESS(Eigen::Ref<const Eigen::VectorXd> const& trace);
 
+      virtual std::shared_ptr<SampleCollection> segment(unsigned int startInd, unsigned int length, unsigned int skipBy=1) const override;
+
     private:
 
       std::vector<std::unordered_map<std::string, boost::any> > meta;

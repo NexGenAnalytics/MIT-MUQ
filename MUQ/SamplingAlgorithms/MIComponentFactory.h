@@ -22,7 +22,8 @@ namespace muq {
     public:
       virtual ~MIComponentFactory() = default;
       virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> const& index, std::shared_ptr<AbstractSamplingProblem> const& samplingProblem) = 0;
-      virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const&index,
+      virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& fineIndex,
+                                                            std::shared_ptr<MultiIndex> const& coarseIndex,
                                                             std::shared_ptr<AbstractSamplingProblem> const& coarseProblem,
                                                             std::shared_ptr<SingleChainMCMC> const& coarseChain) = 0;
       virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> const& index) = 0;

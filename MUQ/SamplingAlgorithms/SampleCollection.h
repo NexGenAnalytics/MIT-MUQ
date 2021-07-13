@@ -62,8 +62,7 @@ namespace muq{
       Eigen::VectorXd output;
     };
 
-    /** @ingroup SamplingAlgorithms
-        @class SampleCollection
+    /** @class SampleCollection
         @brief A class to hold and analyze a collection of SamplingState objects
     */
     class SampleCollection{
@@ -77,7 +76,27 @@ namespace muq{
       virtual std::shared_ptr<SamplingState> at(unsigned i);
       virtual const std::shared_ptr<SamplingState> at(unsigned i) const;
 
-      virtual unsigned size() const;
+      /** Returns the number of samples in this SampleCollection. */
+      virtual unsigned int size() const;
+
+      /** Returns a new sample collection with the first \f$N\f$ states of this collection.
+          Equivalent to a python command like list[0:N]
+      */
+      virtual std::shared_ptr<SampleCollection> head(unsigned int N) const{return segment(0,N,1);}
+
+      /** Returns a new sample collection with the last \f$N\f$ states of this collection.
+          Equivalent to a python command like list[-N:]
+      */
+      virtual std::shared_ptr<SampleCollection> tail(unsigned int N) const{return segment(size()-N,N,1);}
+
+
+      /** Returns a new sample collection containing a segment of this sample collection.
+          The
+          Equivalent to a python command like list[startInd:startInd+length:skipBy]
+      */
+      virtual std::shared_ptr<SampleCollection> segment(unsigned int startInd, unsigned int length, unsigned int skipBy=1) const;
+
+      virtual const std::shared_ptr<SamplingState> back() const;
 
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order
       virtual Eigen::VectorXd CentralMoment(unsigned order, int blockNum=-1) const;
@@ -127,15 +146,27 @@ namespace muq{
       */
       virtual Eigen::VectorXd ESS(int blockDim=-1) const;
 
+      /** Returns the samples in this collection as a matrix.  Each column of the
+          matrix will correspond to a single state in the chain.
+      */
       virtual Eigen::MatrixXd AsMatrix(int blockDim=-1) const;
 
+      /** Returns a vector of unnormalized sample weights for computing empirical expectations.
+          If the samples were generated with MC or MCMC, the weights will all be
+          1.  Importance sampling will generate non-unit weights.   Note that these
+          weights are unnormalized and will not generally sum to one.
+      */
       virtual Eigen::VectorXd Weights() const;
 
       /**
-	 @param[in] filename The name of the file
-	 @param[in] dataset The name of the group within the file
+      Writes the samples, weights, and sample metadata to a group in an HDFfile.
+      - The samples themselves will be written as a \f$DxN\f$ matrix to the "/samples" dataset.
+      - The sample weights will be written as a length \f$1xN\f$ row vector to the "/weights" dataset.
+      - Each additional metadata field (e.g., logdensity) will be written to a \f$KxN\f$ matrix, where \f$K\f$ is the dimension of the vector-valued metadata and \f$N|f$ is the number of samples.
+	     @param[in] filename The name of the HDF file to write to
+	     @param[in] group The name of the group within the HDF file.  Defaults to the root directory "/".
        */
-      virtual void WriteToFile(std::string const& filename, std::string const& dataset = "/") const;
+      virtual void WriteToFile(std::string const& filename, std::string const& group = "/") const;
 
       /**
       @param[in] name Need the this piece of meta data for each sample
@@ -154,6 +185,8 @@ namespace muq{
       virtual Eigen::VectorXd ExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
 
       std::vector<Eigen::VectorXd> RunningExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
+
+
 
     protected:
 

@@ -7,6 +7,7 @@
     BSD-style license that can be found in the LICENSE file.
 */
 
+#include "test_exceptions.h"
 #include "pybind11_tests.h"
 
 // A type that should be raised as an exception in Python
@@ -32,6 +33,13 @@ class MyException3 {
 public:
     explicit MyException3(const char * m) : message{m} {}
     virtual const char * what() const noexcept {return message.c_str();}
+    // Rule of 5 BEGIN: to preempt compiler warnings.
+    MyException3(const MyException3&) = default;
+    MyException3(MyException3&&) = default;
+    MyException3& operator=(const MyException3&) = default;
+    MyException3& operator=(MyException3&&) = default;
+    virtual ~MyException3() = default;
+    // Rule of 5 END.
 private:
     std::string message = "";
 };
@@ -221,4 +229,5 @@ TEST_SUBMODULE(exceptions, m) {
     // Test repr that cannot be displayed
     m.def("simple_bool_passthrough", [](bool x) {return x;});
 
+    m.def("throw_should_be_translated_to_key_error", []() { throw shared_exception(); });
 }

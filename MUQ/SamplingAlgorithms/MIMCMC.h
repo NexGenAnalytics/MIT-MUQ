@@ -9,32 +9,12 @@
 
 namespace pt = boost::property_tree;
 
-/** @defgroup MIMCMC
-    @ingroup MCMC
-    @brief Tools for defininig and running multilevel and multiindex MCMC algorithms.
-    @details Multiindex MCMC methods are built on an entire arbitriry-dimensional
-    grid of sampling problems, in contrast to classical MCMC only sampling from
-    a single distribution.
-
-    In order to be effective, MIMCMC methods require distributions closely related to each
-    other, where evaluating the coarser ones should be significantly computationally cheaper.
-    A typical example are models based on the Finite Element method, where strongly varying mesh
-    resolutions lead to a hierarchy of models. Then, coarser models are a
-    good approximation of finer ones while being far cheaper to compute.
-
-    In analogy to the mathematical definition, running a MIMCMC method requires defining
-    a grid of models (as well as other needed components) via MIComponentFactory.
-    Most importantly, how proposals will be drawn from coarser chains has to be defined
-    as well as how to combine them (via MIInterpolation) with a proposal for the current
-    fine chain.
-
-    Refer to the MCMC examples for complete code examples.
-*/
 
 namespace muq {
   namespace SamplingAlgorithms {
 
     /** @brief Multiindex MCMC method.
+        @ingroup MIMCMC
         @details A basic MIMCMC method based on a fixed
         number of samples for all model indices.
      */

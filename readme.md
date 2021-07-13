@@ -1,4 +1,4 @@
-# MUQ: MIT Uncertainty Quantification Library
+# Overview
 
 Welcome to MUQ (pronounced “muck”), a modular software framework for defining and solving forward and inverse uncertainty quantification problems.
 
@@ -28,28 +28,31 @@ For more installation options, check out the [installation guide](https://mituq.
 
 ## Getting Started
 
-You can find an extensive amount of easy to run [examples](https://mituq.bitbucket.io/source/_site/examples.html)
-in both c++ and Python as part of our repository.
+MUQ is composed of several different modules, which work together to define and solve UQ problems.  Documentation for each of these modules is included with our doxygen-generated [API documentation](https://mituq.bitbucket.io/source/_site/latest/index.html).   Most applications will require using the [modeling module](\ref modeling) to define statistical models or interact with user-defined models.  Learning the basics of this module is therefore a good place to start.
 
-For more detailed information about MUQ, refer to the [API documentation](https://mituq.bitbucket.io/source/_site/latest/index.html).
+#### Interested in forward UQ?
+- First, get acquainted with the [modeling module](\ref modeling).  You'll need to use one or more instances of the [ModPiece class](\ref muq::Modeling::ModPiece) to define the model that will be evaluated by the UQ algorithm.
+- Once you have a model, check out the [polynomial chaos module](\ref polychaos).
+- Other examples can be found by selecting the "PCE" examples on the MUQ [webpage](https://mituq.bitbucket.io/source/_site/examples.html).
 
-If you are mostly interested in modelling, it is a good idea to focus on MUQ's model graphs.
-They allow you to construct complex models while keeping a clean code structure.
+#### Want to tackle Bayesian inverse problems?
+- Just like for forward UQ, you'll want to get familiar with the [modeling module](\ref modeling) module to define a forward model.  The [WorkGraph class](\ref muq::Modeling::WorkGraph) within the modeling module is also used to combine multiple components (e.g., the prior, forward model, and likelihood function) comprising the Bayesian posterior distribution.
+- Look at methods in the [sampling algorithms](\ref sampling) module to generate samples of your Bayesian posterior.
+- Other examples can be found by filtering the "MCMC" examples on the MUQ [webpage](https://mituq.bitbucket.io/source/_site/examples.html).
 
-For method developers, examples showing various existing methods and the API documentation will be a good start to see what components you can build on.
+You can also find many [examples](https://mituq.bitbucket.io/source/_site/examples.html) using both the c++ and Python interfaces to MUQ.  These examples can provide useful starting places for using MUQ on your own problems.
 
-Also, join our Slack channel via our [website](http://muq.mit.edu/) to get in touch with other developers. We are always happy to help!
+#### Getting Connected
+Join the MUQ Slack channel via our [website](http://muq.mit.edu/) to get in touch with MUQ developers and other users. We are always happy to help!
 
 ## Citing
 Parno, M., Davis, A., Seelinger, L., and Marzouk, Y. (2014). MIT Uncertainty Quantification (MUQ) library.
 
-```
-@misc{MUQ,
+<div><pre><code class="language-plaintext">@misc{MUQ,
   title={MIT uncertainty quantification (MUQ) library},
   author={Parno, Matthew and Davis, Andrew and Seelinger, Linus and Marzouk, Youssef},
   year={2014}
-}
-```
+}</code></pre></div>
 
 ## Contributing
 
@@ -63,3 +66,8 @@ Also check out our [style guide](https://mituq.bitbucket.io/source/_site/latest/
 
 #### Want a new feature?
 [Submit a request on bitbucket](https://bitbucket.org/mituq/muq2/issues/new).  Label the issue as an enhancement or proposal.
+
+
+#### Developer Information
+- \subpage infrastructure
+- \subpage muqstyle

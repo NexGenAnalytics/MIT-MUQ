@@ -103,8 +103,8 @@ Eigen::VectorXd const& SamplingStatePartialMoment::operator()(SamplingState cons
 
 void SampleCollection::Add(std::shared_ptr<SamplingState> newSamp)
 {
-  // copy the sample
-  samples.push_back(std::make_shared<SamplingState>(*newSamp));
+  // copy the sample pointer
+  samples.push_back(newSamp);//std::make_shared<SamplingState>(*newSamp));
 }
 
 std::shared_ptr<SamplingState> SampleCollection::at(unsigned i)
@@ -115,6 +115,23 @@ const std::shared_ptr<SamplingState> SampleCollection::at(unsigned i) const
 {
   return samples.at(i);
 }
+
+std::shared_ptr<SampleCollection> SampleCollection::segment(unsigned int startInd, unsigned int length, unsigned int skipBy) const
+{
+  assert(startInd<size());
+  assert(startInd+length<=size());
+
+  std::shared_ptr<SampleCollection> output = std::make_shared<SampleCollection>();
+  for(unsigned int i=startInd; i<startInd+length; i+=skipBy)
+    output->Add(at(i));
+
+  return output;
+}
+
+const std::shared_ptr<SamplingState> SampleCollection::back() const {
+  return samples.back();
+}
+
 
 Eigen::VectorXd SampleCollection::CentralMoment(unsigned order, Eigen::VectorXd const& mean, int blockNum) const {
   SamplingStatePartialMoment op(blockNum, order, mean);

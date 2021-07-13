@@ -63,6 +63,9 @@ public:
 
 class MyMLComponentFactory : public MIComponentFactory {
 public:
+  MyMLComponentFactory(pt::ptree pt)
+   : pt(pt) {}
+
   virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> const& index, std::shared_ptr<AbstractSamplingProblem> const& samplingProblem) override {
     pt::ptree pt;
     pt.put("BlockIndex",0);
@@ -85,14 +88,13 @@ public:
     return index;
   }
 
-  virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& index,
+  virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& fineIndex,
+                                                        std::shared_ptr<MultiIndex> const& coarseIndex,
                                                         std::shared_ptr<AbstractSamplingProblem> const& coarseProblem,
-                                                           std::shared_ptr<SingleChainMCMC> const& coarseChain) override {
-    pt::ptree ptProposal;
+                                                        std::shared_ptr<SingleChainMCMC> const& coarseChain) override {
+    pt::ptree ptProposal = pt;
     ptProposal.put("BlockIndex",0);
-    int subsampling = 5;
-    ptProposal.put("Subsampling", subsampling);
-    return std::make_shared<SubsamplingMIProposal>(ptProposal, coarseProblem, coarseChain);
+    return std::make_shared<SubsamplingMIProposal>(ptProposal, coarseProblem, coarseIndex, coarseChain);
   }
 
   virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> const& index) override {
@@ -132,19 +134,23 @@ public:
     mu << 1.0, 2.0;
     return mu;
   }
-
+  pt::ptree pt;
 };
 
 TEST(MLMCMCTest, GreedyMLMCMC)
 {
-
-  auto componentFactory = std::make_shared<MyMLComponentFactory>();
 
   pt::ptree pt;
 
   pt.put("NumSamples", 1e4); // number of samples for single level
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
+  pt.put("MLMCMC.Subsampling_0", 5); // estimator variance to be achieved by greedy algorithm
+  pt.put("MLMCMC.Subsampling_1", 3); // estimator variance to be achieved by greedy algorithm
+  pt.put("MLMCMC.Subsampling_2", 1); // estimator variance to be achieved by greedy algorithm
+  pt.put("MLMCMC.Subsampling_3", 0); // estimator variance to be achieved by greedy algorithm
+
+  auto componentFactory = std::make_shared<MyMLComponentFactory>(pt);
 
   GreedyMLMCMC greedymlmcmc (pt, componentFactory);
   greedymlmcmc.Run();

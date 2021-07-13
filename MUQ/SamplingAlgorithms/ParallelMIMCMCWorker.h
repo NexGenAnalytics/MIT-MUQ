@@ -248,7 +248,7 @@ namespace muq {
               auto box = std::make_shared<ParallelMIMCMCBox>(pt, parallelComponentFactory, samplingProblemIndex, comm, phonebookClient, tracer);
 
               spdlog::debug("Rank {} begins sampling", comm->GetRank());
-              const int subsampling = pt.get<int>("MLMCMC.Subsampling");
+              const int subsampling = pt.get<int>("MLMCMC.Subsampling" + multiindexToConfigString(samplingProblemIndex));
               tracer->enterRegion(TracerRegions::Sampling);
               for (int i = 0; i < 2 + subsampling; i++) // TODO: Really subsampling on every level? Maybe subsample when requesting samples?
                 box->Sample();
@@ -278,8 +278,8 @@ namespace muq {
                     std::shared_ptr<SamplingState> qoi = AnyCast(latestSample->meta["QOI"]);
                     comm->Send<Eigen::VectorXd>(qoi->state[0], status.MPI_SOURCE, ControlTag);
                   } else {
-                    std::cerr << "No QOI!" << sampleCollection->size() << std::endl;
-                    exit(47);
+                    spdlog::error("No QOI!");
+                    exit(-1);
                   }
 
 
@@ -293,27 +293,32 @@ namespace muq {
                   spdlog::trace("Send box from {} to rank {}", comm->GetRank(), status.MPI_SOURCE);
 
                   for (int i = 0; i < box->NumChains(); i++) {
-                    auto sampleCollection = box->GetChain(i)->GetSamples(); // TODO: last() function for collection? // TODO: Do not store chains here
-                    auto latestSample = sampleCollection->at(sampleCollection->size()-1);
+                    auto sampleCollection = box->GetChain(i)->GetSamples(); // TODO: Do not store chains here
+                    auto latestSample = sampleCollection->back();
                     // TODO: Send "full" sample via parcer?
                     comm->Send<Eigen::VectorXd>(latestSample->state[0], status.MPI_SOURCE, ControlTag);
+                    comm->Send<double>(AnyCast(latestSample->meta["LogTarget"]), status.MPI_SOURCE, ControlTag);
                     if (latestSample->HasMeta("QOI")) {
                       std::shared_ptr<SamplingState> qoi = AnyCast(latestSample->meta["QOI"]);
                       comm->Send<Eigen::VectorXd>(qoi->state[0], status.MPI_SOURCE, ControlTag);
                     } else {
-                      std::cerr << "No QOI!" << sampleCollection->size() << std::endl;
-                      exit(47);
+                      spdlog::error("No QOI!");
+                      exit(-1);
                     }
                   }
 
+                  assert(box->GetQOIDiff()->size() > 0);
+                  auto latestDiffSample = box->GetQOIDiff()->back();
+                  comm->Send<Eigen::VectorXd>(latestDiffSample->state[0], status.MPI_SOURCE, ControlTag);
+
                   tracer->enterRegion(TracerRegions::Sampling);
-                  for (int i = 0; i < 5; i++)
+                  for (int i = 0; i < 1 + subsampling; i++) // TODO: Really subsampling on every level? Maybe subsample when requesting samples?
                     box->Sample();
                   tracer->leaveRegion(TracerRegions::Sampling);
                   phonebookClient->SetWorkerReady(samplingProblemIndex, comm->GetRank());
                 } else {
-                  std::cerr << "Unexpected command!" << std::endl;
-                  exit(43);
+                  spdlog::error("Controller received unexpected command!");
+                  exit(-1);
                 }
 
               }
@@ -346,6 +351,7 @@ namespace muq {
 
             std::vector<std::shared_ptr<DistributedCollection>> sampleCollections(boxIndices->Size());
             std::vector<std::shared_ptr<DistributedCollection>> qoiCollections(boxIndices->Size());
+            std::shared_ptr<DistributedCollection> qoiDiffCollection = std::make_shared<DistributedCollection>(std::make_shared<MarkovChain>(), subcomm);
             for (uint i = 0; i < boxIndices->Size(); i++) {
               auto sampleCollection = std::make_shared<MarkovChain>();
               sampleCollections[i] = std::make_shared<DistributedCollection>(sampleCollection, subcomm);
@@ -369,22 +375,20 @@ namespace muq {
                 int numSamples = comm->Recv<int>(0, ControlTag);
                 spdlog::debug("Collecting {} samples for box {}", numSamples, *boxHighestIndex);
 
-            		//std::cout << "Rank " << comm->GetRank() << " requesting sample from rank " << remoteRank << std::endl;
-
                 for (int i = 0; i < numSamples; i++) {
                   spdlog::trace("Requesting sample box for model {}", *boxHighestIndex);
-                  if (i % (numSamples / 10) == 0)
-                    spdlog::debug("Collected {} out of {} samples for model {}", i, numSamples, *boxHighestIndex);
                   int remoteRank = phonebookClient->Query(boxHighestIndex, boxHighestIndex, false);
                   comm->Send(ControlFlag::SAMPLE_BOX, remoteRank, ControlTag); // TODO: Receive sample in one piece?
-                  for (uint i = 0; i < boxIndices->Size(); i++) {
-                    //std::shared_ptr<MultiIndex> boxIndex = (*boxIndices)[i];
-                    sampleCollections[i]->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
-                    qoiCollections[i]->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
-                		//Eigen::VectorXd remoteQOI = comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag);
+                  for (uint j = 0; j < boxIndices->Size(); j++) {
+                    auto new_state = std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag));
+                    new_state->meta["LogTarget"] = comm->Recv<double>(remoteRank, ControlTag);
+                    sampleCollections[j]->Add(new_state);
+                    qoiCollections[j]->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
                   }
+                  qoiDiffCollection->Add(std::make_shared<SamplingState>(comm->Recv<Eigen::VectorXd>(remoteRank, ControlTag)));
+                  if ((i+1) % std::max(1,numSamples / 10) == 0)
+                    spdlog::debug("Collected {} out of {} samples for model {}", i+1, numSamples, *boxHighestIndex);
                 }
-
                 if (subcomm->GetRank() == 0)
                   comm->Send(ControlFlag::SAMPLE_BOX_DONE, RootRank, ControlTag); // TODO: Receive sample in one piece?
                 //  box->Sample();
@@ -411,6 +415,7 @@ namespace muq {
                   sampleCollections[i]->WriteToFile(filename, "/Collector_model" + boxHighestIndex->ToString() + "_subchain_" + boxIndex->ToString() + "_samples_rank_" + std::to_string(subcomm->GetRank()));
                   qoiCollections[i]->WriteToFile(filename, "/Collector_model" + boxHighestIndex->ToString() + "_subchain_" + boxIndex->ToString() + "_qois_rank_" + std::to_string(subcomm->GetRank()));
                 }
+                qoiDiffCollection->WriteToFile(filename, "/Collector_model" + boxHighestIndex->ToString() + "_qoi_diff_rank_" + std::to_string(subcomm->GetRank()));
                 comm->Send(true, status.MPI_SOURCE, ControlTag);
               } else {
                 std::cerr << "Unexpected command!" << std::endl;
@@ -433,6 +438,14 @@ namespace muq {
 
       }
 
+    private:
+      std::string multiindexToConfigString (std::shared_ptr<MultiIndex> index) {
+        std::stringstream strs;
+        for (int i = 0; i < index->GetLength(); i++) {
+          strs << "_" << index->GetValue(i);
+        }
+        return strs.str();
+      }
     };
 
   }

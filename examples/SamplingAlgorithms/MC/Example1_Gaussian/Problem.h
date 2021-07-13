@@ -84,7 +84,8 @@ public:
     return index;
   }
 
-  virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& index,
+  virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& fineIndex,
+                                                        std::shared_ptr<MultiIndex> const& coarseIndex,
                                                         std::shared_ptr<AbstractSamplingProblem> const& coarseProblem,
                                                         std::shared_ptr<SingleChainMCMC> const& coarseChain) override {
     Eigen::VectorXd mu(2);

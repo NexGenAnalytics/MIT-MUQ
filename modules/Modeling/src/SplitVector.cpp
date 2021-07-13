@@ -2,6 +2,12 @@
 
 using namespace muq::Modeling;
 
+SplitVector::SplitVector(std::vector<int> const& ind,
+                         std::vector<int> const& size,
+                         unsigned int const insize) : SplitVector(Eigen::Map<const Eigen::VectorXi>(&ind[0],ind.size()),
+                                                                  Eigen::Map<const Eigen::VectorXi>(&size[0],size.size()),
+                                                                  insize){};
+                                                                  
 SplitVector::SplitVector(Eigen::VectorXi const& ind,
                          Eigen::VectorXi const& size,
                          unsigned int const insize) : ModPiece(Eigen::VectorXi::Constant(1, insize), size),
