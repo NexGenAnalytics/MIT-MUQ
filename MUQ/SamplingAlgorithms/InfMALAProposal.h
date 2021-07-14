@@ -29,22 +29,27 @@ namespace muq {
     variable with a strategically chosen covariance \f$K\f$, and \f$u^\prime\f$
     is the propsed point.  
     
-    Note that the above proposal is the geometry-aware version and when \f$K =
-    C\f$, it gets back to the \f$\infty-\f$MALA proposal.
+    Note that the above proposal is the geometry-aware version, and it is the
+    \f$\infty-\f$MALA proposal when \f$K = C\f$.
 
     <B>Configuration Parameters:</B>
     Parameter Key | Type | Default Value | Description |
     ------------- | ------------- | ------------- | ------------- |
     "StepSize" | double | 1.0 | The step size used to discrete the Langevin SDE. |
-    "PriorNode" | string | - | (Optional)  If specified, this class assumes the target density was constructed from a WorkGraph and will set the value of the covariance \f$C\f$ to the covariance of the Gaussian density at the specified node. |
     */
     class InfMALAProposal : public MCMCProposal {
     public:
 
+      /**
+      Construct the Inf-mMALA proposal with identity covariance for \f$K\f$.
+      */
       InfMALAProposal(boost::property_tree::ptree           const& pt,
                       std::shared_ptr<AbstractSamplingProblem>     prob);
 
-
+      /**
+      Construct the Inf-mMALA proposal with strategically chosen Gaussian
+      distribution zDistIn for \f$z\f$.
+      */
       InfMALAProposal(boost::property_tree::ptree           const& pt,
                       std::shared_ptr<AbstractSamplingProblem>     prob,
                       std::shared_ptr<muq::Modeling::GaussianBase> zDistIn);
