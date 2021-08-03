@@ -72,6 +72,8 @@ Eigen::VectorXd KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& dens
 
   // compute the unnormalized kernel and store the normalization in the bandwidth vector
   std::vector<Eigen::Triplet<double> > entries;
+  assert(epsilon>1.0e-14);
+  //assert(scaledDens.norm()>1.0e-14);
   Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, epsilon, scaledDens, entries, !tune);
   Eigen::VectorXd similarity = rowsum.array()/scaledDens.array().pow(beta*manifoldDim);
 

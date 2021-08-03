@@ -11,6 +11,7 @@ bandwidth(bandwidth),
 delta(pt.get<double>("StepSize", 1.0)),
 sparsityTol(pt.get<double>("SparsityTolerance", 0.1)) {
   assert(delta>0.0);
+  assert(bandwidth.norm()>1.0e-14);
 }
 
 double KernelBandwidthCostFunction::BandwidthCost(double const para) const {

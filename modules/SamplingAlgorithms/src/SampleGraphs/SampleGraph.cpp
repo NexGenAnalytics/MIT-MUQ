@@ -167,10 +167,17 @@ double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const
   // find the k nearest neighbors
   std::vector<std::pair<std::size_t, double> > neighbors;
   FindNeighbors(x, k, neighbors);
+  assert(neighbors.size()==k);
 
   // return the sum of the squared distance
   double sum = 0.0;
   for( const auto& neigh : neighbors ) { sum += neigh.second; }
+  if( sum<1.0e-14 ) {
+    std::cout << "k: " << k << " size: " << neighbors.size() << std::endl;
+    for( const auto& neigh : neighbors ) { std::cout << neigh.second << " "; }
+    std::cout << std::endl << std::endl;
+  }
+  assert(sum>0.0);
   return sum;
 }
 
@@ -191,6 +198,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::Vect
 }
 
 Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, std::vector<Eigen::Triplet<double> >& entries, bool const rebuildTrees) const {
+  //assert(bandwidthParameter>1.0e-14);
   assert(sparsityTol<1.0);
   assert(bandwidth.size()==NumSamples());
 
@@ -212,12 +220,29 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
 
       // we need to find neighbors within this distnace
       double neighDist = bandwidth(ind);
+      if( neighDist<1.0e-14 ) {
+        std::cout << std::endl;
+        std::cout << "bandwidth: " << bandwidth.transpose() << std::endl;
+        std::cout << "neighDist: " << neighDist << std::endl;
+        std::cout << std::endl;
+      }
+      assert(neighDist>1.0e-14);
       neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
-      assert(neighDist>0.0);
+      /*if( neighDist<1.0e-14 ) {
+        std::cout << std::endl;
+        std::cout << "bandwidth: " << bandwidth.transpose() << std::endl;
+        std::cout << "bandwidth parameter: " << bandwidthParameter << std::endl;
+        std::cout << "neighDist: " << neighDist << std::endl;
+        std::cout << "log sparsityTol: " << std::log(sparsityTol) << std::endl;
+        std::cout << std::endl;
+      }*/
+      //assert(neighDist>1.0e-14);
 
       // find the nearest neighbors
       std::vector<std::pair<std::size_t, double> > neighbors;
       FindNeighbors(Point(ind), neighDist, neighbors, i);
+      if( neighbors.size()<=1 ) { FindNeighbors(Point(ind), (std::size_t)5, neighbors, i); }
+      assert(neighbors.size()>1);
 
       // add the kernel evaluations to the kernel matrix
       const double scale = bandwidthParameter*bandwidth(ind);
@@ -249,6 +274,7 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
 
   // compute the triplets
   std::vector<Eigen::Triplet<double> > entries;
+  //assert(bandwidthParameter>1.0e-14);
   const Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, bandwidthParameter, bandwidth, entries, rebuildTrees);
   kernel.setFromTriplets(entries.begin(), entries.end());
 
@@ -273,7 +299,9 @@ std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const
 
   // solve the optimization and update the parameters
   std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);
-  return std::pair<double, double>(std::pow(2.0, soln.first(0)), soln.second);
+  const double eps = std::max(1.0e-8, std::pow(2.0, soln.first(0)));
+  assert(eps>1.0e-14);
+  return std::pair<double, double>(eps, soln.second);
 }
 
 double SampleGraph::BandwidthParameterCost(Eigen::VectorXd const& bandwidth, double const epsilon) const {

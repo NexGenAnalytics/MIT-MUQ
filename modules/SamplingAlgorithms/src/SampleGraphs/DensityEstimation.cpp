@@ -60,6 +60,8 @@ Eigen::VectorXd DensityEstimation::EstimateDensity(double epsilon, bool const tu
 
   // compute the kernel
   Eigen::SparseMatrix<double> kernel(NumSamples(), NumSamples());
+  assert(epsilon>1.0e-14);
+  //assert(bandwidth.norm()>1.0e-14);
   KernelMatrix(sparsityTol, epsilon, bandwidth, kernel, !tune);
 
   // comptue the normalization (store it in the bandwidth vector since we don't need it anymore)
