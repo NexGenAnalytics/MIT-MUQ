@@ -104,7 +104,7 @@ StochasticEigenSolver& StochasticEigenSolver::compute(std::shared_ptr<LinearOper
         hasConverged = true;
       }
 
-      if(verbosity>1){
+      if((verbosity>1)&&(!hasConverged)){
         std::cout << "After iteration " << it << ", " << eigVals.size() << " eigenvalues in [" << smallestVal << "," << largestVal << "]" << std::endl;
         std::cout << "  Y.shape = " << Y.rows() << " x " << Y.cols() << std::endl;
       }
