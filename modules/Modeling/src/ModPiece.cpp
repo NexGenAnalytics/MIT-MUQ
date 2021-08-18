@@ -350,7 +350,7 @@ Eigen::VectorXd ModPiece::ApplyJacobianByFD(unsigned int                const  o
   return vecNorm*(f-f0)/eps;
 }
 
-Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt,
+Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const  outWrt,
                                        unsigned int                const  inWrt1,
                                        unsigned int                const  inWrt2,
                                        std::vector<Eigen::VectorXd> const& input,
@@ -360,7 +360,7 @@ Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt
   return ApplyHessian(outWrt,inWrt1, inWrt2, ToRefVector(input), sens, vec);
 }
 
-Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt,
+Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const  outWrt,
                                        unsigned int                const  inWrt1,
                                        unsigned int                const  inWrt2,
                                        ref_vector<Eigen::VectorXd> const& input,
