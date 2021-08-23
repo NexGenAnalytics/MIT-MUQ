@@ -1,6 +1,6 @@
 ARG tag
 FROM mparno/muq-build:$tag
-MAINTAINER M. Parno
+LABEL org.opencontainers.image.authors="M. Parno"
 
 # Run with "docker build --build-arg tag=v0.3.1 -t mparno/muq:v0.3.1 ."
 ARG tag

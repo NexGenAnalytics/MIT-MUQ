@@ -1,5 +1,5 @@
 FROM debian:latest
-MAINTAINER M. Parno
+LABEL org.opencontainers.image.authors="M. Parno"
 
 USER root
 
