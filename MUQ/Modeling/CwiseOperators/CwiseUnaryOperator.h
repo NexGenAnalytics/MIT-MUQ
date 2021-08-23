@@ -32,8 +32,6 @@ namespace muq{
         className.erase(0,2);
         className.erase(className.size()-1,className.size());
 
-        std::cout << "ClassName = " << className << std::endl;
-
         // Clean up the class name to remove long templates
         ss << "CwiseUnaryOperator_" << className << "_" << id;
 
