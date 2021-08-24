@@ -149,10 +149,57 @@ $$
 
 Note that obtaining the gradient with this approach only requires one extra linear solve to obtain the adjoint variable $\mathbf{p}$ and that a factorization of the stiffness matrix $\mathbf{A}$ can be resued.  This is in stark contrast to a finite difference approximation that would require $N$ additional solves -- one for each derivative $\frac{\partial J}{\partial k_i}$.  
 
+
+#### Jacobian Actions
+
+The gradient computation above performs one step of the chain rule, which is equivalent to applying the transpose of the model Jacobian (i.e., linearized $k\rightarrow h$ mapping) to the sensitivity vector $\nabla_h J$.   It is also possible to efficiently apply the Jacobian itself to a vector $v$ using what is often called the tangent linear model.   To see this, consider a small perturbation $\tilde{k}(x)$ of the conductivity field $k(x)$.  This perturbation will then cause a perturbation $\tilde{h}$ of the original solution $h$.   The tangent linear model relates $\tilde{k}$ and $\tilde{h}$ by ignoring higher order terms like $\tilde{k}^2$ or $\tilde{k}\tilde{h}$.   
+
+To derive the tangent linear model for this problem, consider what happens when we substitute the perturbed fields $k+\tilde{k}$ and $h+\tilde{h}$ into the flow equation.   The result is
+$$
+\begin{aligned}
+-\frac{\partial}{\partial x}\left[ (k+\tilde{k}) \frac{\partial (h+\tilde{h})}{\partial x}\right] &= f(x)\\
+\tilde{h}(0) &= 0\\
+\left. \frac{\partial \tilde{h}}{\partial x}\right|_{x=1} &= 0,
+\end{aligned}
+$$
+
+Expanding terms, removing higher order terms, and simplifying then gives 
+
+$$
+\begin{aligned}
+-\frac{\partial}{\partial x}\left[ k \frac{\partial h}{\partial x}\right] -\frac{\partial}{\partial x}\left[ \tilde{k} \frac{\partial h}{\partial x}\right] -\frac{\partial}{\partial x}\left[ k \frac{\partial \tilde{h}}{\partial x}\right] -\frac{\partial}{\partial x}\left[ \tilde{k} \frac{\partial \tilde{h}}{\partial x}\right] &= f(x)\\
+\Rightarrow -\frac{\partial}{\partial x}\left[ k \frac{\partial \tilde{h}}{\partial x}\right]  &= \frac{\partial}{\partial x}\left[ \tilde{k} \frac{\partial h}{\partial x}\right].
+\end{aligned}
+$$
+The weak form of this linear tangent model is given by
+$$
+\begin{aligned}
+\Rightarrow \int_\Omega k \frac{\partial p}{\partial x} \frac{\partial \tilde{h}}{\partial x} dx & = -\int_\Omega \tilde{k} \frac{\partial p}{\partial x} \frac{\partial h}{\partial x} dx \quad \forall p\in H^1
+\end{aligned}
+$$
+
+Yet again, this equation has the same form as the forward and adjoint equations!   The only difference is the right hand side.   This shared form is not the case for most operators, but makes the implementation of this model quite easy because we only need one function to construct the stiffness matrix.
+
+Using the vector $\mathbf{h}$ of nodal values, the weak form of the tangent linear model results in a linear system of the form 
+$$
+\mathbf{A} \mathbf{\tilde{h}} = \mathbf{t},
+$$
+where entry $i$ of the right hand side is given by
+$$
+\begin{aligned}
+\mathbf{t}_i & = \int_{x_{i-1}}^{x_i} \tilde{k} \frac{\partial \phi_i^1}{\partial x} \frac{\partial h}{\partial x} dx + \int_{x_{i}}^{x_{i+1}} \tilde{k} \frac{\partial \phi_i^1}{\partial x} \frac{\partial h}{\partial x} dx\\
+&= \left[ \tilde{k}_{i-1} \frac{\mathbf{h}_i - \mathbf{h}_{i-1}}{x_i - x_{i-1}} \right] (x_i - x_{i-1}) + \left[ \tilde{k}_{i} \frac{\mathbf{h}_{i+1} - \mathbf{h}_{i}}{x_{i+1} - x_{i}} \right] (x_{i+1} - x_{i}) \\
+&= \tilde{k}_{i-1} (\mathbf{h}_i - \mathbf{h}_{i-1}) + \tilde{k}_{i} (\mathbf{h}_{i+1} - \mathbf{h}_{i}).
+\end{aligned}
+$$
+
+To apply the Jacobian to $\tilde{k}$, we need to solve the forward problem to get $h$, then construct the right hand side vector $\mathbf{t}$ from the direction $\tilde{k}$, and finally solve $\mathbf{\tilde{h}} = \mathbf{A}^{-1}\mathbf{t}$ to get $\tilde{h}$. 
+
+
 #### Adjoint-based Hessian actions
 Second derivative information can also be exploited by many different UQ, optimization, and dimension reduction algorithms.  Newton methods in optimization are a classic example of this.  Here we extend the adjoint gradient from above to efficiently evaluate the action of the Hessian operator $\nabla_{kk} J$ on a function $\hat{k}$.   After discretizing, this is equivalent to multiplying the Hessian matrix times a vector.
 
-Recall that $\mathcal{L}_k(h,k,p)(\tilde{k})$ is a scalar quantity that, when $\mathcal{L}_p(h,k,p)(\tilde{p})=0$ for all $\tilde{p}$ and $\mathcal{L}_h(h,k,p)(\tilde{h})=0$ for all $\tilde{h}$, represents the directional derivative of the Lagrangian in direction $\tilde{k}$.   To characterize the Hessian, we now want to consider the change in this scalar quantity when $k$ is perturbed in another direction.  In an abstract sense, this is identical to our adjoint approach for the gradient, however, instead of considering the scalar functional $J(h)$, we are considering the scalar functional $\mathcal{L}_k(h,k,p)(\tilde{k})$.
+Recall from the adjoint gradient discussion above that $\mathcal{L}_k(h,k,p)(\tilde{k})$ is a scalar quantity that represents the directional derivative of the Lagrangian in direction $\tilde{k}$ when $\mathcal{L}_p(h,k,p)(\tilde{p})=0$ for all $\tilde{p}$ and $\mathcal{L}_h(h,k,p)(\tilde{h})=0$ for all $\tilde{h}$.   To characterize the Hessian, we now want to consider the change in this scalar quantity when $k$ is perturbed in another direction.  In an abstract sense, this is identical to our adjoint approach for the gradient, however, instead of considering the scalar functional $J(h)$ to construct a Lagrangian, we will the scalar functional $\mathcal{L}_k(h,k,p)(\tilde{k})$.
 
 To characterize a second directional derivative, we can form another (meta-)Lagrangian using $\mathcal{L}_k(h,k,p)(\tilde{k})$ and the constraints $\mathcal{L}_p(h,k,p)(\tilde{p})=0$ and $\mathcal{L}_h(h,k,p)(\tilde{h})=0$.  The strong form of these constraints is given by
 $$
@@ -167,7 +214,7 @@ $$
 \begin{aligned}
 -\frac{\partial}{\partial x}\left[ k(x) \frac{\partial p}{\partial x}\right] &= D_hJ(x)\\
 p(0) &= 0\\
-\left. \frac{\partial p}{\partial x} \right|_{x=1} &= 0,
+\left. \frac{\partial p}{\partial x} \right|_{x=1} &= 0.
 \end{aligned}
 $$
 
@@ -216,6 +263,7 @@ $$
 (\nabla_{kk}J ) \tilde{k} = \frac{\partial \hat{p}}{\partial x}\frac{\partial h}{\partial x} + \frac{\partial \hat{h}}{\partial x} \frac{\partial p}{\partial x}.
 $$
 Note that $\tilde{k}$ is implicitly contained in the right hand side of this expression through $\hat{p}$ and $\hat{h}$.
+
 
 ## Implementation
 MUQ implements components of models through the `ModPiece`.  Readers that are not familiar with the `ModPiece` class should consult the [model compoents tutorial](https://mituq.bitbucket.io/source/_site/latest/group__modpieces.html) before proceeding. 
@@ -355,11 +403,11 @@ protected:
     auto& cond = inputs.at(0).get();
 
     // Build the stiffness matrix
-    auto K = BuildStiffness(cond);
+    auto A = BuildStiffness(cond);
 
     // Factor the stiffness matrix for forward and adjoint solves 
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-    solver.compute(K);
+    solver.compute(A);
 
     // Solve the forward problem
     Eigen::VectorXd sol = solver.solve(rhs);
@@ -371,7 +419,65 @@ protected:
     // Compute the gradient from the adjoint solution
     gradient = (1.0/dx)*(sol.tail(numCells)-sol.head(numCells)).array() * (adjSol.tail(numCells) - adjSol.head(numCells)).array();
   }
+    
+    
+  /*** 
+    This function computes the application of the model Jacobian's matrix $J$
+    on a vector $v$.  In addition to the model parameter $k$, this function also
+    requires the vector $v$. 
+        
+    The gradient with respect to the conductivity field is computed by solving
+    the forward model to get $h(x)$ and then using the tangent linear approach 
+    described above to obtain the Jacobian action.
 
+    @param[in] outWrt For a model with multiple outputs, this would be the index
+                      of the output list that corresponds to the sensitivity vector.
+                      Since this ModPiece only has one output, the outWrt argument
+                      is not used in the GradientImpl function.
+
+    @param[in] inWrt Specifies the index of the input for which we want to compute
+                     the gradient.  For inWrt==0, then the Jacobian with respect
+                     to the conductivity is used.  Since this ModPiece only has one 
+                     input, 0 is the only valid value for inWrt.
+
+    @param[in] inputs Just like the EvalauteImpl function, this is a list of vector-valued inputs.
+
+    @param[in] vec A vector with the same size of inputs[0].  The Jacobian will be applied to this vector.
+
+    @return This function returns nothing.  It stores the result in the private
+            ModPiece::jacobianAction variable that is then returned by the `Jacobian` function.
+
+  */
+  virtual void ApplyJacobianImpl(unsigned int outWrt, 
+                                 unsigned int inWrt,
+                                 muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+                                 Eigen::VectorXd const& vec) override
+  {
+    // Extract the conductivity vector from the inptus
+    auto& cond = inputs.at(0).get();
+
+    // Build the stiffness matrix
+    auto A = BuildStiffness(cond);
+
+    // Factor the stiffness matrix for forward and tangent linear solves 
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    solver.compute(A);
+
+    // Solve the forward system
+    Eigen::VectorXd sol = solver.solve(rhs);
+
+    // Build the tangent linear rhs 
+    Eigen::VectorXd incrRhs = Eigen::VectorXd::Zero(numNodes);
+
+    Eigen::VectorXd dh_dx = (sol.tail(numCells)-sol.head(numCells))/dx; // Spatial derivative of solution
+
+    incrRhs.head(numCells) += ( vec.array()*dh_dx.array() ).matrix();
+    incrRhs.tail(numCells) -= ( vec.array()*dh_dx.array() ).matrix();
+
+    // Solve the tangent linear model for the jacobian action
+    jacobianAction = solver.solve(incrRhs);
+  }
+    
   /**
     Computes the action of Hessian on a vector.
         
@@ -628,6 +734,18 @@ gradients will be close.
   Eigen::VectorXd gradFD = mod->GradientByFD(0,0,std::vector<Eigen::VectorXd>{cond},sens);
   std::cout << "Finite Difference Gradient:\n" << gradFD.transpose() << std::endl << std::endl;
 
+/***
+## Test Jacobian of Model
+Here we randomly choose a vector $v$ (`jacDir`) and compute the action of the Jacobian $Jv$ using both our adjoint method and MUQ's built-in finite difference implementation.
+*/
+  Eigen::VectorXd jacDir = RandomGenerator::GetUniform(numCells);
+
+  Eigen::VectorXd jacAct = mod->ApplyJacobian(0,0, cond, jacDir);
+  std::cout << "Jacobian Action: \n" << jacAct.transpose() << std::endl << std::endl;
+  
+  Eigen::VectorXd jacActFD = mod->ApplyJacobianByFD(0,0, std::vector<Eigen::VectorXd>{cond}, jacDir);
+  std::cout << "Finite Difference Jacobian Action \n" << jacActFD.transpose() << std::endl << std::endl;
+  
 /***
 ## Test Hessian of Model
 We now take a similar approach to verifying our Hessian action implementation.  Here we randomly choose a vector $v$ (`hessDir`)
