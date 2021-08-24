@@ -113,10 +113,54 @@ class FlowEquation(mm.PyModPiece):
         
         self.gradient = self.dx * dhdx * dpdx 
         
-#     def ApplyJacobianImpl(self, outWrt, inWrt, inputs, vec):
-#         """
-#         Applies the Jacobian of the model to an input vector.
-#         """
+    def ApplyJacobianImpl(self, outWrt, inWrt, inputs, vec):
+        """ This function computes the application of the model Jacobian's matrix $J$
+            on a vector $v$.  In addition to the model parameter $k$, this function also
+            requires the vector $v$. 
+        
+            The gradient with respect to the conductivity field is computed by solving
+            the forward model to get $h(x)$ and then using the incremental approach 
+            described above to obtain the Jacobian action.
+
+            INPUTS:
+                outWrt: For a model with multiple outputs, this would be the index
+                        of the output list that corresponds to the sensitivity vector.
+                        Since this ModPiece only has one output, the outWrt argument
+                        is not used in the GradientImpl function.
+
+                inWrt: Specifies the index of the input for which we want to compute
+                       the gradient.  For inWrt==0, then the Jacobian with respect
+                       to the conductivity is used.  Since this ModPiece only has one 
+                       input, 0 is the only valid value for inWrt.
+
+                inputs: Just like the EvalauteImpl function, this is a list of vector-valued inputs.
+
+                vec: A vector with the same size of inputs[0].  The Jacobian will be applied to this vector.
+                
+            RETURNS:
+                This function returns nothing.  It stores the result in the private
+                ModPiece::jacobianAction variable that is then returned by the `Jacobian` function.
+
+        """
+        
+        condVals = inputs[0]
+        
+        # Build the stiffness matrix
+        A = self.BuildStiffness(condVals)
+        
+        # Solve the forward system
+        sol = spla.spsolve(A,self.rhs)
+        
+        # Build the rhs 
+        incrRhs = np.zeros(self.numNodes)
+        
+        dh_dx = (sol[1:]-sol[:-1])/self.dx  # Spatial derivative of solution
+        
+        incrRhs[:-1] += vec*dh_dx
+        incrRhs[1:] -= vec*dh_dx
+            
+        # Solve the incremental problem for the jacobian action
+        self.jacobianAction = spla.spsolve(A, incrRhs)
         
     def ApplyHessianImpl(self, outWrt, inWrt1, inWrt2, inputs, sensitivity, vec):
         """  Computes the action of Hessian on a vector.
