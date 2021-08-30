@@ -132,24 +132,20 @@ std::shared_ptr<SampleCollection> SampleDILI(std::shared_ptr<ModPiece> const& po
     pt.put("BurnIn", 5000);
     pt.put("PrintLevel",3);
     pt.put("HessianType","Exact");
-    pt.put("Adapt Interval", 10000);
+    pt.put("Adapt Interval", 0);
     pt.put("Initial Weight", 1);
     pt.put("Prior Node", "Prior");
     pt.put("Likelihood Node", "Likelihood");
 
-    pt.put("Eigensolver Block", "EigOpts");
-    pt.put("EigOpts.NumEigs",100); // Maximum number of generalized eigenvalues to compute (e.g., maximum LIS dimension)
-    pt.put("EigOpts.ExpectedRank", 5);
-    pt.put("EigOpts.OversamplingFactor", 2);
-    //pt.put("EigOpts.AbsoluteTolerance", );
-    pt.put("EigOpts.Verbosity",3);
+    //pt.put("Eigensolver Block", "EigOpts");
+    //pt.put("EigOpts.OversamplingFactor", 2);
+    //pt.put("EigOpts.Verbosity",3);
 
     pt.put("LIS Block", "LIS");
     pt.put("LIS.Method", "MHKernel");
     pt.put("LIS.Proposal","MyProposal");
     pt.put("LIS.MyProposal.Method","MALAProposal");
-    pt.put("LIS.MyProposal.ProposalVariance", 5.0);
-    pt.put("LIS.MyProposal.StepSize", 0.05);
+    pt.put("LIS.MyProposal.StepSize", 0.15);
 
     pt.put("CS Block", "CS");
     pt.put("CS.Method", "MHKernel");
@@ -180,7 +176,7 @@ std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& pos
     pt.put("Kernel1.Method","MHKernel");
     pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
     pt.put("Kernel1.MyProposal.Method", "CrankNicolsonProposal");
-    pt.put("Kernel1.MyProposal.Beta", 0.3);
+    pt.put("Kernel1.MyProposal.Beta", 0.1);
     pt.put("Kernel1.MyProposal.PriorNode", "Prior"); // The node in the WorkGraph containing the prior density
 
     // create a sampling problem
@@ -189,6 +185,11 @@ std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& pos
     auto sampler = std::make_shared<SingleChainMCMC>(pt,problem);
 
     return sampler->Run(startPt); // Use a true posterior sample to avoid burnin
+}
+
+Eigen::VectorXd ComputeMAP(std::shared_ptr<ModPiece> const& posterior, Eigen::VectorXd const& startPt)
+{
+    
 }
 
 int main(){

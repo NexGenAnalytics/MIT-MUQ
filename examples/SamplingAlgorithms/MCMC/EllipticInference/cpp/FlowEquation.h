@@ -114,11 +114,11 @@ protected:
     auto& cond = inputs.at(0).get();
 
     // Build the stiffness matrix
-    auto K = BuildStiffness(cond);
+    auto A = BuildStiffness(cond);
 
     // Factor the stiffness matrix for forward and adjoint solves 
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-    solver.compute(K);
+    solver.compute(A);
 
     // Solve the forward problem
     Eigen::VectorXd sol = solver.solve(rhs);
@@ -130,7 +130,65 @@ protected:
     // Compute the gradient from the adjoint solution
     gradient = (1.0/dx)*(sol.tail(numCells)-sol.head(numCells)).array() * (adjSol.tail(numCells) - adjSol.head(numCells)).array();
   }
+    
+    
+  /*** 
+    This function computes the application of the model Jacobian's matrix $J$
+    on a vector $v$.  In addition to the model parameter $k$, this function also
+    requires the vector $v$. 
+        
+    The gradient with respect to the conductivity field is computed by solving
+    the forward model to get $h(x)$ and then using the tangent linear approach 
+    described above to obtain the Jacobian action.
 
+    @param[in] outWrt For a model with multiple outputs, this would be the index
+                      of the output list that corresponds to the sensitivity vector.
+                      Since this ModPiece only has one output, the outWrt argument
+                      is not used in the GradientImpl function.
+
+    @param[in] inWrt Specifies the index of the input for which we want to compute
+                     the gradient.  For inWrt==0, then the Jacobian with respect
+                     to the conductivity is used.  Since this ModPiece only has one 
+                     input, 0 is the only valid value for inWrt.
+
+    @param[in] inputs Just like the EvalauteImpl function, this is a list of vector-valued inputs.
+
+    @param[in] vec A vector with the same size of inputs[0].  The Jacobian will be applied to this vector.
+
+    @return This function returns nothing.  It stores the result in the private
+            ModPiece::jacobianAction variable that is then returned by the `Jacobian` function.
+
+  */
+  virtual void ApplyJacobianImpl(unsigned int outWrt, 
+                                 unsigned int inWrt,
+                                 muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+                                 Eigen::VectorXd const& vec) override
+  {
+    // Extract the conductivity vector from the inptus
+    auto& cond = inputs.at(0).get();
+
+    // Build the stiffness matrix
+    auto A = BuildStiffness(cond);
+
+    // Factor the stiffness matrix for forward and tangent linear solves 
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    solver.compute(A);
+
+    // Solve the forward system
+    Eigen::VectorXd sol = solver.solve(rhs);
+
+    // Build the tangent linear rhs 
+    Eigen::VectorXd incrRhs = Eigen::VectorXd::Zero(numNodes);
+
+    Eigen::VectorXd dh_dx = (sol.tail(numCells)-sol.head(numCells))/dx; // Spatial derivative of solution
+
+    incrRhs.head(numCells) += ( vec.array()*dh_dx.array() ).matrix();
+    incrRhs.tail(numCells) -= ( vec.array()*dh_dx.array() ).matrix();
+
+    // Solve the tangent linear model for the jacobian action
+    jacobianAction = solver.solve(incrRhs);
+  }
+    
   /**
     Computes the action of Hessian on a vector.
         
@@ -306,7 +364,7 @@ private:
   // Will store the precomputed RHS for the forward problem
   Eigen::VectorXd rhs;
 
-}; // end of class
+}; // end of class FlowEquation
 
 
 
