@@ -50,7 +50,8 @@ namespace muq {
       std::shared_ptr<AbstractSamplingProblem> GetFinestProblem();
 
       std::shared_ptr<MultiIndex> GetHighestIndex();
-      
+      std::shared_ptr<MultiIndex> GetLowestIndex();
+
       std::shared_ptr<SampleCollection> GetQOIDiff();
 
       void WriteToFile(std::string filename);

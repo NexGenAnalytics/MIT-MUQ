@@ -10,6 +10,7 @@
 #include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+#include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
 
@@ -158,7 +159,25 @@ TEST(MLMCMCTest, GreedyMLMCMC)
 
   auto mean = greedymlmcmc.MeanQOI();
 
-  EXPECT_NEAR(mean[0], 1.0, 0.2);
-  EXPECT_NEAR(mean[1], 2.0, 0.2);
+  Eigen::VectorXd trueMu(2);
+  trueMu << 1.0, 2.0;
+  Eigen::MatrixXd trueCov(2,2);
+  trueCov << 0.7, 0.6,
+             0.6, 1.0;
 
+  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+
+  MultiIndexEstimator estimator( greedymlmcmc.GetBoxes() );
+  mean = estimator.Mean();
+  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+
+  Eigen::VectorXd variance = estimator.Variance();
+  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+
+  Eigen::VectorXd skewness = estimator.Skewness();
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
 }
