@@ -18,12 +18,12 @@ namespace muq {
         @details A basic MIMCMC method based on a fixed
         number of samples for all model indices.
      */
-    class MIMCMC : public SamplingAlgorithm {
+    class MIMCMC : public SamplingAlgorithm{
     public:
       MIMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory);
 
-      virtual std::shared_ptr<SampleCollection> GetSamples() const override;
-      virtual std::shared_ptr<SampleCollection> GetQOIs() const override;
+      virtual std::shared_ptr<SampleCollection> GetSamples() const;
+      virtual std::shared_ptr<SampleCollection> GetQOIs() const;
 
       Eigen::VectorXd MeanQOI();
 
@@ -53,7 +53,7 @@ namespace muq {
        */
       std::shared_ptr<MultiIndexSet> GetIndices();
 
-      virtual std::shared_ptr<SampleCollection> RunImpl(std::vector<Eigen::VectorXd> const& x0) override;
+      virtual std::shared_ptr<SampleCollection> RunImpl(std::vector<Eigen::VectorXd> const& x0);
 
       /**
        * @brief Write HDF5 output for the entire MIMCMC method

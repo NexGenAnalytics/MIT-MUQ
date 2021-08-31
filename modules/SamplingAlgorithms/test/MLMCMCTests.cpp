@@ -24,10 +24,6 @@ using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 
 
-
-
-
-
 class MySamplingProblem : public AbstractSamplingProblem {
 public:
   MySamplingProblem(std::shared_ptr<muq::Modeling::ModPiece> targetIn)
@@ -168,16 +164,36 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   EXPECT_NEAR(trueMu(0), mean(0), 0.2);
   EXPECT_NEAR(trueMu(1), mean(1), 0.2);
 
-  MultiIndexEstimator estimator( greedymlmcmc.GetBoxes() );
-  mean = estimator.Mean();
+  auto params = greedymlmcmc.GetSamples();
+  mean = params->Mean();
   EXPECT_NEAR(trueMu(0), mean(0), 0.2);
   EXPECT_NEAR(trueMu(1), mean(1), 0.2);
 
-  Eigen::VectorXd variance = estimator.Variance();
+  Eigen::VectorXd variance = params->Variance();
   EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
   EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
 
-  Eigen::VectorXd skewness = estimator.Skewness();
+  Eigen::VectorXd skewness = params->Skewness();
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+
+  Eigen::MatrixXd covariance = params->Covariance();
+  EXPECT_NEAR(trueCov(0,0), covariance(0,0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), covariance(1,1), 0.2);
+  EXPECT_NEAR(trueCov(0,1), covariance(0,1), 0.2);
+  EXPECT_NEAR(trueCov(1,0), covariance(1,0), 0.2);
+
+
+  auto qois = greedymlmcmc.GetQOIs();
+  mean = qois->Mean();
+  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+
+  variance = qois->Variance();
+  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+
+  skewness = qois->Skewness();
   EXPECT_NEAR(0.0, skewness(0), 0.2);
   EXPECT_NEAR(0.0, skewness(0), 0.2);
 }
