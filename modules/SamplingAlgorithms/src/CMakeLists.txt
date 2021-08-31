@@ -50,6 +50,7 @@ CreateCompileGroup(
 
     SamplingState.cpp
     SampleCollection.cpp
+    SampleEstimator.cpp
     #DistributedCollection.cpp
     MarkovChain.cpp
 
