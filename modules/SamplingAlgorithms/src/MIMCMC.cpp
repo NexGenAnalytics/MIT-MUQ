@@ -1,5 +1,4 @@
 #include "MUQ/SamplingAlgorithms/MIMCMC.h"
-#include "spdlog/spdlog.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
