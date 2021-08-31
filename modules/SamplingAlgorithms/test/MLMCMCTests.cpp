@@ -153,19 +153,14 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   greedymlmcmc.Run();
   greedymlmcmc.Draw(false);
 
-  auto mean = greedymlmcmc.MeanQOI();
-
   Eigen::VectorXd trueMu(2);
   trueMu << 1.0, 2.0;
   Eigen::MatrixXd trueCov(2,2);
   trueCov << 0.7, 0.6,
              0.6, 1.0;
 
-  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
-  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
-
   auto params = greedymlmcmc.GetSamples();
-  mean = params->Mean();
+  Eigen::VectorXd mean = params->Mean();
   EXPECT_NEAR(trueMu(0), mean(0), 0.2);
   EXPECT_NEAR(trueMu(1), mean(1), 0.2);
 

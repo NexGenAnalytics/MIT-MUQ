@@ -37,6 +37,8 @@ namespace SamplingAlgorithms{
   class SampleEstimator {
 
   public:
+
+      virtual ~SampleEstimator() = default;
     
       /** Returns the size \f$N_i\f$ of each block.   If `blockInd==-1`, the size \f$N\f$ of the joint random variable is 
           returned.

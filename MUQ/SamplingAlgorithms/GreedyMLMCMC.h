@@ -5,7 +5,7 @@
 
 #include "MUQ/SamplingAlgorithms/MIMCMCBox.h"
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
-#include "MUQ/SamplingAlgorithms/SamplingAlgorithm.h"
+
 #include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 
 namespace pt = boost::property_tree;
@@ -25,8 +25,6 @@ namespace muq {
 
       virtual std::shared_ptr<MultiIndexEstimator> GetSamples() const;
       virtual std::shared_ptr<MultiIndexEstimator> GetQOIs() const;
-
-      Eigen::VectorXd MeanQOI();
 
       void Draw(bool drawSamples = true);
 

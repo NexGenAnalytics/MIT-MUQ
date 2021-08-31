@@ -3,6 +3,7 @@
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
 #include "MUQ/SamplingAlgorithms/MarkovChain.h"
 #include "MUQ/SamplingAlgorithms/SampleEstimator.h"
+#include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 #include "MUQ/SamplingAlgorithms/SamplingState.h"
 #include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
@@ -56,6 +57,9 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"), py::arg("blockDim") = -1)
     .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"),py::arg("stdDev"), py::arg("blockDim") = -1)
     .def("ExpectedValue", &SampleEstimator::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>());
+
+  py::class_<MultiIndexEstimator, SampleEstimator, std::shared_ptr<MultiIndexEstimator>>(m, "MultiIndexEstimator")
+    .def(py::init<std::vector<std::shared_ptr<MIMCMCBox>>>());
 
   py::class_<SampleCollection, SampleEstimator, std::shared_ptr<SampleCollection>> sampColl(m, "SampleCollection");
   sampColl

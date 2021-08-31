@@ -111,20 +111,6 @@ namespace muq {
       }
     }
 
-    Eigen::VectorXd GreedyMLMCMC::MeanQOI() {
-      // Compute full QOI estimate
-      Eigen::VectorXd MImean(componentFactory->SamplingProblem(componentFactory->FinestIndex())->blockSizesQOI.sum());
-      MImean.setZero();
-
-      for (auto box : boxes) {
-        Eigen::VectorXd sampMean = box->MeanQOI();
-
-        MImean += sampMean;
-      }
-
-      return MImean;
-    }
-
     void GreedyMLMCMC::Draw(bool drawSamples) {
       std::ofstream graphfile;
       graphfile.open ("graph");
