@@ -1,6 +1,7 @@
 #include "AllClassWrappers.h"
 
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
+#include "MUQ/SamplingAlgorithms/MarkovChain.h"
 #include "MUQ/SamplingAlgorithms/SampleEstimator.h"
 #include "MUQ/SamplingAlgorithms/SamplingState.h"
 #include "MUQ/SamplingAlgorithms/Diagnostics.h"
@@ -77,6 +78,9 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("head", &SampleCollection::head)
     .def("tail", &SampleCollection::tail)
     .def("segment", &SampleCollection::segment, py::arg("startInd"),py::arg("length"),py::arg("skipBy")=1);
+
+  py::class_<MarkovChain, SampleCollection, SampleEstimator, std::shared_ptr<MarkovChain>>(m,"MarkovChain")
+    .def_static("SingleComponentESS", &MarkovChain::SingleComponentESS);
 
   m.def_submodule("Diagnostics")
     .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::Rhat(collections);})

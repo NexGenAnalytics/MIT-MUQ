@@ -120,15 +120,19 @@ void PythonBindings::MCMCWrapper(py::module &m) {
     .def("GetSamples", &SamplingAlgorithm::GetSamples)
     .def("GetQOIs", &SamplingAlgorithm::GetQOIs);
 
-  py::class_<SingleChainMCMC, SamplingAlgorithm, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
+  py::class_<SingleChainMCMC, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
   singleMCMC
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> problem) {return new SingleChainMCMC(ConvertDictToPtree(d), problem);}))
     .def(py::init( [](py::dict d, std::vector<std::shared_ptr<TransitionKernel>> kernels) {return new SingleChainMCMC(ConvertDictToPtree(d), kernels);}))
+    .def("SetState", (void (SingleChainMCMC::*)(std::shared_ptr<SamplingState> const&)) &SingleChainMCMC::SetState)
+    .def("SetState", (void (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::SetState)
     .def("Kernels", &SingleChainMCMC::Kernels)
-    .def("RunImpl", &SingleChainMCMC::RunImpl)
+    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run)
     .def("AddNumSamps", &SingleChainMCMC::AddNumSamps)
     .def("NumSamps", &SingleChainMCMC::NumSamps)
-    .def("TotalTime", &SingleChainMCMC::TotalTime);
+    .def("TotalTime", &SingleChainMCMC::TotalTime)
+    .def("GetSamples", &SingleChainMCMC::GetSamples)
+    .def("GetQOIs", &SingleChainMCMC::GetQOIs);
 
   py::class_<MIMCMCBox, std::shared_ptr<MIMCMCBox>> multiindexMCMCBox(m, "MIMCMCBox");
   multiindexMCMCBox
