@@ -123,6 +123,13 @@ Eigen::VectorXd SampleEstimator::Skewness(Eigen::VectorXd const& mean,
     return StandardizedMoment(3,mean, blockInd);
 }
 
+Eigen::VectorXd SampleEstimator::Skewness(Eigen::VectorXd const& mean,
+                                          Eigen::VectorXd const& stdDev,
+                                          int                    blockInd) const
+{   
+    return StandardizedMoment(3,mean, stdDev, blockInd);
+}
+
 Eigen::VectorXd SampleEstimator::Kurtosis(int blockInd) const
 {
     return StandardizedMoment(4,blockInd);
@@ -132,6 +139,13 @@ Eigen::VectorXd SampleEstimator::Kurtosis(Eigen::VectorXd const& mean,
                                           int                    blockInd) const
 {   
     return StandardizedMoment(4,mean, blockInd);
+}
+
+Eigen::VectorXd SampleEstimator::Kurtosis(Eigen::VectorXd const& mean,
+                                          Eigen::VectorXd const& stdDev,
+                                          int                    blockInd) const
+{   
+    return StandardizedMoment(4,mean, stdDev, blockInd);
 }
 
 

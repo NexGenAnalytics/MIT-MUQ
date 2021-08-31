@@ -1,6 +1,7 @@
 #include "AllClassWrappers.h"
 
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
+#include "MUQ/SamplingAlgorithms/SampleEstimator.h"
 #include "MUQ/SamplingAlgorithms/SamplingState.h"
 #include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
@@ -36,17 +37,34 @@ void PythonBindings::SampleWrapper(py::module &m)
   //   .def_readonly("momentPower", &SamplingStatePartialMoment::momentPower);
   //   //.def_readonly("mu", &SamplingStatePartialMoment::mu);
 
-  py::class_<SampleCollection, std::shared_ptr<SampleCollection>> sampColl(m, "SampleCollection");
+  py::class_<SampleEstimator, std::shared_ptr<SampleEstimator>>(m,"SampleEstimator")
+    .def("CentralMoment", (Eigen::VectorXd (SampleEstimator::*)(unsigned int, int) const) &SampleEstimator::CentralMoment, py::arg("order"), py::arg("blockDim") = -1)
+    .def("CentralMoment", (Eigen::VectorXd (SampleEstimator::*)(unsigned int, Eigen::VectorXd const&, int) const) &SampleEstimator::CentralMoment, py::arg("order"), py::arg("mean"), py::arg("blockDim") = -1)
+    .def("Mean", &SampleEstimator::Mean, py::arg("blockDim") = -1)
+    .def("Variance", (Eigen::VectorXd (SampleEstimator::*)(int) const) &SampleEstimator::Variance, py::arg("blockDim") = -1)
+    .def("Variance", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Variance, py::arg("mean"), py::arg("blockDim") = -1)
+    .def("Covariance", (Eigen::MatrixXd (SampleEstimator::*)(int) const) &SampleEstimator::Covariance, py::arg("blockDim") = -1)
+    .def("Covariance", (Eigen::MatrixXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Covariance, py::arg("mean"), py::arg("blockDim") = -1)
+    .def("StandardizedMoment", (Eigen::VectorXd (SampleEstimator::*)(unsigned int, int) const) &SampleEstimator::CentralMoment, py::arg("order"), py::arg("blockDim") = -1)
+    .def("StandardizedMoment", (Eigen::VectorXd (SampleEstimator::*)(unsigned int, Eigen::VectorXd const&, int) const) &SampleEstimator::StandardizedMoment, py::arg("order"), py::arg("mean"), py::arg("blockDim") = -1)
+    .def("StandardizedMoment", (Eigen::VectorXd (SampleEstimator::*)(unsigned int, Eigen::VectorXd const&, Eigen::VectorXd const&, int) const) &SampleEstimator::StandardizedMoment, py::arg("order"), py::arg("mean"),py::arg("stdDev"), py::arg("blockDim") = -1)
+    .def("Skewness", (Eigen::VectorXd (SampleEstimator::*)(int) const) &SampleEstimator::Skewness, py::arg("blockDim") = -1)
+    .def("Skewness", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Skewness, py::arg("mean"), py::arg("blockDim") = -1)
+    .def("Skewness", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, Eigen::VectorXd const&, int) const) &SampleEstimator::Skewness, py::arg("mean"),py::arg("stdDev"), py::arg("blockDim") = -1)
+    .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(int) const) &SampleEstimator::Kurtosis, py::arg("blockDim") = -1)
+    .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"), py::arg("blockDim") = -1)
+    .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"),py::arg("stdDev"), py::arg("blockDim") = -1)
+    .def("ExpectedValue", &SampleEstimator::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>());
+
+  py::class_<SampleCollection, SampleEstimator, std::shared_ptr<SampleCollection>> sampColl(m, "SampleCollection");
   sampColl
     .def("__getitem__", (const std::shared_ptr<SamplingState> (SampleCollection::*)(unsigned) const) &SampleCollection::at)
 //    .def("at", &SampleCollection::at)
     .def("size", &SampleCollection::size)
-    .def("CentralMoment", (Eigen::VectorXd (SampleCollection::*)(unsigned, int) const) &SampleCollection::CentralMoment, py::arg("order"), py::arg("blockDim") = -1)
     .def("CentralMoment", (Eigen::VectorXd (SampleCollection::*)(unsigned, Eigen::VectorXd const&, int) const) &SampleCollection::CentralMoment, py::arg("order"), py::arg("mean"), py::arg("blockDim") = -1)
     .def("Mean", &SampleCollection::Mean, py::arg("blockDim") = -1)
-    .def("Variance", &SampleCollection::Variance, py::arg("blockDim") = -1)
-    .def("Covariance", (Eigen::MatrixXd (SampleCollection::*)(int) const) &SampleCollection::Covariance, py::arg("blockDim") = -1)
     .def("Covariance", (Eigen::MatrixXd (SampleCollection::*)(Eigen::VectorXd const&, int) const) &SampleCollection::Covariance, py::arg("mean"), py::arg("blockDim") = -1)
+    .def("ExpectedValue", &SampleCollection::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>())
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(Eigen::VectorXd const&, int) const) &SampleCollection::RunningCovariance, py::arg("mean"), py::arg("blockDim") = -1)
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(int) const) &SampleCollection::RunningCovariance, py::arg("blockDim") = -1)
     .def("ESS", &SampleCollection::ESS, py::arg("blockDim")=-1)

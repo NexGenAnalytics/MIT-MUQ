@@ -143,14 +143,6 @@ Eigen::VectorXd SampleCollection::CentralMoment(unsigned order, Eigen::VectorXd 
   return (stateSum / weightSum).eval();
 }
 
-//  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order
-Eigen::VectorXd SampleCollection::CentralMoment(unsigned order, int blockNum) const
-{
-  const Eigen::VectorXd& mu = Mean(blockNum);
-
-  return CentralMoment(order, mu, blockNum);
-}
-
 Eigen::VectorXd SampleCollection::Mean(int blockNum) const
 {
     SamplingStateIdentity op(blockNum);
@@ -162,10 +154,6 @@ Eigen::VectorXd SampleCollection::Mean(int blockNum) const
     return (stateSum / weightSum).eval();
 }
 
-Eigen::MatrixXd SampleCollection::Covariance(int blockInd) const
-{
-  return Covariance(Mean(blockInd), blockInd);
-}
 
 Eigen::MatrixXd SampleCollection::Covariance(Eigen::VectorXd const& mean, int blockInd) const {
   const int numSamps = samples.size();
@@ -379,8 +367,6 @@ void SampleCollection::WriteToFile(std::string const& filename, std::string cons
 
 unsigned SampleCollection::size() const { return samples.size(); }
 
-Eigen::VectorXd SampleCollection::Variance(int blockDim) const { return CentralMoment(2,blockDim); }
-
 
 std::set<std::string> SampleCollection::ListMeta(bool requireAll) const{
 
@@ -543,4 +529,19 @@ std::vector<Eigen::VectorXd> SampleCollection::RunningExpectedValue(std::shared_
   }
 
   return runningExpected;
+}
+
+
+unsigned int SampleCollection::BlockSize(int blockInd) const
+{
+  if(blockInd<0){
+    return samples.at(0)->TotalDim();
+  }else{
+    return samples.at(0)->state.at(blockInd).size();
+  }
+}
+
+unsigned int SampleCollection::NumBlocks() const
+{
+  return samples.at(0)->state.size();
 }

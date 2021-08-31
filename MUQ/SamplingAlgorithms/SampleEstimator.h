@@ -171,6 +171,9 @@ namespace SamplingAlgorithms{
       virtual Eigen::VectorXd Skewness(Eigen::VectorXd const& mean,
                                        int                    blockInd=-1) const;
 
+      virtual Eigen::VectorXd Skewness(Eigen::VectorXd const& mean,
+                                       Eigen::VectorXd const& stdDev,
+                                       int                    blockInd=-1) const;
       /**
        The marginal kurtosis of a random variable is given by 
        \f[
@@ -189,6 +192,10 @@ namespace SamplingAlgorithms{
 
       /** Evaluate the kurtosis using a precomputed (or known) mean vector. */
       virtual Eigen::VectorXd Kurtosis(Eigen::VectorXd const& mean,
+                                       int                    blockInd=-1) const;
+
+      virtual Eigen::VectorXd Kurtosis(Eigen::VectorXd const& mean,
+                                       Eigen::VectorXd const& stdDev,
                                        int                    blockInd=-1) const;
       /**
        Computes the sample covariance of \f$x\f$ with itself (if `blockInd==-1`) or \f$x_i\f$ with itself (if `blockInd==i`), i.e., 

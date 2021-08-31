@@ -10,6 +10,7 @@
 #include "MUQ/Modeling/ModPiece.h"
 
 #include "MUQ/SamplingAlgorithms/SamplingState.h"
+#include "MUQ/SamplingAlgorithms/SampleEstimator.h"
 
 #include "MUQ/Utilities/HDF5/HDF5File.h"
 
@@ -65,7 +66,7 @@ namespace muq{
     /** @class SampleCollection
         @brief A class to hold and analyze a collection of SamplingState objects
     */
-    class SampleCollection{
+    class SampleCollection : public SampleEstimator{
     public:
       SampleCollection() = default;
 
@@ -98,16 +99,12 @@ namespace muq{
 
       virtual const std::shared_ptr<SamplingState> back() const;
 
-      ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order
-      virtual Eigen::VectorXd CentralMoment(unsigned order, int blockNum=-1) const;
-
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order given that we already know the mean
-      virtual Eigen::VectorXd CentralMoment(unsigned order, Eigen::VectorXd const& mean, int blockNum=-1) const;
+      virtual Eigen::VectorXd CentralMoment(unsigned order, Eigen::VectorXd const& mean, int blockNum=-1) const override;
 
-      virtual Eigen::VectorXd Mean(int blockInd=-1) const;
-      virtual Eigen::VectorXd Variance(int blockInd=-1) const;
-      virtual Eigen::MatrixXd Covariance(int blockInd=-1) const;
-      virtual Eigen::MatrixXd Covariance(Eigen::VectorXd const& mean, int blockInd=-1) const;
+      virtual Eigen::VectorXd Mean(int blockInd=-1) const override;
+      virtual Eigen::MatrixXd Covariance(int blockInd=-1) const override{return SampleEstimator::Covariance(blockInd);};
+      virtual Eigen::MatrixXd Covariance(Eigen::VectorXd const& mean, int blockInd=-1) const override;
 
       /** Computes running estimates of the covariance.
 
@@ -194,7 +191,8 @@ namespace muq{
       as a muq::Modeling::ModPiece.  The output is a vector containing the expected
       value of \f$f\f$.
       */
-      virtual Eigen::VectorXd ExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
+      virtual Eigen::VectorXd ExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, 
+                                            std::vector<std::string> const& metains = std::vector<std::string>()) const override;
 
       /**
       Computes running estimates of the expected value.  Returns a std::vector
@@ -205,6 +203,13 @@ namespace muq{
       std::vector<Eigen::VectorXd> RunningExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
 
 
+      /** Returns the size \f$N_i\f$ of each block.   If `blockInd==-1`, the size \f$N\f$ of the joint random variable is 
+          returned.
+      */ 
+      virtual unsigned int BlockSize(int blockInd) const override;
+
+      /** Returns the nubmer of block \f$M\f$. */
+      virtual unsigned int NumBlocks() const override;
 
     protected:
 
