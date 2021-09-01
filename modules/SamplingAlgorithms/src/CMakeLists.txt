@@ -101,6 +101,7 @@ if(MUQ_USE_MPI)
       DistributedCollection.cpp
       ParallelAbstractSamplingProblem.cpp
       ParallelMIComponentFactory.cpp
+      ParallelFixedSamplesMIMCMC.cpp
   )
 
 endif()

@@ -33,7 +33,9 @@ SingleChainMCMC::SingleChainMCMC(boost::property_tree::ptree pt,
 SingleChainMCMC::SingleChainMCMC(pt::ptree pt,
                                  std::shared_ptr<AbstractSamplingProblem> const& problem,
                                  std::shared_ptr<parcer::Communicator> const& comm) :
-                 SingleChainMCMC(pt,problem),
+                 samples(std::make_shared<MarkovChain>()),
+                 QOIs(std::make_shared<MarkovChain>()),
+                 printLevel(pt.get("PrintLevel",3)),
                  comm(comm)
 {
   Setup(pt, problem);
@@ -42,7 +44,9 @@ SingleChainMCMC::SingleChainMCMC(pt::ptree pt,
 SingleChainMCMC::SingleChainMCMC(pt::ptree pt,
                                  std::shared_ptr<parcer::Communicator> const& comm,
                                  std::vector<std::shared_ptr<TransitionKernel> > const& kernelsIn) :
-                 SingleChainMCMC(pt,kernelsIn),
+                 samples(std::make_shared<MarkovChain>()),
+                 QOIs(std::make_shared<MarkovChain>()),
+                 printLevel(pt.get("PrintLevel",3)),
                  comm(comm)
 {
   Setup(pt, kernelsIn);

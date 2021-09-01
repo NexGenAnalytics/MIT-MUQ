@@ -55,13 +55,13 @@ int main(){
   MIMCMC mimcmc (pt, componentFactory);
   mimcmc.Run();
   mimcmc.Draw(false);
-  std::cout << "mean QOI: " << mimcmc.MeanQOI().transpose() << std::endl;
+  std::cout << "mean QOI: " << mimcmc.GetQOIs()->Mean().transpose() << std::endl;
 
   std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
 
   SLMCMC slmcmc (pt, componentFactory);
   slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+  std::cout << "mean QOI: " << slmcmc.GetQOIs()->Mean().transpose() << std::endl;
 
   return 0;
 }

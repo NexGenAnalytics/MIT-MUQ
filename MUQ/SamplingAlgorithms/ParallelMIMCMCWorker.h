@@ -1,6 +1,8 @@
 #ifndef PARALLELMIMCMCWORKER_H_
 #define PARALLELMIMCMCWORKER_H_
 
+#include "MUQ/config.h"
+
 #if MUQ_HAS_MPI
 
 #if !MUQ_HAS_PARCER
