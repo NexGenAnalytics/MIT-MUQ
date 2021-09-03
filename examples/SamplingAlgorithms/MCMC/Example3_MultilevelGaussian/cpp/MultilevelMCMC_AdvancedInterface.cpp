@@ -198,7 +198,7 @@ int main(){
 
   std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
 
-  Eigen::VectorXd x0 = RandomGenerator::GetNormal(numChains);
+  Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
   auto componentFactory = std::make_shared<MyMIComponentFactory>(x0, pt);
 
   SLMCMC slmcmc (pt, componentFactory);
