@@ -62,13 +62,17 @@ CreateCompileGroup(
     MHKernel.cpp
     DRKernel.cpp
     DILIKernel.cpp
+
+    # MIMCMC Stack
     MIKernel.cpp
     GreedyMLMCMC.cpp
     MIMCMC.cpp
     MIMCMCBox.cpp
     MultiIndexEstimator.cpp
+    DefaultComponentFactory.cpp
     SLMCMC.cpp
     SubsamplingMIProposal.cpp
+    
     GMHKernel.cpp
 
     MCMCFactory.cpp

@@ -36,8 +36,8 @@ public:
 
 class MyMIComponentFactory : public MIComponentFactory {
 public:
-  MyMIComponentFactory (pt::ptree pt)
-   : pt(pt)
+  MyMIComponentFactory (Eigen::VectorXd const& start, pt::ptree pt)
+   : startingPoint(start), pt(pt)
   { }
 
   virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> const& index, std::shared_ptr<AbstractSamplingProblem> const& samplingProblem) override {
@@ -104,12 +104,11 @@ public:
   }
 
   virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> const& index) override {
-    Eigen::VectorXd mu(2);
-    mu << 1.0, 2.0;
-    return mu;
+    return startingPoint;
   }
 
 private:
+  Eigen::VectorXd startingPoint;
   pt::ptree pt;
 };
 

@@ -9,8 +9,12 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) # Only look for MUQ when 
   include_directories(${MUQ_INCLUDE_DIRS})
 endif()
 
-add_executable(MultilevelGaussianSampling MultilevelGaussianSampling.cpp)
-target_link_libraries(MultilevelGaussianSampling ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+add_executable(BasicMultilevel MultilevelMCMC_BasicInterface.cpp)
+target_link_libraries(BasicMultilevel ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(AdvancedMultilevel MultilevelMCMC_AdvancedInterface.cpp)
+target_link_libraries(AdvancedMultilevel ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
 
 if (MUQ_HAS_PARCER)
   add_executable(ModelParallelMultilevelGaussianSampling ModelParallelMultilevelGaussianSampling.cpp)
