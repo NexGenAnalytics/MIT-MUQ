@@ -22,13 +22,13 @@ GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree                         
 { 
 }
 
-GreedyMLMCMC::GreedyMLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
+GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree opts, std::shared_ptr<MIComponentFactory> componentFactory)
 : componentFactory(componentFactory),
-  numInitialSamples(pt.get("NumInitialSamples",1000)),
-  e(pt.get("GreedyTargetVariance",0.1)),
-  beta(pt.get("GreedyResamplingFactor",0.5)),
+  numInitialSamples(opts.get("NumInitialSamples",1000)),
+  e(opts.get("GreedyTargetVariance",0.1)),
+  beta(opts.get("GreedyResamplingFactor",0.5)),
   levels(componentFactory->FinestIndex()->GetValue(0)),
-  verbosity(pt.get("verbosity",0)),
+  verbosity(opts.get("verbosity",0)),
   useQOIs(componentFactory->SamplingProblem(componentFactory->FinestIndex())->numBlocksQOI>0)
 {
 

@@ -86,9 +86,8 @@ int main(){
 
   pt::ptree options;
   
-  options.put("NumSamples", 1e2); // number of samples for single level
-  options.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
-  options.put("GreedyTargetVariance", 0.1); // estimator variance to be achieved by greedy algorithm
+  options.put("NumInitialSamples", 10000); // number of initial samples for greedy MLMCMC
+  options.put("GreedyTargetVariance", 0.1); // Target estimator variance to be achieved by greedy algorithm
   options.put("verbosity", 1); // show some output
   options.put("MLMCMC.Subsampling_0", 8);
   options.put("MLMCMC.Subsampling_1", 4);
@@ -96,7 +95,7 @@ int main(){
   options.put("MLMCMC.Subsampling_3", 0);
 
   options.put("Proposal.Method", "MHProposal");
-  options.put("Proposal.ProposalVariance", 0.5);
+  options.put("Proposal.ProposalVariance", 1.0);
 
 
   unsigned int numChains = 5;
@@ -110,22 +109,24 @@ int main(){
     GreedyMLMCMC sampler(options, x0, logDensities);
     estimators.at(chainInd) = sampler.Run();
 
-    std::cout << "mean QOI: " << estimators.at(chainInd)->Mean().transpose() << std::endl;
-
+    std::cout << "Mean: " << estimators.at(chainInd)->Mean().transpose() << std::endl;
+    std::cout << "Variance: " << estimators.at(chainInd)->Variance().transpose() << std::endl;
+    
     std::stringstream filename;
     filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
     sampler.WriteToFile(filename.str());
+
   }
 
-  std::cout << "Rhat Convergence Diagnostic: " << Diagnostics::Rhat(estimators) << std::endl;
+  std::cout << "\n=============================\n";
+  std::cout << "Summary: \n";
+  std::cout << "-----------------------------\n";
+  std::cout << "  Rhat:               " << Diagnostics::Rhat(estimators).transpose() << std::endl;
+  std::cout << "  Mean (chain 0):     " << estimators.at(0)->Mean().transpose() << std::endl;
+  std::cout << "  Variance (chain 0): " << estimators.at(0)->Variance().transpose() << std::endl;
+  std::cout << "  Finest evals:       " << logDensities.back()->GetNumCalls() << std::endl;
+  std::cout << std::endl;
 
-  std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
-
-  // Eigen::VectorXd x0 = RandomGenerator::GetNormal(numChains);
-  
-  // SLMCMC slmcmc (pt, componentFactory);
-  // slmcmc.Run();
-  // std::cout << "mean QOI: " << slmcmc.GetQOIs()->Mean().transpose() << std::endl;
 
   return 0;
 }
