@@ -131,23 +131,54 @@ namespace muq{
                    "effective sample size" (ESS) describes how many independent
                    samples would have been needed to obtain the same estimator
                    variance.  In particular, let \f$\tilde{\mu}_N\f$ be a Monte
-                   Carlo estimator based on \f$N\f$ correlated samples.  The ESS
-                   is then given by the ratio of the esimator variances:
-                   \f[ ESS = N \frac{\mathbb{V}[\hat{\mu}-\mu]}{\mathbb{V}[\tilde{\mu}-\mu]}. \f]
+                   Carlo estimator based on \f$N\f$ correlated samples.  
 
-                   In SampleCollection, the samples are assumed independent, but
-                   not equally weighted, which is typically the case with importance
-                   sampling.  In this setting, the ESS is estimated using
-                   \f[
-                      ESS = \frac{\left(\sum_{i=1}^N w_i}\right)^2}{\sum_{i=1}^N w_i^2}.
-                   \f]
+        If method=="Batch" (default) The overlapping batch method (OBM) described in \cite Flegal2010 
+            is used.  This method is also applied to each component independently,
+            resulting in an ESS estimate for each component.
 
-                   Note that children of this class may compute the ESS with different
-                   approaches.  For example, the MarkovChain class computes the
-                   ESS using the approach of "Monte Carlo errors with less error" by
-                   Ulli Wolff.
+        If method=="MultiBatch",  The multivariate method of \cite Vats2019 is employed.  This 
+            method takes into account the joint correlation of all components of the chain and 
+            returns a single ESS.   This approach is preferred in high dimensional settings.
       */
-      virtual Eigen::VectorXd ESS(int blockDim=-1) const;
+      virtual Eigen::VectorXd ESS(std::string const& method="Batch") const{return ESS(-1,method);};
+      virtual Eigen::VectorXd ESS(int blockDim) const{return ESS(blockDim,"Batch");};
+      virtual Eigen::VectorXd ESS(int blockDim, std::string const& method) const;
+
+      /**
+      Computes the effective sample size using the overlapping or nonoverlapping 
+      batch method.  (See e.g., \cite Flegal2010).
+      
+      */
+      Eigen::VectorXd BatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
+
+      /**
+        Computes the multivariate effective sample size of \cite Vats2019.  This implementation is 
+        adapted from the python implementation at https://github.com/Gabriel-p/multiESS .
+
+        The standard definition of a univariate effective sample size is given in terms of the 
+        the ratio between the target distribution variance and the estimator variance.  More 
+        precisely, \f$\text{ESS}_u\f$ is given by
+        \f[
+          \text{ESS}_u = N \frac{\sigma^2}{\hat{\sigma}^2},
+        \f]
+        where \f$N\f$ is the total number of samples in the Monte Carlo estimate,
+        \f$\sigma^2\f$ is the variance of the target random variable, and \f$\hat{\sigma}^2\f$ 
+        is the variance of a Monte Carlo estimator for the mean of the target distribution.
+
+        The multivariate ESS is defined similarly, but using generalized variances.  Let \f$\Sigma\f$ 
+        denote the target distribution covariance and \f$\hat{\Sigma}\f$ the covariance 
+        of the Monte Carlo mean estimator.    The multivariate ESS of \cite Vats2019 is then given by
+        \f[
+          \text{ESS}_m = N \left( \frac{|\Sigma|}{|\hat{\Sigma}|} \right)^{1/D},
+        \f]
+        where \f$|\cdot|\f$ denotes the determinant of the matrix and \f$D\f$ is the dimension of 
+        target random variable.
+
+        As proposed in \cite Vats2019, it is possible to estimate \f$\text{ESS}_m\f$ using overlapping 
+        batches of samples to calculate the estimator covariance \f$\hat{\Sigma}\f$.
+      */
+      double MultiBatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
       /** Returns the samples in this collection as a matrix.  Each column of the
           matrix will correspond to a single state in the chain.

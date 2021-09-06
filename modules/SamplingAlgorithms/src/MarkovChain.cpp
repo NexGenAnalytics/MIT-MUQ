@@ -4,18 +4,35 @@
 
 using namespace muq::SamplingAlgorithms;
 
-Eigen::VectorXd MarkovChain::ESS(int blockDim) const
+Eigen::VectorXd MarkovChain::ESS(int blockInd, std::string const& method) const
+{ 
+  if(method=="Wolff"){
+    return WolffESS(blockInd);
+  }else if(method=="Batch"){
+    return BatchESS(blockInd);
+  }else if(method=="MultiBatch"){
+    return MultiBatchESS(blockInd)*Eigen::VectorXd::Ones(1);
+  }else{
+    std::stringstream msg;
+    msg << "Invalid method (" << method << ") passed to MarkovChain::ESS.  Valid options include \"Wolff\", \"Batch\", and \"MultiBatch\".";
+    throw std::runtime_error(msg.str());
+    return Eigen::VectorXd();
+  }
+}
+
+
+Eigen::VectorXd MarkovChain::WolffESS(int blockDim) const
 {
   Eigen::MatrixXd sampMat = AsMatrix(blockDim);
 
   Eigen::VectorXd ess(sampMat.rows());
   for(int row=0; row<sampMat.rows(); ++row)
-    ess(row) = SingleComponentESS(sampMat.row(row));
+    ess(row) = SingleComponentWolffESS(sampMat.row(row));
 
   return ess;
 }
 
-double MarkovChain::SingleComponentESS(Eigen::Ref<const Eigen::VectorXd> const& trace)
+double MarkovChain::SingleComponentWolffESS(Eigen::Ref<const Eigen::VectorXd> const& trace)
 {
   int size = trace.size();
   // must have a positive number of samples

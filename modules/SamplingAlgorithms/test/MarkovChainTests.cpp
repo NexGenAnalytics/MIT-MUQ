@@ -98,19 +98,35 @@ TEST_F(MarkovChainTest, ToWeights)
   for( unsigned int i=0; i<numSamps; ++i ) { EXPECT_DOUBLE_EQ(1.0, sampWeights(i)); }
 }
 
-TEST_F(MarkovChainTest, ESS)
+TEST_F(MarkovChainTest, WolffESS)
 {
   int totalSteps = collection.size();
-  Eigen::VectorXd ess = collection.ESS();
+  Eigen::VectorXd ess = collection.ESS("Wolff");
 
   EXPECT_LE(ess(0), totalSteps);
   EXPECT_LE(ess(1), totalSteps);
 
   int numWhite = 1e3;
   Eigen::VectorXd whiteNoise = RandomGenerator::GetNormal(numWhite);
-  double singleEss = MarkovChain::SingleComponentESS(whiteNoise);
+  double singleEss = MarkovChain::SingleComponentWolffESS(whiteNoise);
 
   EXPECT_NEAR(numWhite, singleEss, 250);
+}
+
+
+TEST_F(MarkovChainTest, BatchESS)
+{
+  int totalSteps = collection.size();
+  Eigen::VectorXd ess = collection.ESS("Batch");
+  Eigen::VectorXd multiEss = collection.ESS("MultiBatch");
+
+  EXPECT_LE(ess(0), totalSteps);
+  EXPECT_LE(ess(1), totalSteps);
+  EXPECT_GE(ess(0), 0.95*totalSteps);
+  EXPECT_GE(ess(1), 0.95*totalSteps); 
+
+  EXPECT_LE(multiEss(0), totalSteps);
+  EXPECT_GE(multiEss(0), 0.95*totalSteps); 
 }
 
 

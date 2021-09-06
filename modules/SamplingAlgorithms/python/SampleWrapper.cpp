@@ -72,7 +72,9 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("ExpectedValue", &SampleCollection::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>())
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(Eigen::VectorXd const&, int) const) &SampleCollection::RunningCovariance, py::arg("mean"), py::arg("blockDim") = -1)
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(int) const) &SampleCollection::RunningCovariance, py::arg("blockDim") = -1)
-    .def("ESS", &SampleCollection::ESS, py::arg("blockDim")=-1)
+    .def("ESS", (Eigen::VectorXd (SampleCollection::*)(int, std::string const&) const) &SampleCollection::ESS, py::arg("blockDim")=-1, py::arg("method")="Batch")
+    .def("BatchESS", &SampleCollection::BatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
+    .def("MultiBatchESS", &SampleCollection::MultiBatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
     .def("Add", &SampleCollection::Add)
     .def("Weights", &SampleCollection::Weights)
     .def("AsMatrix", &SampleCollection::AsMatrix, py::arg("blockDim")=-1)
@@ -84,7 +86,7 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("segment", &SampleCollection::segment, py::arg("startInd"),py::arg("length"),py::arg("skipBy")=1);
 
   py::class_<MarkovChain, SampleCollection, SampleEstimator, std::shared_ptr<MarkovChain>>(m,"MarkovChain")
-    .def_static("SingleComponentESS", &MarkovChain::SingleComponentESS);
+    .def_static("SingleComponentWolffESS", &MarkovChain::SingleComponentWolffESS);
 
   m.def_submodule("Diagnostics")
     .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::Rhat(collections);})
