@@ -16,7 +16,7 @@ protected:
 
       L.resize(2,2);
       L << 1.0, 0.0,
-	1.0, 2.0;
+	         1.0, 2.0;
 
       samps = L * RandomGenerator::GetNormal(2,numWeightedSamps);
       //weights = (maxRepeat*RandomGenerator::GetUniform(numWeightedSamps)).array().ceil();
@@ -116,17 +116,24 @@ TEST_F(MarkovChainTest, WolffESS)
 
 TEST_F(MarkovChainTest, BatchESS)
 {
-  int totalSteps = collection.size();
-  Eigen::VectorXd ess = collection.ESS("Batch");
-  Eigen::VectorXd multiEss = collection.ESS("MultiBatch");
+  MarkovChain newCollection;
+  
+  for(int i=0; i<collection.size(); ++i){
+    newCollection.Add(collection.at(i));
+    newCollection.Add(collection.at(i));
+  }
+    
+  int totalSteps = newCollection.size();
+  Eigen::VectorXd ess = newCollection.ESS("Batch");
+  Eigen::VectorXd multiEss = newCollection.ESS("MultiBatch");
 
-  EXPECT_LE(ess(0), totalSteps);
-  EXPECT_LE(ess(1), totalSteps);
-  EXPECT_GE(ess(0), 0.95*totalSteps);
-  EXPECT_GE(ess(1), 0.95*totalSteps); 
+  EXPECT_LE(ess(0), 0.6*totalSteps);
+  EXPECT_LE(ess(1), 0.6*totalSteps);
+  EXPECT_GE(ess(0), 0.4*totalSteps);
+  EXPECT_GE(ess(1), 0.4*totalSteps); 
 
-  EXPECT_LE(multiEss(0), totalSteps);
-  EXPECT_GE(multiEss(0), 0.95*totalSteps); 
+  EXPECT_LE(multiEss(0), 0.6*totalSteps);
+  EXPECT_GE(multiEss(0), 0.4*totalSteps); 
 }
 
 

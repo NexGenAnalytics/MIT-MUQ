@@ -140,15 +140,33 @@ namespace muq{
         If method=="MultiBatch",  The multivariate method of \cite Vats2019 is employed.  This 
             method takes into account the joint correlation of all components of the chain and 
             returns a single ESS.   This approach is preferred in high dimensional settings.
+
+        @param[in] method A string specifying the method used to estimate the ESS.  Options in SampleCollection are "Batch" or "MultiBatch".   The MarkovChain class also supports a "Wolff" method.
+        @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
       */
       virtual Eigen::VectorXd ESS(std::string const& method="Batch") const{return ESS(-1,method);};
+
+      /**
+      @param[in] blockDim The block of the SampleState that we want to use in the ESS computation.
+      @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
+      */
       virtual Eigen::VectorXd ESS(int blockDim) const{return ESS(blockDim,"Batch");};
+
+      /**
+      @param[in] blockDim The block of the SampleState that we want to use in the ESS computation.
+      @param[in] method A string specifying the method used to estimate the ESS.  Options in SampleCollection are "Batch" or "MultiBatch".   The MarkovChain class also supports a "Wolff" method.
+      @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
+      */
       virtual Eigen::VectorXd ESS(int blockDim, std::string const& method) const;
 
       /**
       Computes the effective sample size using the overlapping or nonoverlapping 
       batch method.  (See e.g., \cite Flegal2010).
       
+      @param[in] blockInd The block of the SampleState that we want to use in the ESS computation.
+      @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/3}\f$.  Note that to ensure the convergence of the ESS estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+      @param[in] overlap How much the batches overlap.   Defaults to \f$b_n/2\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+      @return A vector of length \f$D\f$ containing an ESS estimate for each component
       */
       Eigen::VectorXd BatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
@@ -177,6 +195,11 @@ namespace muq{
 
         As proposed in \cite Vats2019, it is possible to estimate \f$\text{ESS}_m\f$ using overlapping 
         batches of samples to calculate the estimator covariance \f$\hat{\Sigma}\f$.
+
+        @param[in] blockInd The block of the SampleState that we want to use in the ESS computation.
+        @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/3}\f$.  Note that to ensure the convergence of the ESS estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+        @param[in] overlap How much the batches overlap.   Defaults to \f$b_n/2\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+        @return A double containing the multivariate ESS estimate.
       */
       double MultiBatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
