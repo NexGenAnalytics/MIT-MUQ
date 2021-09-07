@@ -298,81 +298,6 @@ Eigen::VectorXd SampleCollection::ESS(int blockInd, std::string const& method) c
 
 
 double SampleCollection::MultiBatchESS(int blockInd, int batchSize, int overlap) const
-{ 
-  double numSamps = size();
-
-  double estCovDet = std::pow( MultiBatchError(blockInd, batchSize, overlap), 2.0);
-  double covDet = Covariance(blockInd).determinant();
-
-  return std::min(numSamps, std::pow(covDet, 1.0/BlockSize(blockInd))  / estCovDet);
-
-}
-
-Eigen::VectorXd SampleCollection::BatchESS(int blockInd, int batchSize, int overlap) const
-{ 
-  double numSamps = size();
-
-  Eigen::VectorXd avgEstVar = BatchError(blockInd, batchSize, overlap).array().square();
-
-  Eigen::VectorXd ess = Variance(blockInd).array() / avgEstVar.array();
-  for(int i=0; i<ess.size(); ++i)
-    ess(i) = std::min(ess(i), numSamps);
-
-  return ess;
-}
-
-Eigen::VectorXd SampleCollection::StandardError(int                blockInd, 
-                                                std::string const& method) const
-{
-  if(method=="Batch"){
-    return BatchError(blockInd);
-  }else if(method=="MultiBatch"){
-    return MultiBatchError(blockInd)*Eigen::VectorXd::Ones(1);
-  }else{
-    std::stringstream msg;
-    msg << "Invalid method (" << method << ") passed to SampleCollection::StandardError.  Valid options are \"Batch\" and \"MultiBatch\".";
-    throw std::runtime_error(msg.str());
-    return Eigen::VectorXd();
-  }
-}
-
-Eigen::VectorXd SampleCollection::BatchError(int blockInd, int batchSize, int overlap) const
-{
-  double numSamps = size();
-
-  // If the blocksize wasn't given explicitly, use n^{1/2}
-  if(batchSize<1)
-    batchSize = std::round(std::pow(numSamps, 1.0/2.0));
-
-  // If the overlap wasn't given explicitly, use 10% of the batchSize
-  if(overlap<1)
-    overlap = std::floor(0.75*batchSize);
-
-  // The total number of overlapping batches in the chain
-  unsigned int numBatches = std::floor( (numSamps-batchSize)/(batchSize-overlap) );
-
-  // The number of non-overlapping batches that we could fit in this chain 
-  unsigned int numNonOverlapBatches = std::floor( (numSamps / batchSize) - 1 ); 
-
-  // Number of non-overlapping variance estimators
-  unsigned int numEstimators = std::floor( (numSamps - numNonOverlapBatches*batchSize)/double(batchSize-overlap) ); 
-
-  Eigen::VectorXd mean = Mean(blockInd);
-
-  // Vector to hold the mean (over non-overlapping estimators) estimator variance.
-  Eigen::VectorXd avgEstVar = Eigen::VectorXd::Zero(BlockSize(blockInd));
-  for(unsigned int estInd=0; estInd<numEstimators; ++estInd){
-    for(unsigned int batchInd=0; batchInd<numNonOverlapBatches; ++batchInd){
-      avgEstVar += (1.0/(numNonOverlapBatches-1.0)) * (segment(estInd*(batchSize-overlap) + batchInd*batchSize, batchSize)->Mean(blockInd) - mean).array().square().matrix();
-    }
-  }
-  avgEstVar /= numEstimators; // <- Estimate of the size b_n estimator variance
-  avgEstVar *= (double(batchSize)/double(size())); // <-Estimate of the size n estimator variance 
-
-  return avgEstVar.cwiseSqrt();
-}
-
-double SampleCollection::MultiBatchError(int blockInd, int batchSize, int overlap) const
 {
   double numSamps = size();
 
@@ -418,9 +343,81 @@ double SampleCollection::MultiBatchError(int blockInd, int batchSize, int overla
     }
   }
   estCov /= (numNonOverlapBatches-1.0)*numEstimators; // <- Estimate of the size b_n estimator variance
-  estCov /= double(batchSize); // <-Estimate of the size n estimator variance 
+  estCov *= double(batchSize); // <-Estimate of the size n estimator variance 
 
-  return std::pow( estCov.determinant(), 1.0/(2.0*BlockSize(blockInd)));
+  double covDet = Covariance(mean).determinant();
+
+  return std::min(numSamps, numSamps*std::pow(covDet / estCov.determinant(), 1.0/BlockSize(blockInd)) );
+}
+
+Eigen::VectorXd SampleCollection::BatchESS(int blockInd, int batchSize, int overlap) const
+{ 
+  double numSamps = size();
+
+  Eigen::VectorXd avgEstVar = BatchError(blockInd, batchSize, overlap).array().square();
+
+  Eigen::VectorXd ess = Variance(blockInd).array() / avgEstVar.array();
+  for(int i=0; i<ess.size(); ++i)
+    ess(i) = std::min(ess(i), numSamps);
+
+  return ess;
+}
+
+Eigen::VectorXd SampleCollection::StandardError(int                blockInd, 
+                                                std::string const& method) const
+{
+  if(method=="Batch"){
+    return BatchError(blockInd);
+  }else if(method=="MultiBatch"){
+    return MultiBatchError(blockInd);
+  }else{
+    std::stringstream msg;
+    msg << "Invalid method (" << method << ") passed to SampleCollection::StandardError.  Valid options are \"Batch\" and \"MultiBatch\".";
+    throw std::runtime_error(msg.str());
+    return Eigen::VectorXd();
+  }
+}
+
+Eigen::VectorXd SampleCollection::BatchError(int blockInd, int batchSize, int overlap) const
+{
+  double numSamps = size();
+
+  // If the blocksize wasn't given explicitly, use n^{1/2}
+  if(batchSize<1)
+    batchSize = std::round(std::pow(numSamps, 1.0/2.0));
+
+  // If the overlap wasn't given explicitly, use 10% of the batchSize
+  if(overlap<1)
+    overlap = std::floor(0.75*batchSize);
+
+  // The total number of overlapping batches in the chain
+  unsigned int numBatches = std::floor( (numSamps-batchSize)/(batchSize-overlap) );
+
+  // The number of non-overlapping batches that we could fit in this chain 
+  unsigned int numNonOverlapBatches = std::floor( (numSamps / batchSize) - 1 ); 
+
+  // Number of non-overlapping variance estimators
+  unsigned int numEstimators = std::floor( (numSamps - numNonOverlapBatches*batchSize)/double(batchSize-overlap) ); 
+
+  Eigen::VectorXd mean = Mean(blockInd);
+
+  // Vector to hold the mean (over non-overlapping estimators) estimator variance.
+  Eigen::VectorXd avgEstVar = Eigen::VectorXd::Zero(BlockSize(blockInd));
+  for(unsigned int estInd=0; estInd<numEstimators; ++estInd){
+    for(unsigned int batchInd=0; batchInd<numNonOverlapBatches; ++batchInd){
+      avgEstVar += (1.0/(numNonOverlapBatches-1.0)) * (segment(estInd*(batchSize-overlap) + batchInd*batchSize, batchSize)->Mean(blockInd) - mean).array().square().matrix();
+    }
+  }
+  avgEstVar /= numEstimators; // <- Estimate of the size b_n estimator variance
+  avgEstVar *= (double(batchSize)/double(size())); // <-Estimate of the size n estimator variance 
+
+  return avgEstVar.cwiseSqrt();
+}
+
+Eigen::VectorXd SampleCollection::MultiBatchError(int blockInd, int batchSize, int overlap) const
+{
+  double ess = MultiBatchESS(blockInd, batchSize, overlap);
+  return (Variance() / ess).array().sqrt();
 }
 
 

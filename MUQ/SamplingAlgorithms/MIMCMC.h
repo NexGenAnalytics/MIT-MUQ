@@ -20,7 +20,18 @@ namespace muq {
      */
     class MIMCMC {
     public:
-      MIMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory);
+      MIMCMC(boost::property_tree::ptree options,
+             std::shared_ptr<MIComponentFactory> const& componentFactory);
+
+      MIMCMC(boost::property_tree::ptree                                  pt, 
+             Eigen::VectorXd                                       const& startPt,
+             std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models,
+             std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
+      
+      MIMCMC(boost::property_tree::ptree                                  pt, 
+             Eigen::VectorXd                                       const& startPt,
+             std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems,
+             std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
 
       virtual std::shared_ptr<MultiIndexEstimator> GetSamples() const;
       virtual std::shared_ptr<MultiIndexEstimator> GetQOIs() const;
@@ -60,6 +71,9 @@ namespace muq {
       std::vector<std::shared_ptr<MIMCMCBox>> boxes;
 
       std::string multiindexToConfigString (std::shared_ptr<MultiIndex> index);
+
+      static std::vector<std::shared_ptr<AbstractSamplingProblem>> CreateProblems(std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models);
+      static std::shared_ptr<MultiIndexSet> ProcessMultis(std::shared_ptr<MultiIndexSet> const& multis, unsigned int numLevels);
     };
 
   }

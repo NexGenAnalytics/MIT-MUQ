@@ -42,13 +42,7 @@ Eigen::VectorXd MultiIndexEstimator::StandardError(int blockDim, std::string con
 
 Eigen::VectorXd MultiIndexEstimator::ESS(int blockDim, std::string const& method) const
 {   
-    if(method=="MultiBatch"){
-        Eigen::VectorXd covDet(1);
-        covDet << std::pow(Covariance(blockDim).determinant(), 1.0/BlockSize(blockDim));
-        return covDet.array() / StandardError(blockDim, method).array().square();
-    }else{
-        return Variance(blockDim).array() / StandardError(blockDim, method).array().square();
-    }
+    return Variance(blockDim).array() / StandardError(blockDim, method).array().square();
 }
 
 

@@ -212,8 +212,8 @@ namespace muq{
         Recall at the MCSE is the standard deviation of the estimator variance employed in the Central Limit Theorem.
 
         @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
-        @param[in] method A string describing what method should be used to estimate the MCSE.  Defaults to "Batch"
-        @return A vector containing either the MCSE for each component (if method!="MultiBatch") or a single component vector containing the square root of the generalized estimator variance (if method=="MultiBatch").
+        @param[in] method A string describing what method should be used to estimate the MCSE.  Defaults to "Batch".  Options are the same as the ESS function: "Batch", "MultiBatch", and "Wolff".  The "Wolff" option is only valid for the "MarkovChain" and "MultiIndexEstimator" classes.
+        @return A vector containing either the MCSE for each component.
       */
       virtual Eigen::VectorXd StandardError(int                blockInd, 
                                             std::string const& method) const override;
@@ -231,15 +231,14 @@ namespace muq{
       virtual Eigen::VectorXd BatchError(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
       /**
-        Estimates the generalized Monte Carlo standard error using the multivariate overlapping batch method of \cite Vats2019 .   If the covariance of the Monte Carlo estimator is 
-        given by \f$\Sigma\f$, the generalized variance of the estimator is \f$|\Sigma|^{1/D}\f$.   This function returns \f$|\Sigma|^{1/(2D)}\f$ as a "generalized standard error".
+        Estimates the Monte Carlo standard error using the effective sample size coming from the multivariate overlapping batch method of \cite Vats2019 .   
       
         @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
         @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/2}\f$.  Note that to ensure the convergence of the MCSE estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
         @param[in] overlap How much the batches overlap.   Defaults to \f$0.75*b_n\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
-        @return A scalar containing the generalized MCSE.
+        @return A  vector containing \f$\sqrt{\sigma_i / N_{ess}}\f$, where \f$N_{ess}\f$ is the multivariate ESS estimate return by MultiBatchESS.
       */
-      virtual double MultiBatchError(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
+      virtual Eigen::VectorXd MultiBatchError(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
       /** Returns the samples in this collection as a matrix.  Each column of the
           matrix will correspond to a single state in the chain.

@@ -60,9 +60,11 @@ void PythonBindings::MCMCWrapper(py::module &m) {
 
   py::class_<MIMCMC, std::shared_ptr<MIMCMC>> multiindexMCMC(m, "MIMCMC");
   multiindexMCMC
-    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<DefaultComponentFactory>(ConvertDictToPtree(d), startingPoint, problems)); }))
-    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::shared_ptr<MultiIndexSet> problem_indices, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<DefaultComponentFactory>(ConvertDictToPtree(d), startingPoint, problem_indices, problems)); }))
-    .def("Run", &MIMCMC::Run)
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, problems); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<ModPiece>> const& models) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, models); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems, std::shared_ptr<MultiIndexSet> const& indices) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, problems, indices); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<ModPiece>> const& models, std::shared_ptr<MultiIndexSet> const& indices) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, models, indices); }))
+    .def("Run", &MIMCMC::Run, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
     .def("GetSamples", &MIMCMC::GetSamples)
     .def("GetQOIs", &MIMCMC::GetQOIs)
     .def("GetIndices", &MIMCMC::GetIndices)

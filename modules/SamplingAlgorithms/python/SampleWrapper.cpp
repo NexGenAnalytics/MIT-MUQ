@@ -93,6 +93,12 @@ void PythonBindings::SampleWrapper(py::module &m)
   m.def_submodule("Diagnostics")
     .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::Rhat(collections);})
     .def("Rhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
+    .def("Rhat", [](std::vector<std::shared_ptr<MarkovChain>> const& collections){return Diagnostics::Rhat(collections);})
+    .def("Rhat", [](std::vector<std::shared_ptr<MarkovChain>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
+    .def("Rhat", [](std::vector<std::shared_ptr<MultiIndexEstimator>> const& collections){return Diagnostics::Rhat(collections);})
+    .def("Rhat", [](std::vector<std::shared_ptr<MultiIndexEstimator>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
+    .def("SplitRankRhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::SplitRankRhat(collections);})
+    .def("SplitRankRhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections, py::dict opts){return Diagnostics::SplitRankRhat(collections, ConvertDictToPtree(opts));})
     .def("ComputeRanks", &Diagnostics::ComputeRanks);
 
 
