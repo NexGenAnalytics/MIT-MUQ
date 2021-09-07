@@ -35,12 +35,6 @@ using namespace muq::Modeling;
 
 
 void PythonBindings::MCMCWrapper(py::module &m) {
-  py::class_<SamplingAlgorithm, std::shared_ptr<SamplingAlgorithm>> sampAlg(m, "SamplingAlgorithm");
-  sampAlg
-    .def("Run", (std::shared_ptr<SampleCollection>  (SamplingAlgorithm::*)(std::vector<Eigen::VectorXd> const&)) &SamplingAlgorithm::Run,
-                 py::call_guard<py::scoped_ostream_redirect,py::scoped_estream_redirect>())
-    .def("GetSamples", &SamplingAlgorithm::GetSamples)
-    .def("GetQOIs", &SamplingAlgorithm::GetQOIs);
 
   py::class_<SingleChainMCMC, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
   singleMCMC
@@ -49,7 +43,7 @@ void PythonBindings::MCMCWrapper(py::module &m) {
     .def("SetState", (void (SingleChainMCMC::*)(std::shared_ptr<SamplingState> const&)) &SingleChainMCMC::SetState)
     .def("SetState", (void (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::SetState)
     .def("Kernels", &SingleChainMCMC::Kernels)
-    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run)
+    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
     .def("AddNumSamps", &SingleChainMCMC::AddNumSamps)
     .def("NumSamps", &SingleChainMCMC::NumSamps)
     .def("TotalTime", &SingleChainMCMC::TotalTime)

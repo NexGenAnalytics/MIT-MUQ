@@ -56,7 +56,10 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(int) const) &SampleEstimator::Kurtosis, py::arg("blockDim") = -1)
     .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"), py::arg("blockDim") = -1)
     .def("Kurtosis", (Eigen::VectorXd (SampleEstimator::*)(Eigen::VectorXd const&, Eigen::VectorXd const&, int) const) &SampleEstimator::Kurtosis, py::arg("mean"),py::arg("stdDev"), py::arg("blockDim") = -1)
-    .def("ExpectedValue", &SampleEstimator::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>());
+    .def("ExpectedValue", &SampleEstimator::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>())
+    .def("ESS", (Eigen::VectorXd (SampleEstimator::*)(int, std::string const&) const) &SampleEstimator::ESS, py::arg("blockDim")=-1, py::arg("method")="Batch")
+    .def("StandardError", (Eigen::VectorXd (SampleEstimator::*)(int, std::string const&) const) &SampleEstimator::StandardError, py::arg("blockDim")=-1, py::arg("method")="Batch");
+    
 
   py::class_<MultiIndexEstimator, SampleEstimator, std::shared_ptr<MultiIndexEstimator>>(m, "MultiIndexEstimator")
     .def(py::init<std::vector<std::shared_ptr<MIMCMCBox>>>());
@@ -66,15 +69,8 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("__getitem__", (const std::shared_ptr<SamplingState> (SampleCollection::*)(unsigned) const) &SampleCollection::at)
 //    .def("at", &SampleCollection::at)
     .def("size", &SampleCollection::size)
-    .def("CentralMoment", (Eigen::VectorXd (SampleCollection::*)(unsigned, Eigen::VectorXd const&, int) const) &SampleCollection::CentralMoment, py::arg("order"), py::arg("mean"), py::arg("blockDim") = -1)
-    .def("Mean", &SampleCollection::Mean, py::arg("blockDim") = -1)
-    .def("Covariance", (Eigen::MatrixXd (SampleCollection::*)(Eigen::VectorXd const&, int) const) &SampleCollection::Covariance, py::arg("mean"), py::arg("blockDim") = -1)
-    .def("ExpectedValue", &SampleCollection::ExpectedValue, py::arg("f"), py::arg("metasIn")=std::vector<std::string>())
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(Eigen::VectorXd const&, int) const) &SampleCollection::RunningCovariance, py::arg("mean"), py::arg("blockDim") = -1)
     .def("RunningCovariance", (std::vector<Eigen::MatrixXd> (SampleCollection::*)(int) const) &SampleCollection::RunningCovariance, py::arg("blockDim") = -1)
-    .def("ESS", (Eigen::VectorXd (SampleCollection::*)(int, std::string const&) const) &SampleCollection::ESS, py::arg("blockDim")=-1, py::arg("method")="Batch")
-    .def("BatchESS", &SampleCollection::BatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
-    .def("MultiBatchESS", &SampleCollection::MultiBatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
     .def("Add", &SampleCollection::Add)
     .def("Weights", &SampleCollection::Weights)
     .def("AsMatrix", &SampleCollection::AsMatrix, py::arg("blockDim")=-1)
@@ -83,9 +79,15 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("WriteToFile", (void (SampleCollection::*)(std::string const&, std::string const&) const) &SampleCollection::WriteToFile, py::arg("filename"), py::arg("dataset") = "/")
     .def("head", &SampleCollection::head)
     .def("tail", &SampleCollection::tail)
-    .def("segment", &SampleCollection::segment, py::arg("startInd"),py::arg("length"),py::arg("skipBy")=1);
+    .def("segment", &SampleCollection::segment, py::arg("startInd"),py::arg("length"),py::arg("skipBy")=1)
+    .def("BatchESS", &SampleCollection::BatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
+    .def("MultiBatchESS", &SampleCollection::MultiBatchESS, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
+    .def("BatchError", &SampleCollection::BatchError, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1)
+    .def("MultiBatchError", &SampleCollection::MultiBatchError, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1);
 
   py::class_<MarkovChain, SampleCollection, SampleEstimator, std::shared_ptr<MarkovChain>>(m,"MarkovChain")
+    .def("WolfESS", &MarkovChain::WolffESS, py::arg("blockInd")=-1)
+    .def("WolfError", &MarkovChain::WolffError, py::arg("blockInd")=-1)
     .def_static("SingleComponentWolffESS", &MarkovChain::SingleComponentWolffESS);
 
   m.def_submodule("Diagnostics")

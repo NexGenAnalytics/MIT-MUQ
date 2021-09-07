@@ -304,7 +304,7 @@ double SampleCollection::MultiBatchESS(int blockInd, int batchSize, int overlap)
   double estCovDet = std::pow( MultiBatchError(blockInd, batchSize, overlap), 2.0);
   double covDet = Covariance(blockInd).determinant();
 
-  return std::min(numSamps, numSamps * std::pow(covDet, 1.0/BlockSize(blockInd))  / estCovDet);
+  return std::min(numSamps, std::pow(covDet, 1.0/BlockSize(blockInd))  / estCovDet);
 
 }
 
@@ -394,7 +394,7 @@ double SampleCollection::MultiBatchError(int blockInd, int batchSize, int overla
   if(numNonOverlapBatches < BlockSize(blockInd)){
 
       std::stringstream msg;
-      msg << "ERROR in SampleCollection::MultiBatchESS.  Batch size of " << batchSize;
+      msg << "ERROR in SampleCollection::MultiBatchError.  Batch size of " << batchSize;
       msg << " results in " << numNonOverlapBatches << " non-overlapping batches, which";
       msg << " is less than the parameter dimension " << BlockSize(blockInd);
       msg << " and will result in a singular estimator covariance matrix.";
@@ -418,7 +418,7 @@ double SampleCollection::MultiBatchError(int blockInd, int batchSize, int overla
     }
   }
   estCov /= (numNonOverlapBatches-1.0)*numEstimators; // <- Estimate of the size b_n estimator variance
-  estCov *= double(batchSize); // <-Estimate of the size n estimator variance 
+  estCov /= double(batchSize); // <-Estimate of the size n estimator variance 
 
   return std::pow( estCov.determinant(), 1.0/(2.0*BlockSize(blockInd)));
 }
