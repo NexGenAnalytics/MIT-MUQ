@@ -167,7 +167,7 @@ int main(){
 
   pt.put("NumSamples", 1e2); // number of samples for single level
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
-  pt.put("GreedyTargetVariance", 0.1); // estimator variance to be achieved by greedy algorithm
+  pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
   pt.put("verbosity", 1); // show some output
   pt.put("MLMCMC.Subsampling_0", 8);
   pt.put("MLMCMC.Subsampling_1", 4);
@@ -182,7 +182,9 @@ int main(){
     Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
     auto componentFactory = std::make_shared<MyMIComponentFactory>(x0, pt);
 
-    std::cout << std::endl << "*************** greedy multilevel chain" << std::endl << std::endl;
+    std::cout << "\n=============================\n";
+    std::cout << "Running MLMCMC Chain " << chainInd << ": \n";
+    std::cout << "-----------------------------\n";
 
     GreedyMLMCMC greedymlmcmc (pt, componentFactory);
     estimators.at(chainInd) = greedymlmcmc.Run();
@@ -193,17 +195,17 @@ int main(){
     filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
     greedymlmcmc.WriteToFile(filename.str());
   }
+  
+  std::cout << "\n=============================\n";
+  std::cout << "Multilevel Summary: \n";
+  std::cout << "-----------------------------\n";
+  std::cout << "  Rhat:               " << Diagnostics::Rhat(estimators).transpose() << std::endl;
+  std::cout << "  Mean (chain 0):     " << estimators.at(0)->Mean().transpose() << std::endl;
+  std::cout << "  MCSE (chain 0):     " << estimators.at(0)->StandardError().transpose() << std::endl;
+  std::cout << "  ESS (chain 0):      " << estimators.at(0)->ESS().transpose() << std::endl;
+  std::cout << "  Variance (chain 0): " << estimators.at(0)->Variance().transpose() << std::endl;
+  std::cout << std::endl;
 
-  std::cout << "Rhat Convergence Diagnostic: " << Diagnostics::Rhat(estimators) << std::endl;
-
-  std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
-
-  Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
-  auto componentFactory = std::make_shared<MyMIComponentFactory>(x0, pt);
-
-  SLMCMC slmcmc (pt, componentFactory);
-  slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.GetQOIs()->Mean().transpose() << std::endl;
 
   return 0;
 }

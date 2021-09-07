@@ -59,7 +59,7 @@ namespace muq {
       virtual Eigen::VectorXd StandardError(std::string const& method="Batch") const override{return StandardError(-1,method);};
       virtual Eigen::VectorXd StandardError(int blockDim) const override{return StandardError(blockDim,"Batch");};
       virtual Eigen::VectorXd StandardError(int blockDim, std::string const& method) const override;
-
+      
       /** Computes the effective sample size using the spectral method of \cite Wolff2004 
 
         @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the ESS estimate.

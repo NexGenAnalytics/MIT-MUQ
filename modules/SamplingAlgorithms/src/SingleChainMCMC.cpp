@@ -151,6 +151,12 @@ std::shared_ptr<MarkovChain> SingleChainMCMC::Run(std::vector<Eigen::VectorXd> c
 }
 
 void SingleChainMCMC::Sample() {
+  if(prevState==nullptr){
+    std::stringstream msg;
+    msg << "\nERROR in SingleChainMCMC::Sample!  Trying to sample chain but previous (or initial) state has not been set.\n";
+    throw std::runtime_error(msg.str());
+  }
+
   auto startTime = std::chrono::high_resolution_clock::now();
 
   std::vector<std::shared_ptr<SamplingState> > newStates;

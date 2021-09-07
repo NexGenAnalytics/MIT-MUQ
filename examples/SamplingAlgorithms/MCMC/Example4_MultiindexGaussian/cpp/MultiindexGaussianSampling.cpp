@@ -12,6 +12,7 @@
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
 
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -50,18 +51,54 @@ int main(){
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
 
 
-  std::cout << std::endl << "*************** multiindex chain" << std::endl << std::endl;
+  unsigned int numChains = 5;
+  std::vector<std::shared_ptr<MultiIndexEstimator>> estimators(numChains);
 
-  MIMCMC mimcmc (pt, componentFactory);
-  mimcmc.Run();
-  mimcmc.Draw(false);
-  std::cout << "mean QOI: " << mimcmc.GetQOIs()->Mean().transpose() << std::endl;
+  for(int chainInd=0; chainInd<numChains; ++chainInd){
+    Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
+    auto componentFactory = std::make_shared<MyMIComponentFactory>(x0, pt);
 
-  std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;
+    std::cout << "\n=============================\n";
+    std::cout << "Running MIMCMC Chain " << chainInd << ": \n";
+    std::cout << "-----------------------------\n";
+
+    MIMCMC mimcmc (pt, componentFactory);
+    estimators.at(chainInd) = mimcmc.Run();
+
+    std::cout << "mean QOI: " << estimators.at(chainInd)->Mean().transpose() << std::endl;
+
+    std::stringstream filename;
+    filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
+    greedymlmcmc.WriteToFile(filename.str());
+  }
+  
+  std::cout << "\n=============================\n";
+  std::cout << "Multilevel Summary: \n";
+  std::cout << "-----------------------------\n";
+  std::cout << "  Rhat:               " << Diagnostics::Rhat(estimators).transpose() << std::endl;
+  std::cout << "  Mean (chain 0):     " << estimators.at(0)->Mean().transpose() << std::endl;
+  std::cout << "  MCSE (chain 0):     " << estimators.at(0)->StandardError().transpose() << std::endl;
+  std::cout << "  ESS (chain 0):      " << estimators.at(0)->ESS().transpose() << std::endl;
+  std::cout << "  Variance (chain 0): " << estimators.at(0)->Variance().transpose() << std::endl;
+  std::cout << std::endl;
+
+
+
+  std::cout << "\n=============================\n";
+  std::cout << "Running Single Level Chain" << ": \n";
+  std::cout << "-----------------------------\n";
 
   SLMCMC slmcmc (pt, componentFactory);
-  slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.GetQOIs()->Mean().transpose() << std::endl;
+  auto samps = slmcmc.Run();
+
+  std::cout << "\n=============================\n";
+  std::cout << "Single Level Summary: \n";
+  std::cout << "-----------------------------\n";
+  std::cout << "  Mean:               " << samps->Mean().transpose() << std::endl;
+  std::cout << "  MCSE:               " << samps->StandardError().transpose() << std::endl;
+  std::cout << "  ESS:                " << samps->ESS().transpose() << std::endl;
+  std::cout << "  Variance:           " << samps->Variance().transpose() << std::endl;
+  std::cout << std::endl;
 
   return 0;
 }

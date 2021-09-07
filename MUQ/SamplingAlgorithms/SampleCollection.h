@@ -100,7 +100,11 @@ namespace muq{
       virtual const std::shared_ptr<SamplingState> back() const;
 
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order given that we already know the mean
-      virtual Eigen::VectorXd CentralMoment(unsigned order, Eigen::VectorXd const& mean, int blockNum=-1) const override;
+      virtual Eigen::VectorXd CentralMoment(unsigned               order, 
+                                            Eigen::VectorXd const& mean,
+                                            int                    blockNum=-1) const override;
+      virtual Eigen::VectorXd CentralMoment(unsigned int order, 
+                                            int          blockNum=-1) const override{ return CentralMoment(order, Mean(blockNum), blockNum);};
 
       virtual Eigen::VectorXd Mean(int blockInd=-1) const override;
       virtual Eigen::MatrixXd Covariance(int blockInd=-1) const override{return SampleEstimator::Covariance(blockInd);};

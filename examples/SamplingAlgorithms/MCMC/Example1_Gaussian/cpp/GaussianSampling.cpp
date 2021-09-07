@@ -114,6 +114,9 @@ chain, kernel, and proposal themselves.
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
+
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -234,6 +237,35 @@ At the base level, we specify the number of steps in the chain with the entry "N
 
   Eigen::VectorXd sampMom3 = samps->CentralMoment(3);
   std::cout << "\nSample Third Moment = \n" << sampMom3 << std::endl << std::endl;
+
+
+  /***
+  ### 5. Compute convergence diagnostics
+  To quantitatively assess whether the chain has converged, we need to run multiple
+  chains and then compare the results.  Below we run 3 more independent chains (for a total of 4)
+  and then analyze convergence using the commonly employed \f$\hat{R}\f$ diagnostic.
+
+  Notice that a new MCMC sampler is defined each time.  If we simply called `mcmc->Run()`
+  multiple times, the sampler would always pick up where it left off.
+  */
+  pt.put("PrintLevel",0);
+  int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> chains(numChains);
+  chains.at(0) = samps;
+
+  for(int i=1; i<numChains; ++i){
+    std::cout << "Running chain " << i << "..." << std::flush;
+    Eigen::VectorXd x0 = startPt + 1.5*RandomGenerator::GetNormal(mu.size()); // Start the Gaussian block at the mean
+
+    mcmc = MCMCFactory::CreateSingleChain(pt, problem);
+    chains.at(i) = mcmc->Run(x0);
+
+    std::cout << " done" << std::endl;
+  }
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(chains);
+  std::cout << "\nRhat = " << rhat.transpose() << std::endl;
+
 
   return 0;
 }
