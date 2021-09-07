@@ -21,6 +21,29 @@ Eigen::VectorXd MarkovChain::ESS(int blockInd, std::string const& method) const
 }
 
 
+Eigen::VectorXd MarkovChain::StandardError(int blockInd, std::string const& method) const
+{ 
+  if(method=="Wolff"){
+    return WolffError(blockInd);
+  }else if(method=="Batch"){
+    return BatchError(blockInd);
+  }else if(method=="MultiBatch"){
+    return MultiBatchError(blockInd)*Eigen::VectorXd::Ones(1);
+  }else{
+    std::stringstream msg;
+    msg << "Invalid method (" << method << ") passed to MarkovChain::StandardError.  Valid options include \"Wolff\", \"Batch\", and \"MultiBatch\".";
+    throw std::runtime_error(msg.str());
+    return Eigen::VectorXd();
+  }
+}
+
+Eigen::VectorXd MarkovChain::WolffError(int blockDim) const
+{
+  Eigen::VectorXd ess = WolffESS(blockDim);
+  
+  return (Variance(blockDim).array() / ess.array()).sqrt();
+}
+
 Eigen::VectorXd MarkovChain::WolffESS(int blockDim) const
 {
   Eigen::MatrixXd sampMat = AsMatrix(blockDim);

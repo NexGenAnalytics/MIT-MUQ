@@ -179,10 +179,21 @@ TEST(MIMCMCTest, MIMCMC) {
   mimcmc.Run();
   mimcmc.Draw(false);
 
-  auto mean = mimcmc.GetQOIs()->Mean();
+  auto samps = mimcmc.GetSamples();
+  auto mean = samps->Mean();
+  Eigen::VectorXd mcse = samps->StandardError();
 
-  EXPECT_NEAR(mean[0], 1.0, 0.25);
-  EXPECT_NEAR(mean[1], 2.0, 0.25);
+  std::cout << "MIMCMC MCSE: " << mcse.transpose() << std::endl;
+  EXPECT_NEAR(1.0, mean(0), 3.0*mcse(0));
+  EXPECT_NEAR(2.0, mean(1), 3.0*mcse(1));
+
+  auto qois = mimcmc.GetQOIs();
+  mean = qois->Mean();
+  mcse = qois->StandardError();
+
+  std::cout << "MIMCMC MCSE: " << mcse.transpose() << std::endl;
+  EXPECT_NEAR(1.0, mean(0), 3.0*mcse(0));
+  EXPECT_NEAR(2.0, mean(1), 3.0*mcse(1));
 
 }
 

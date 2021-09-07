@@ -161,12 +161,13 @@ TEST(MLMCMCTest, GreedyMLMCMC)
 
   auto params = greedymlmcmc.GetSamples();
   Eigen::VectorXd mean = params->Mean();
-  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
-  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+  Eigen::VectorXd mcse = params->StandardError();
+  EXPECT_NEAR(trueMu(0), mean(0), 3.*mcse(0));
+  EXPECT_NEAR(trueMu(1), mean(1), 3.0*mcse(1));
 
   Eigen::VectorXd variance = params->Variance();
-  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
-  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+  EXPECT_NEAR(trueCov(0,0), variance(0), 5.0*mcse(0));
+  EXPECT_NEAR(trueCov(1,1), variance(1), 5.0*mcse(1));
 
   Eigen::VectorXd skewness = params->Skewness();
   EXPECT_NEAR(0.0, skewness(0), 0.2);

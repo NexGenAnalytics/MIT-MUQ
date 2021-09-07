@@ -29,7 +29,8 @@ namespace muq {
     class MIMCMCBox {
     public:
 
-      MIMCMCBox(std::shared_ptr<MIComponentFactory> componentFactory, std::shared_ptr<MultiIndex> boxHighestIndex);
+      MIMCMCBox(std::shared_ptr<MIComponentFactory> componentFactory, 
+                std::shared_ptr<MultiIndex> boxHighestIndex);
 
       void Sample();
 
