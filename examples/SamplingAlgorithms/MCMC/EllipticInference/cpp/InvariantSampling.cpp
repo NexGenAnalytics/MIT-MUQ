@@ -189,6 +189,9 @@ std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& pos
 
 Eigen::VectorXd ComputeMAP(std::shared_ptr<ModPiece> const& posterior, Eigen::VectorXd const& startPt)
 {
+    boost::property_tree::ptree opts;
+    opts.put("Method","NewtonTrust");
+    opts.put("Minimize", false);
     
 }
 
