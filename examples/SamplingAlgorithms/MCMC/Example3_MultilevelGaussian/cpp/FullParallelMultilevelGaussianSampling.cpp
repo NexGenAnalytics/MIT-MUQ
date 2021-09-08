@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 
   if (comm->GetRank() == 0) {
     parallelMIMCMC.Run();
-    Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
+    Eigen::VectorXd meanQOI = parallelMIMCMC.GetQOIs()->Mean();
     std::cout << "mean QOI: " << meanQOI.transpose() << std::endl;
   }
   parallelMIMCMC.WriteToFile("FullParallelGaussianSampling.h5");

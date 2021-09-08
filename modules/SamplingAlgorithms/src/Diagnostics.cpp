@@ -1,12 +1,62 @@
 #include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
+#include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
+#include "MUQ/SamplingAlgorithms/MarkovChain.h"
+#include "MUQ/SamplingAlgorithms/SampleCollection.h"
+
 #include <stan/math/fwd/scal.hpp>
 #include <algorithm>
 
 using namespace muq::SamplingAlgorithms;
 
-Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shared_ptr<SampleCollection>> const& origChains,
-                                                           boost::property_tree::ptree options)
+template<typename EstimatorType>
+Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shared_ptr<EstimatorType>> const& collections,
+                                                           boost::property_tree::ptree                           options)
+{
+  // Check to see if we can cast the estimator to SampleCollection
+  auto samplePtr = std::dynamic_pointer_cast<SampleCollection>(collections.at(0));
+  if(samplePtr){
+    std::vector<std::shared_ptr<SampleCollection>> newCollections(collections.size());
+    for(unsigned int i=0; i<collections.size(); ++i)
+      newCollections.at(i) = std::dynamic_pointer_cast<SampleCollection>(collections.at(i));
+
+    return SplitRankRhat(newCollections, options);
+  }
+
+  // If we aren't working with SampleCollections, use the vanilla Rhat statistic of Gelman 2013
+  unsigned int numChains = collections.size();
+  unsigned int dim = collections.at(0)->BlockSize(-1);
+
+  Eigen::MatrixXd mus(dim, numChains);
+  Eigen::MatrixXd sbjs(dim, numChains);
+  Eigen::MatrixXd vars(dim,numChains);
+
+  for(unsigned int i=0; i<numChains; ++i){
+    mus.col(i) = collections.at(i)->Mean();
+    sbjs.col(i) = collections.at(i)->CentralMoment(2,mus.col(i)); // Possibly biased estimate
+    vars.col(i) = collections.at(i)->Variance(mus.col(i)); // Possibly unbiased estimate
+  }
+  
+  Eigen::VectorXd mumu = mus.rowwise().mean();
+  Eigen::VectorXd muVar = (mus.colwise()-mumu).array().square().rowwise().sum() / (numChains-1.0);
+
+  Eigen::VectorXd varEst = sbjs.rowwise().mean() + muVar;
+  Eigen::VectorXd W = vars.rowwise().mean();
+
+  return (varEst.array() / W.array()).array().sqrt();
+}
+
+template Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shared_ptr<MarkovChain>> const& collections,
+                                                                    boost::property_tree::ptree                      options);
+template Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shared_ptr<MultiIndexEstimator>> const& collections,
+                                                                    boost::property_tree::ptree                              options);
+template Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shared_ptr<SampleCollection>> const& collections,
+                                                                    boost::property_tree::ptree                           options);
+
+
+
+Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::SplitRankRhat(std::vector<std::shared_ptr<SampleCollection>> const& origChains,
+                                                                    boost::property_tree::ptree options)
 {
 
   std::vector<std::shared_ptr<SampleCollection>> chains;

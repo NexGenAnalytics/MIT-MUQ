@@ -60,13 +60,13 @@ int main(int argc, char **argv){
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
   StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory);
 
-  if (comm->GetRank() == 0) {
-    spdlog::info("Starting parallel run");
-    parallelMIMCMC.Run();
-    spdlog::info("Parallel run finished");
-    Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
-    std::cout << "mean QOI: " << meanQOI.transpose() << std::endl;
-  }
+  // if (comm->GetRank() == 0) {
+  //   spdlog::info("Starting parallel run");
+  //   parallelMIMCMC.Run();
+  //   spdlog::info("Parallel run finished");
+  //   Eigen::VectorXd meanQOI = parallelMIMCMC.GetQOIs()->Mean();
+  //   std::cout << "mean QOI: " << meanQOI.transpose() << std::endl;
+  // }
   parallelMIMCMC.Finalize();
 
   MPI_Finalize();

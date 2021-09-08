@@ -3,15 +3,15 @@
     tag: MCMC
     title: Multilevel MCMC
     description: Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it.
-    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cellss, 4 for very good documentation
+    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cells, 4 for very good documentation
 
 
 - example:
-    file: MultilevelGaussianSampling.cpp
+    file: ModelParallelMultilevelGaussianSampling.cpp
     tag: MCMC
     title: Multilevel MCMC with parallel model
     description: Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it. The UQ method is sequential. However, the models themselves may exploit MPI parallelism. We use simple Gaussian target densities here, but the example can serve as a template for actually parallel models.
-    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cellss, 4 for very good documentation
+    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cells, 4 for very good documentation
 
 
 - example:
@@ -19,4 +19,4 @@
     tag: MCMC
     title: Parallel Multilevel MCMC with parallel model
     description: Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it. The MLMCMC method itself allows massive parallelization, and the forward model may be parallelized as well. We use simple Gaussian target densities here, but the example can serve as a template for actually parallel models.
-    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cellss, 4 for very good documentation
+    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cells, 4 for very good documentation
