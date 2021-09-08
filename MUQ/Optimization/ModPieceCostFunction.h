@@ -8,7 +8,7 @@ namespace muq {
     class ModPieceCostFunction : public CostFunction {
     public:
 
-      ModPieceCostFunction(std::shared_ptr<muq::Modeling::ModPiece> cost);
+      ModPieceCostFunction(std::shared_ptr<muq::Modeling::ModPiece> cost, double scaleIn=1.0);
 
       virtual ~ModPieceCostFunction() = default;
 
@@ -25,6 +25,8 @@ namespace muq {
          
       // The muq::Modeling::ModPiece that holds the cost
       std::shared_ptr<muq::Modeling::ModPiece> cost;
+
+      const double scale;
     };
   } // namespace Optimization
 } // namespace muq

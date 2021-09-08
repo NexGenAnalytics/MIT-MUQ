@@ -31,5 +31,6 @@ void PythonBindings::CostFunctionWrapper(py::module &m) {
 
   py::class_<ModPieceCostFunction, CostFunction, std::shared_ptr<ModPieceCostFunction> > modCost(m, "ModPieceCostFunction");
   modCost
-    .def(py::init<std::shared_ptr<ModPiece>>());//( [](std::shared_ptr<ModPiece> cost) { return new ModPieceCostFunction(cost); }));
+    .def(py::init<std::shared_ptr<ModPiece>>())
+    .def(py::init<std::shared_ptr<ModPiece>,double>());//( [](std::shared_ptr<ModPiece> cost) { return new ModPieceCostFunction(cost); }));
 }

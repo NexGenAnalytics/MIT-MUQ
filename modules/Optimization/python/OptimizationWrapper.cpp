@@ -34,7 +34,7 @@ void PythonBindings::OptimizationWrapper(pybind11::module &m) {
     .def("AddEqualityConstraint", (void (Optimizer::*)(std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const&)) &Optimizer::AddEqualityConstraint)
     .def("AddEqualityConstraint", (void (Optimizer::*)(std::shared_ptr<muq::Modeling::ModPiece> const&)) &Optimizer::AddEqualityConstraint)
     .def("ClearEqualityConstraint", &Optimizer::ClearEqualityConstraint)
-    .def("Solve", &Optimizer::Solve);
+    .def("Solve", &Optimizer::Solve, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>());
 
   py::class_<NLoptOptimizer, Optimizer, std::shared_ptr<NLoptOptimizer>>(m, "NLoptOptimizer")
     .def(py::init( [](std::shared_ptr<CostFunction> cost, py::dict d) { return new NLoptOptimizer(cost, ConvertDictToPtree(d)); }));

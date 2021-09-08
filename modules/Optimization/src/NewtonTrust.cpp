@@ -43,8 +43,11 @@ std::pair<Eigen::VectorXd, double> NewtonTrust::Solve(std::vector<Eigen::VectorX
     fval = opt->Cost();
     Eigen::VectorXd const& grad = opt->Gradient();
 
-    if(printLevel>0)
-      std::printf("  %9d, %11.3f,  %4.3e,  %5.3e\n", it, trustRadius, fval, grad.norm());
+    if(printLevel>0){
+      char buf[1024]; 
+      std::sprintf(buf, "  %9d, %11.3f,  %4.3e,  %5.3e\n", it, trustRadius, fval, grad.norm()); // create string and then cout so pybind11 can capture output
+      std::cout << std::string(buf);
+    }//std::printf("  %9d, %11.3f,  %4.3e,  %5.3e\n", it, trustRadius, fval, grad.norm());
 
     if(grad.norm() < xtol_abs)
         return std::make_pair(x,fval);
