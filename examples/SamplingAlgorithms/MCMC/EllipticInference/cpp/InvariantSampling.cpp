@@ -15,6 +15,8 @@
 #include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
 
+#include "MUQ/Optimization/Optimizer.h"
+
 #include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
@@ -23,6 +25,7 @@ using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Approximation;
 using namespace muq::Utilities;
+using namespace muq::Optimization;
 
 struct Discretization
 {   
@@ -127,6 +130,10 @@ std::shared_ptr<ModPiece> DefinePosterior(Discretization const& mesh, Eigen::Vec
 
 std::shared_ptr<SampleCollection> SampleDILI(std::shared_ptr<ModPiece> const& posterior, Eigen::VectorXd const& startPt, unsigned int numSamps)
 {
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "Sampling Posterior with DILI" << std::endl;
+    std::cout << "--------------------------------------" << std::endl;
+
     boost::property_tree::ptree pt;
     pt.put("NumSamples",numSamps);
     pt.put("BurnIn", 5000);
@@ -168,6 +175,10 @@ std::shared_ptr<SampleCollection> SampleDILI(std::shared_ptr<ModPiece> const& po
 
 std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& posterior, Eigen::VectorXd const& startPt, unsigned int numSamps)
 {   
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "Sampling Posterior with pCN" << std::endl;
+    std::cout << "--------------------------------------" << std::endl;
+
     boost::property_tree::ptree pt;
     pt.put("NumSamples", numSamps); // number of Monte Carlo samples
     pt.put("BurnIn",5000);
@@ -187,36 +198,54 @@ std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& pos
     return sampler->Run(startPt); // Use a true posterior sample to avoid burnin
 }
 
-Eigen::VectorXd ComputeMAP(std::shared_ptr<ModPiece> const& posterior, Eigen::VectorXd const& startPt)
+Eigen::VectorXd ComputeMAP(std::shared_ptr<ModPiece> const& logPosterior, Eigen::VectorXd const& startPt)
 {
-    boost::property_tree::ptree opts;
-    opts.put("Method","NewtonTrust");
-    opts.put("Minimize", false);
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "Computing MAP Point" << std::endl;
+    std::cout << "--------------------------------------" << std::endl;
     
+    boost::property_tree::ptree opts;
+    opts.put("Algorithm","NewtonTrust");
+    opts.put("Ftol.AbsoluteTolerance", 1e-3);
+    opts.put("PrintLevel", 1);
+    
+    // Create an objective function we can minimize -- the negative log posterior
+    auto objective = std::make_shared<ModPieceCostFunction>(logPosterior, -1.0);
+    auto solver = Optimizer::Construct(objective, opts);
+
+    Eigen::VectorXd xopt;
+    double fopt;
+    std::tie(xopt,fopt) = solver->Solve({startPt});
+
+    std::cout << "\nMAP Point: " << std::endl;
+    std::cout << xopt.transpose() << std::endl;
+    return xopt;
 }
 
 int main(){
 
     
     // Define the mesh
-    unsigned int numCells = 100;
+    unsigned int numCells = 50;
     Discretization mesh(numCells);
 
     // Generate synthetic "truth" data
-    unsigned int obsThin = 10;
+    unsigned int obsThin = 4;
     double obsVar = 0.01*0.01;
     auto data = GenerateData(mesh, obsThin, obsVar);
+    
+    std::shared_ptr<Gaussian> prior = CreatePrior(mesh);
+    std::shared_ptr<ModPiece> posterior = DefinePosterior(mesh, data, obsThin, obsVar);
 
-    auto posterior = DefinePosterior(mesh, data, obsThin, obsVar);
-
-    // Use a random draw from the prior as a starting point for MCMC
-    Eigen::VectorXd startPt = GetTrueLogConductivity(mesh);//CreatePrior(mesh)->Sample();
+    // Comptue the MAP point starting from the prior mean
+    Eigen::VectorXd startPt = ComputeMAP(posterior, prior->GetMean());
 
     unsigned int numSamps = 100000;
     auto diliSamps = SampleDILI(posterior, startPt, numSamps);
-    std::cout << "DILI Min ESS: " << diliSamps->ESS().minCoeff() << std::endl;
+    std::cout << "DILI:\n  Multivariate ESS: " << diliSamps->ESS("MultiBatch") << std::endl;
 
     auto pcnSamps = SamplePCN(posterior, startPt, numSamps);
-    std::cout << "PCN Min ESS: " << pcnSamps->ESS().minCoeff() << std::endl;
+    std::cout << "pCN:\n  Multivariate ESS: " << pcnSamps->ESS("MultiBatch") << std::endl;
+
     return 0;
 }
