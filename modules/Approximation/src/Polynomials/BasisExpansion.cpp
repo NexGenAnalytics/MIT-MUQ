@@ -201,6 +201,49 @@ void BasisExpansion::ProcessCoeffs(Eigen::VectorXd const& newCoeffs)
   coeffs = coeffMap;
 }
 
+Eigen::MatrixXd BasisExpansion::Derivative(unsigned int const dim, Eigen::VectorXd const& x) const {
+  // Get the maximum orders
+  Eigen::VectorXi maxOrders = multis->GetMaxOrders();
+
+  // Evaluate each dimension up to the maximum order
+  std::vector<std::vector<double>> uniEvals(basisComps.size());
+  std::vector<double> uniDerivs(maxOrders(dim)+1);
+  assert(uniEvals.size() == maxOrders.size());
+
+  for(int i=0; i<uniEvals.size(); ++i){
+    uniEvals.at(i).resize(maxOrders(i)+1);
+
+    for(int j=0; j<=maxOrders(i); ++j){
+      uniEvals.at(i).at(j) = basisComps.at(i)->BasisEvaluate(j, x(i));
+    }
+  }
+
+  for(int i=0; i<=maxOrders(dim); ++i){
+    uniDerivs.at(i) = basisComps.at(dim)->DerivativeEvaluate(i, 1, x(dim));
+  }
+
+  // Now that we have all the univariate terms evaluated, evaluate the expansion
+  Eigen::VectorXd derivs = Eigen::VectorXd::Ones(multis->Size());
+  for(int i=0; i<multis->Size(); ++i){
+
+    // Loop over each dimension
+      if(multis->at(i)->GetValue(dim)==0){
+        derivs(i) = 0;
+      }else{
+        for(auto it = multis->at(i)->GetNzBegin(); it != multis->at(i)->GetNzEnd(); ++it){
+
+          if(it->first == dim){
+            derivs(i) *= uniDerivs.at(it->second);
+          }else{
+            derivs(i) *= uniEvals.at(it->first).at(it->second);
+          }
+
+        }
+      }
+  }
+
+  return coeffs*derivs;
+}
 
 void BasisExpansion::EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
 
@@ -268,18 +311,18 @@ void BasisExpansion::SetCoeffs(Eigen::MatrixXd const& allCoeffs){
   coeffs = allCoeffs;
 }
 
-Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts) const
-{
+Eigen::MatrixXd BasisExpansion::BuildVandermonde(Eigen::MatrixXd const& evalPts) const {
   Eigen::MatrixXd vand(evalPts.cols(), NumTerms());
 
-  for(int i=0; i<evalPts.cols(); ++i)
+  for(int i=0; i<evalPts.cols(); ++i) {
     vand.row(i) = GetAllTerms(evalPts.col(i)).transpose();
+  }
 
   return vand;
 }
 
 
-Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const
+Eigen::MatrixXd BasisExpansion::BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const
 {
   Eigen::MatrixXd output(evalPts.cols(), NumTerms());
 

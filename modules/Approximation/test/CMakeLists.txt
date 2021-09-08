@@ -45,6 +45,13 @@ CreateTestGroup(
 	RegressionTests/LocalRegressionTests.cpp
 )
 
+CreateTestGroup(
+	APPROXIMATION_TRANSPORT_MAP
+
+	TransportMapTests/PolynomialMapTests.cpp
+  TransportMapTests/DensityConstructionTests.cpp
+)
+
 CreateParallelTestGroup(
 	APPROXIMATION_REGRESSION
 

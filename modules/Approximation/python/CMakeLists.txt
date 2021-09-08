@@ -26,4 +26,5 @@ CreateCompileGroup(
     wrappers/KLWrapper.cpp
     wrappers/QuadratureWrapper.cpp
     wrappers/PolynomialChaosWrapper.cpp
+    wrappers/TransportMapsWrapper.cpp
 )

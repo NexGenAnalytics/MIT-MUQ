@@ -102,12 +102,22 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
       */
       Eigen::MatrixXd BuildVandermonde(Eigen::MatrixXd const& evalPts) const;
 
+
+      /**
+      This is equivalent to extracting the \f$d\f$'s column of the Jacobian
+      @param[in] dim The dimension that we are taking the derivative with respect to
+      @param[in] x The point where we are evaluating the derivative
+      \return The derivative with respect to dimension dim
+      */
+      Eigen::MatrixXd Derivative(unsigned int const dim, Eigen::VectorXd const& x) const;
+
       /** Constructs a Vandermonde-like matrix but instead of filling each column
           with evaluations of the basis function, this function fill each column
           with the derivatives of a basis function with respect to a particular input.
           @seealso BuildVandermonde
       */
-      Eigen::MatrixXd BuildDerivMatrix(Eigen::MatrixXd const& evalPts, int wrtDim) const;
+      Eigen::MatrixXd BuildDerivMatrix(unsigned int wrtDim, Eigen::MatrixXd const& evalPts) const;
+
 
       Eigen::MatrixXd SecondDerivative(unsigned                                     outputDim,
                                        unsigned                                     wrtDim1,
@@ -124,7 +134,12 @@ Eigen::MatrixXd outputVec2 = boost::any_cast<Eigen::MatrixXd>(output1);
 
       void SetCoeffs(Eigen::MatrixXd const& allCoeffs);
 
+      // Set a single coefficient
+      void SetCoeff(int outInd, int termInd, double val){coeffs(outInd,termInd)=val;};
+
       const std::shared_ptr<muq::Utilities::MultiIndexSet> Multis() const{return multis;};
+
+      const std::vector<std::shared_ptr<IndexedScalarBasis> >& BasisComponents() const { return basisComps; }
 
     protected:
 

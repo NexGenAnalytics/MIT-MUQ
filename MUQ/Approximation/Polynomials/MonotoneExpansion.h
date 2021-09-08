@@ -11,7 +11,7 @@ namespace muq{
         @ingroup Polynomials
         @brief Defines a parameterized family of multivariate lower triangular monotone functions.
         @details This class defines functions that take the form
-        \f[ f_i(x) = g_i(x_1, \ldots, x_{i-1}) + \int_{-\infty}^{x_i} \left[ h_i(x_1,\ldots, x_{i-1}, y)\right]^2 + \epsilon dy, \f]
+        \f[ f_i(x) = g_i(x_1, \ldots, x_{i-1}) + \int_{0}^{x_i} \left[ h_i(x_1,\ldots, x_{i-1}, y)\right]^2 dy, \f]
         where the functions \f$g_i\f$ and \f$h_i\f$ are both represented through the
         muq::Approximation::BasisExpansion class, and \f$\epsilon>0\f$ is a small nugget
         ensuring that \f$f_i\f$ is strictly increasing with \f$x_i\f$.  By squaring \f$h_i\f$,

@@ -31,6 +31,7 @@ CreateCompileGroup(
 	""
 	""
 	Polynomials/IndexedScalarBasis.cpp
+	Polynomials/Polynomial.cpp
 	Polynomials/OrthogonalPolynomial.cpp
 	Polynomials/Monomial.cpp
 	Polynomials/PhysicistHermite.cpp
@@ -51,7 +52,7 @@ CreateCompileGroup(
 	""
 	""
 	Quadrature/Quadrature.cpp
-  Quadrature/GaussQuadrature.cpp
+    Quadrature/GaussQuadrature.cpp
 	Quadrature/FullTensorQuadrature.cpp
 	Quadrature/SmolyakQuadrature.cpp
 	Quadrature/ClenshawCurtisQuadrature.cpp
@@ -71,6 +72,7 @@ CreateCompileGroup(
 	PolynomialChaos/SmolyakEstimator.cpp
 	PolynomialChaos/AdaptiveSmolyakPCE.cpp
 	Quadrature/AdaptiveSmolyakQuadrature.cpp
+	Polynomials/SturmSolver.cpp
 )
 
 CreateCompileGroup(
@@ -102,4 +104,19 @@ CreateCompileGroup(
 
     GaussianProcesses/StateSpaceGP.cpp
     GaussianProcesses/GaussianProcess.cpp
+)
+
+CreateCompileGroup(
+    APPROXIMATION_TRANSPORT_MAP
+    "Tools for constructing transport maps."
+    muqApproximation
+    "MODELING_CORE;OPTIMIZATION_CORE"
+    "EIGEN3;BOOST"
+    ""
+
+		TransportMaps/TransportMap.cpp
+		TransportMaps/ConditionableMap.cpp
+		TransportMaps/PolynomialMap.cpp
+
+		TransportMaps/KLSamplesCost.cpp
 )

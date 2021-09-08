@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 
-#include "MUQ/Approximation/Polynomials/IndexedScalarBasis.h"
+#include "MUQ/Approximation/Polynomials/Polynomial.h"
 
 namespace muq {
   namespace Approximation {
@@ -28,32 +28,23 @@ namespace muq {
 
        The BasisEvaluate function Uses the Clenshaw algorithm from: http://en.wikipedia.org/wiki/Clenshaw_algorithm.
      */
-    class OrthogonalPolynomial : public IndexedScalarBasis {
+    class OrthogonalPolynomial : public Polynomial {
 
       friend class GaussQuadrature;
 
     public:
 
+      enum RootMethod {
+          Sturm,
+          Comrade
+      };
+
       /// Create a polynomial
-      OrthogonalPolynomial() : IndexedScalarBasis(){};
+      OrthogonalPolynomial() : Polynomial(){};
 
       static std::shared_ptr<OrthogonalPolynomial> Construct(std::string const& polyName);
 
       virtual ~OrthogonalPolynomial() = default;
-
-      /// Evaluate the specific polynomial type (must be implemented by the child)
-      /**
-	 Inputs:
-	 <ol>
-	 <li> The order of the polynomial (unsigned int)
-	 <li> The point where we are evaluating the polynomial
-	 </ol>
-	 \return The polynomial value
-       */
-      virtual double BasisEvaluate(int const order, double const x) const override;
-
-      virtual Eigen::VectorXd EvaluateAllTerms(int    const maxOrder,
-                                               double const x) const override;
 
       /**
          @brief Returns the normalization constant for the polynomial of order \f$p\f$.
@@ -67,38 +58,6 @@ where \f$\delta_{mn}\f$ is the Kronecker delta function, \f$w(x)\f$ is a weighti
        */
       virtual double Normalization(unsigned int polyOrder) const;
 
-
-    private:
-
-      /// Implement \f$a_k(x)\f$
-      /**
-	     @param[in] k The order of the polynomial
-       */
-      virtual double ak(unsigned int k) const = 0;
-
-      /// Implement \f$b_k(x)\f$
-      /**
-	       @param[in] k The order of the polynomial
-       */
-      virtual double bk(unsigned int k) const = 0;
-
-      /// Implement \f$c_k(x)\f$
-      /**
-	       @param[in] k The order of the polynomial
-       */
-      virtual double ck(unsigned int k) const = 0;
-
-      /// Implement \f$\phi_0(x)\f$
-      /**
-	       @param[in] x The point where w are evaluating the polynomial
-       */
-      virtual double phi0(double x) const = 0;
-
-      /// Implement \f$\phi_1(x)\f$
-      /**
-	       @param[in] x The point where w are evaluating the polynomial
-       */
-      virtual double phi1(double x) const = 0;
     };
   } // namespace Approximation
 } // namespace muq
