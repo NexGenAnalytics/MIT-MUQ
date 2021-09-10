@@ -142,7 +142,7 @@ StochasticEigenSolver& StochasticEigenSolver::compute(std::shared_ptr<LinearOper
     // Make sure we're only keeping eigenvalues that satisfy tolerances
     double largestVal = eigVals(0);
     unsigned int numKeep = 0;
-    for(int i=0; i<numEigs; ++i){
+    for(int i=0; i<std::min<int>(eigVals.size(), numEigs); ++i){
       if((eigVals(i)>eigRelTol*largestVal)&&(eigVals(i)>eigAbsTol)){
         numKeep++;
       }else{

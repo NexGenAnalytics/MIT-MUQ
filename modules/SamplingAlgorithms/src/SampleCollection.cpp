@@ -303,7 +303,7 @@ double SampleCollection::MultiBatchESS(int blockInd, int batchSize, int overlap)
 
   // If the blocksize wasn't given explicitly, use n^{1/3}
   if(batchSize<1)
-    batchSize = std::round(std::pow(numSamps, 1.0/2.0));
+    batchSize = std::min( std::floor(numSamps/(BlockSize(blockInd)+1)), std::round(std::pow(numSamps, 1.0/2.0)));
 
   // If the overlap wasn't given explicitly, use 10% of the batchSize
   if(overlap<1)
