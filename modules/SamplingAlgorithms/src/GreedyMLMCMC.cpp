@@ -5,8 +5,7 @@ namespace muq {
   namespace SamplingAlgorithms {
 
     GreedyMLMCMC::GreedyMLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-    : SamplingAlgorithm(std::shared_ptr<SampleCollection>(), std::shared_ptr<SampleCollection>()),
-      componentFactory(componentFactory),
+    : componentFactory(componentFactory),
       numInitialSamples(pt.get("NumInitialSamples",1000)),
       e(pt.get("GreedyTargetVariance",0.1)),
       beta(pt.get("GreedyResamplingFactor",0.5)),
@@ -25,16 +24,15 @@ namespace muq {
       }
     }
 
-    std::shared_ptr<SampleCollection> GreedyMLMCMC::GetSamples() const {
-      spdlog::warn("GetSamples() called on GreedyMLMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetBox() instead to access chains.");
-      return nullptr;
+    std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::GetSamples() const {
+      return std::make_shared<MultiIndexEstimator>(boxes);
     }
-    std::shared_ptr<SampleCollection> GreedyMLMCMC::GetQOIs() const {
-      spdlog::warn("GetQOIs() called on GreedyMLMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetBox() instead to access chains.");
-      return nullptr;
+    
+    std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::GetQOIs() const {
+      return std::make_shared<MultiIndexEstimator>(boxes, true);
     }
 
-    std::shared_ptr<SampleCollection> GreedyMLMCMC::RunImpl(std::vector<Eigen::VectorXd> const& x0) {
+    std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::Run() {
 
       const int levels = componentFactory->FinestIndex()->GetValue(0);
 
@@ -96,31 +94,21 @@ namespace muq {
           boxes[l]->FinestChain()->PrintStatus("lvl " + std::to_string(l) + " ");
       }
 
-      return nullptr;
+      return GetSamples();
     }
 
     std::shared_ptr<MIMCMCBox> GreedyMLMCMC::GetBox(int index) {
       return boxes[index];
     }
 
+    std::vector<std::shared_ptr<MIMCMCBox>> GreedyMLMCMC::GetBoxes() {
+      return boxes;
+    }
+
     void GreedyMLMCMC::WriteToFile(std::string filename) {
       for (auto box : boxes) {
         box->WriteToFile(filename);
       }
-    }
-
-    Eigen::VectorXd GreedyMLMCMC::MeanQOI() {
-      // Compute full QOI estimate
-      Eigen::VectorXd MImean(componentFactory->SamplingProblem(componentFactory->FinestIndex())->blockSizesQOI.sum());
-      MImean.setZero();
-
-      for (auto box : boxes) {
-        Eigen::VectorXd sampMean = box->MeanQOI();
-
-        MImean += sampMean;
-      }
-
-      return MImean;
     }
 
     void GreedyMLMCMC::Draw(bool drawSamples) {

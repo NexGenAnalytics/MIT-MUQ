@@ -10,6 +10,7 @@
 #include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+#include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
 
@@ -21,10 +22,6 @@ namespace pt = boost::property_tree;
 using namespace muq::Modeling;
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
-
-
-
-
 
 
 class MySamplingProblem : public AbstractSamplingProblem {
@@ -156,9 +153,42 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   greedymlmcmc.Run();
   greedymlmcmc.Draw(false);
 
-  auto mean = greedymlmcmc.MeanQOI();
+  Eigen::VectorXd trueMu(2);
+  trueMu << 1.0, 2.0;
+  Eigen::MatrixXd trueCov(2,2);
+  trueCov << 0.7, 0.6,
+             0.6, 1.0;
 
-  EXPECT_NEAR(mean[0], 1.0, 0.2);
-  EXPECT_NEAR(mean[1], 2.0, 0.2);
+  auto params = greedymlmcmc.GetSamples();
+  Eigen::VectorXd mean = params->Mean();
+  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
 
+  Eigen::VectorXd variance = params->Variance();
+  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+
+  Eigen::VectorXd skewness = params->Skewness();
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+
+  Eigen::MatrixXd covariance = params->Covariance();
+  EXPECT_NEAR(trueCov(0,0), covariance(0,0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), covariance(1,1), 0.2);
+  EXPECT_NEAR(trueCov(0,1), covariance(0,1), 0.2);
+  EXPECT_NEAR(trueCov(1,0), covariance(1,0), 0.2);
+
+
+  auto qois = greedymlmcmc.GetQOIs();
+  mean = qois->Mean();
+  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+
+  variance = qois->Variance();
+  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
+  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+
+  skewness = qois->Skewness();
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.2);
 }

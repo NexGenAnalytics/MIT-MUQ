@@ -44,7 +44,7 @@ int main(){
 
   GreedyMLMCMC greedymlmcmc (pt, componentFactory);
   greedymlmcmc.Run();
-  std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+  std::cout << "mean QOI: " << greedymlmcmc->GetQOIs()->Mean().transpose() << std::endl;
 
   greedymlmcmc.WriteToFile("MultilevelGaussianSampling.h5");
 
@@ -53,7 +53,7 @@ int main(){
 
   SLMCMC slmcmc (pt, componentFactory);
   slmcmc.Run();
-  std::cout << "mean QOI: " << slmcmc.MeanQOI().transpose() << std::endl;
+  std::cout << "mean QOI: " << slmcmc->QOIs()->Mean().transpose() << std::endl;
 
   return 0;
 }

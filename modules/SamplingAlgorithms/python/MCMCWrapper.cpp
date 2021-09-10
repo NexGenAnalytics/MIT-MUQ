@@ -120,33 +120,35 @@ void PythonBindings::MCMCWrapper(py::module &m) {
     .def("GetSamples", &SamplingAlgorithm::GetSamples)
     .def("GetQOIs", &SamplingAlgorithm::GetQOIs);
 
-  py::class_<SingleChainMCMC, SamplingAlgorithm, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
+  py::class_<SingleChainMCMC, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
   singleMCMC
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> problem) {return new SingleChainMCMC(ConvertDictToPtree(d), problem);}))
     .def(py::init( [](py::dict d, std::vector<std::shared_ptr<TransitionKernel>> kernels) {return new SingleChainMCMC(ConvertDictToPtree(d), kernels);}))
+    .def("SetState", (void (SingleChainMCMC::*)(std::shared_ptr<SamplingState> const&)) &SingleChainMCMC::SetState)
+    .def("SetState", (void (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::SetState)
     .def("Kernels", &SingleChainMCMC::Kernels)
-    .def("RunImpl", &SingleChainMCMC::RunImpl)
+    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run)
     .def("AddNumSamps", &SingleChainMCMC::AddNumSamps)
     .def("NumSamps", &SingleChainMCMC::NumSamps)
-    .def("TotalTime", &SingleChainMCMC::TotalTime);
+    .def("TotalTime", &SingleChainMCMC::TotalTime)
+    .def("GetSamples", &SingleChainMCMC::GetSamples)
+    .def("GetQOIs", &SingleChainMCMC::GetQOIs);
 
   py::class_<MIMCMCBox, std::shared_ptr<MIMCMCBox>> multiindexMCMCBox(m, "MIMCMCBox");
   multiindexMCMCBox
-    .def("MeanParam", &MIMCMCBox::MeanParam)
-    .def("MeanQOI", &MIMCMCBox::MeanQOI)
     .def("FinestChain", &MIMCMCBox::FinestChain)
     .def("GetChain", &MIMCMCBox::GetChain)
     .def("GetBoxIndices", &MIMCMCBox::GetBoxIndices)
     .def("GetHighestIndex", &MIMCMCBox::GetHighestIndex);
 
 
-  py::class_<MIMCMC, SamplingAlgorithm, std::shared_ptr<MIMCMC>> multiindexMCMC(m, "MIMCMC");
+  py::class_<MIMCMC, std::shared_ptr<MIMCMC>> multiindexMCMC(m, "MIMCMC");
   multiindexMCMC
     .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<PythonMIComponentFactory>(ConvertDictToPtree(d), startingPoint, problems)); }))
     .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::shared_ptr<MultiIndexSet> problem_indices, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<PythonMIComponentFactory>(ConvertDictToPtree(d), startingPoint, problem_indices, problems)); }))
-    .def("RunImpl", &MIMCMC::RunImpl)
-    .def("MeanParam", &MIMCMC::MeanParam)
-    .def("MeanQOI", &MIMCMC::MeanQOI)
+    .def("Run", &MIMCMC::Run)
+    .def("GetSamples", &MIMCMC::GetSamples)
+    .def("GetQOIs", &MIMCMC::GetQOIs)
     .def("GetIndices", &MIMCMC::GetIndices)
     .def("GetMIMCMCBox", &MIMCMC::GetMIMCMCBox);
 

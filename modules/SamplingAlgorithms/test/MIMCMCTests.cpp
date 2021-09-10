@@ -176,10 +176,10 @@ TEST(MIMCMCTest, MIMCMC) {
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
 
   MIMCMC mimcmc (pt, componentFactory);
-  mimcmc.Run(Eigen::Vector2d(1.0, 2.0));
+  mimcmc.Run();
   mimcmc.Draw(false);
 
-  auto mean = mimcmc.MeanQOI();
+  auto mean = mimcmc.GetQOIs()->Mean();
 
   EXPECT_NEAR(mean[0], 1.0, 0.25);
   EXPECT_NEAR(mean[1], 2.0, 0.25);
@@ -196,9 +196,9 @@ TEST(MIMCMCTest, SLMCMC)
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
 
   SLMCMC slmcmc (pt, componentFactory);
-  slmcmc.Run(Eigen::Vector2d(1.0, 2.0));
+  slmcmc.Run();
 
-  auto mean = slmcmc.MeanQOI();
+  auto mean = slmcmc.GetQOIs()->Mean();
 
   EXPECT_NEAR(mean[0], 1.0, 0.1);
   EXPECT_NEAR(mean[1], 2.0, 0.1);

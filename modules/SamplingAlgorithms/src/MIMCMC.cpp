@@ -1,12 +1,10 @@
 #include "MUQ/SamplingAlgorithms/MIMCMC.h"
-#include "spdlog/spdlog.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
 
     MIMCMC::MIMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory)
-    : SamplingAlgorithm(std::shared_ptr<SampleCollection>(), std::shared_ptr<SampleCollection>()),
-      pt(pt),
+    : pt(pt),
       componentFactory(componentFactory)
     {
       gridIndices = MultiIndexFactory::CreateFullTensor(componentFactory->FinestIndex()->GetVector());
@@ -26,16 +24,14 @@ namespace muq {
       return nullptr;
     }
 
-    std::shared_ptr<SampleCollection> MIMCMC::GetSamples() const {
-      spdlog::warn("GetSamples() called on MIMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetMIMCMCBox() instead to access chains.");
-      return nullptr;
+    std::shared_ptr<MultiIndexEstimator> MIMCMC::GetSamples() const {
+      return std::make_shared<MultiIndexEstimator>(boxes);
     }
-    std::shared_ptr<SampleCollection> MIMCMC::GetQOIs() const {
-      spdlog::warn("GetQOIs() called on MIMCMC. This is not supported and returns a nullptr since we have multiple chains here! Use GetMIMCMCBox() instead to access chains.");
-      return nullptr;
+    std::shared_ptr<MultiIndexEstimator> MIMCMC::GetQOIs() const {
+      return std::make_shared<MultiIndexEstimator>(boxes,true);
     }
 
-    std::shared_ptr<SampleCollection> MIMCMC::RunImpl(std::vector<Eigen::VectorXd> const& x0) {
+    std::shared_ptr<MultiIndexEstimator> MIMCMC::Run() {
       for (auto box : boxes) {
         assert(box);
         int numSamples = pt.get<int>("NumSamples" + multiindexToConfigString(box->GetHighestIndex()));
@@ -44,34 +40,7 @@ namespace muq {
         }
       }
 
-      return nullptr;
-    }
-
-    Eigen::VectorXd MIMCMC::MeanQOI() {
-      // Compute full QOI estimate
-      Eigen::VectorXd MImean(boxes[0]->GetFinestProblem()->blockSizesQOI.sum());
-      MImean.setZero();
-
-      for (auto box : boxes) {
-        Eigen::VectorXd sampMean = box->MeanQOI();
-
-        MImean += sampMean;
-      }
-
-      return MImean;
-    }
-
-    Eigen::VectorXd MIMCMC::MeanParam() {
-      Eigen::VectorXd MImean(boxes[0]->GetFinestProblem()->blockSizes.sum());
-      MImean.setZero();
-
-      for (auto box : boxes) {
-        Eigen::VectorXd sampMean = box->MeanParam();
-
-        MImean += sampMean;
-      }
-
-      return MImean;
+      return GetSamples();
     }
 
     std::shared_ptr<MIMCMCBox> MIMCMC::GetMIMCMCBox(std::shared_ptr<MultiIndex> index) {

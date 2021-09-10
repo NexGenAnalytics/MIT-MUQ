@@ -50,6 +50,7 @@ CreateCompileGroup(
 
     SamplingState.cpp
     SampleCollection.cpp
+    SampleEstimator.cpp
     #DistributedCollection.cpp
     MarkovChain.cpp
 
@@ -65,6 +66,7 @@ CreateCompileGroup(
     GreedyMLMCMC.cpp
     MIMCMC.cpp
     MIMCMCBox.cpp
+    MultiIndexEstimator.cpp
     SLMCMC.cpp
     SubsamplingMIProposal.cpp
     GMHKernel.cpp
