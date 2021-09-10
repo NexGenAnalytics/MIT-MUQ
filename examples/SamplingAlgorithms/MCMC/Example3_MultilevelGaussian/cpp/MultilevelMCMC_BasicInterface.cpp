@@ -1,17 +1,17 @@
 /***
 ## Overview
-This example shows how to use the high-level (basic) API to MUQ's Multilevel MCMC algorithms.  The actual sampling 
-problem is quite simple: we want to draw samples from a multivariate Gaussian distribution with 
-mean 
+This example shows how to use the high-level (basic) API to MUQ's Multilevel MCMC algorithms.  The actual sampling
+problem is quite simple: we want to draw samples from a multivariate Gaussian distribution with
+mean
 \f[
   \mu = \left[ \begin{array}{c} 1\\ 2\end{array}\right]
 \f]
-and covariance 
+and covariance
 \f[
 \Sigma = \left[\begin{array}{cc} 0.7& 0.6\\ 0.6 & 1.0\end{array}\right].
 \f]
-It's of course possible to sample this distribution directly, but we will use Multilevel MCMC methods in 
-this example to illustrate their use without introducing unnecessary complexity to the problem definition.   
+It's of course possible to sample this distribution directly, but we will use Multilevel MCMC methods in
+this example to illustrate their use without introducing unnecessary complexity to the problem definition.
 
 */
 
@@ -46,7 +46,7 @@ using namespace muq::Utilities;
 
 /***
   ## Define the Target Distributions
-  To apply MLMCMC, we need to define 
+  To apply MLMCMC, we need to define
 */
 std::vector<std::shared_ptr<ModPiece>> ConstructDensities()
 {
@@ -74,7 +74,7 @@ std::vector<std::shared_ptr<ModPiece>> ConstructDensities()
   levelCov = 1.1*tgtCov;
   logDensities.at(2) = std::make_shared<Gaussian>(levelMu, levelCov)->AsDensity();
 
-  // Deifne the finest level.  This should be the target distribution. 
+  // Deifne the finest level.  This should be the target distribution.
   logDensities.at(3) = std::make_shared<Gaussian>(tgtMu, tgtCov)->AsDensity();
 
   return logDensities;
@@ -86,7 +86,7 @@ int main(){
 
 
   pt::ptree options;
-  
+
   options.put("NumInitialSamples", 1000); // number of initial samples for greedy MLMCMC
   options.put("GreedyTargetVariance", 0.05); // Target estimator variance to be achieved by greedy algorithm
   options.put("verbosity", 1); // show some output
@@ -104,17 +104,17 @@ int main(){
 
   for(int chainInd=0; chainInd<numChains; ++chainInd){
     Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
-    
+
     std::cout << "\n=============================\n";
     std::cout << "Running MLMCMC Chain " << chainInd << ": \n";
     std::cout << "-----------------------------\n";
-   
+
     GreedyMLMCMC sampler(options, x0, logDensities);
     estimators.at(chainInd) = sampler.Run();
 
     std::cout << "Chain " << chainInd << " Mean:     " << estimators.at(chainInd)->Mean().transpose() << std::endl;
     std::cout << "Chain " << chainInd << " Variance: " << estimators.at(chainInd)->Variance().transpose() << std::endl;
-    
+
     std::stringstream filename;
     filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
     sampler.WriteToFile(filename.str());
@@ -123,7 +123,7 @@ int main(){
 
 
   unsigned int numCalls = logDensities.back()->GetNumCalls();
-  
+
   std::cout << "\n=============================\n";
   std::cout << "Multilevel Summary: \n";
   std::cout << "-----------------------------\n";
