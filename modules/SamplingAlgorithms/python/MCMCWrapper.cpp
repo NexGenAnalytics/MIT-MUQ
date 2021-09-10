@@ -8,6 +8,7 @@
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
 #include "MUQ/SamplingAlgorithms/MHKernel.h"
 
+#include "MUQ/SamplingAlgorithms/ConcatenatingInterpolation.h"
 #include "MUQ/Utilities/PyDictConversion.h"
 
 #include <pybind11/pybind11.h>
@@ -28,97 +29,12 @@ namespace py = pybind11;
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 #include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
 #include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+#include "MUQ/SamplingAlgorithms/DefaultComponentFactory.h"
 
 using namespace muq::Modeling;
 
 
-// In the long run, this is to be replaced by ConcatenatingInterpolation to be introduced along with parallel MIMCMC
-class PyConcatenatingInterpolation : public MIInterpolation {
-public:
-  PyConcatenatingInterpolation(std::shared_ptr<MultiIndex> const& index) : index(index) {
-  }
-
-  virtual std::shared_ptr<SamplingState> Interpolate (std::shared_ptr<SamplingState> const& coarseProposal, std::shared_ptr<SamplingState> const& fineProposal) override {
-    int fine_part_size = fineProposal->state[0].size() - coarseProposal->state[0].size();
-
-    Eigen::VectorXd interpolatedState(fineProposal->state[0].size());
-    interpolatedState << coarseProposal->state[0], fineProposal->state[0].tail(fine_part_size);
-
-    return std::make_shared<SamplingState>(interpolatedState);
-  }
-
-private:
-  std::shared_ptr<MultiIndex> index;
-};
-
-
-class PythonMIComponentFactory : public MIComponentFactory {
-public:
-  PythonMIComponentFactory(pt::ptree pt, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& pySamplingProblems)
-   : pt(pt), startingPoint(startingPoint), problemIndices(MultiIndexFactory::CreateFullTensor(1,pySamplingProblems.size() - 1)), pySamplingProblems(pySamplingProblems) {}
-
-  PythonMIComponentFactory(pt::ptree pt, Eigen::VectorXd startingPoint, std::shared_ptr<MultiIndexSet> const& problemIndices, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& pySamplingProblems)
-   : pt(pt), startingPoint(startingPoint), pySamplingProblems(pySamplingProblems)
-  {
-    this->problemIndices = problemIndices;
-  }
-
-  virtual std::shared_ptr<MCMCProposal> Proposal (std::shared_ptr<MultiIndex> const& index, std::shared_ptr<AbstractSamplingProblem> const& samplingProblem) override {
-
-    boost::property_tree::ptree subTree = pt.get_child("Proposal");
-    subTree.put("BlockIndex",0);
-
-    // Construct the proposal
-    std::shared_ptr<MCMCProposal> proposal = MCMCProposal::Construct(subTree, samplingProblem);
-    assert(proposal);
-    return proposal;
-  }
-
-  virtual std::shared_ptr<MultiIndex> FinestIndex() override {
-    return std::make_shared<MultiIndex>(problemIndices->GetMaxOrders());
-  }
-
-  virtual std::shared_ptr<MCMCProposal> CoarseProposal (std::shared_ptr<MultiIndex> const& fineIndex,
-                                                        std::shared_ptr<MultiIndex> const& coarseIndex,
-                                                        std::shared_ptr<AbstractSamplingProblem> const& coarseProblem,
-                                                           std::shared_ptr<SingleChainMCMC> const& coarseChain) override {
-    pt::ptree ptProposal = pt;
-    ptProposal.put("BlockIndex",0);
-    return std::make_shared<SubsamplingMIProposal>(ptProposal, coarseProblem, coarseIndex, coarseChain);
-  }
-
-  virtual std::shared_ptr<AbstractSamplingProblem> SamplingProblem (std::shared_ptr<MultiIndex> const& index) override {
-    for (int i = 0; i < problemIndices->Size(); i++) {
-      if (*(problemIndices->at(i)) == *index) {
-        return pySamplingProblems[i];
-      }
-    }
-    std::cout << "Undefined problem! " << *index << std::endl;
-    return nullptr;
-  }
-
-  virtual std::shared_ptr<MIInterpolation> Interpolation (std::shared_ptr<MultiIndex> const& index) override {
-    return std::make_shared<PyConcatenatingInterpolation>(index);
-  }
-
-  virtual Eigen::VectorXd StartingPoint (std::shared_ptr<MultiIndex> const& index) override {
-    return startingPoint;
-  }
-private:
-  pt::ptree pt;
-  Eigen::VectorXd startingPoint;
-  std::shared_ptr<MultiIndexSet> problemIndices;
-  std::vector<std::shared_ptr<AbstractSamplingProblem>> pySamplingProblems;
-};
-
-
 void PythonBindings::MCMCWrapper(py::module &m) {
-  py::class_<SamplingAlgorithm, std::shared_ptr<SamplingAlgorithm>> sampAlg(m, "SamplingAlgorithm");
-  sampAlg
-    .def("Run", (std::shared_ptr<SampleCollection>  (SamplingAlgorithm::*)(std::vector<Eigen::VectorXd> const&)) &SamplingAlgorithm::Run,
-                 py::call_guard<py::scoped_ostream_redirect,py::scoped_estream_redirect>())
-    .def("GetSamples", &SamplingAlgorithm::GetSamples)
-    .def("GetQOIs", &SamplingAlgorithm::GetQOIs);
 
   py::class_<SingleChainMCMC, std::shared_ptr<SingleChainMCMC>> singleMCMC(m, "SingleChainMCMC");
   singleMCMC
@@ -127,7 +43,7 @@ void PythonBindings::MCMCWrapper(py::module &m) {
     .def("SetState", (void (SingleChainMCMC::*)(std::shared_ptr<SamplingState> const&)) &SingleChainMCMC::SetState)
     .def("SetState", (void (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::SetState)
     .def("Kernels", &SingleChainMCMC::Kernels)
-    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run)
+    .def("Run", (std::shared_ptr<MarkovChain> (SingleChainMCMC::*)(std::vector<Eigen::VectorXd> const&)) &SingleChainMCMC::Run, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
     .def("AddNumSamps", &SingleChainMCMC::AddNumSamps)
     .def("NumSamps", &SingleChainMCMC::NumSamps)
     .def("TotalTime", &SingleChainMCMC::TotalTime)
@@ -144,9 +60,11 @@ void PythonBindings::MCMCWrapper(py::module &m) {
 
   py::class_<MIMCMC, std::shared_ptr<MIMCMC>> multiindexMCMC(m, "MIMCMC");
   multiindexMCMC
-    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<PythonMIComponentFactory>(ConvertDictToPtree(d), startingPoint, problems)); }))
-    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::shared_ptr<MultiIndexSet> problem_indices, std::vector<std::shared_ptr<AbstractSamplingProblem>> problems) {return new MIMCMC(ConvertDictToPtree(d), std::make_shared<PythonMIComponentFactory>(ConvertDictToPtree(d), startingPoint, problem_indices, problems)); }))
-    .def("Run", &MIMCMC::Run)
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, problems); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<ModPiece>> const& models) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, models); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems, std::shared_ptr<MultiIndexSet> const& indices) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, problems, indices); }))
+    .def(py::init( [](py::dict d, Eigen::VectorXd startingPoint, std::vector<std::shared_ptr<ModPiece>> const& models, std::shared_ptr<MultiIndexSet> const& indices) {return new MIMCMC(ConvertDictToPtree(d), startingPoint, models, indices); }))
+    .def("Run", &MIMCMC::Run, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
     .def("GetSamples", &MIMCMC::GetSamples)
     .def("GetQOIs", &MIMCMC::GetQOIs)
     .def("GetIndices", &MIMCMC::GetIndices)

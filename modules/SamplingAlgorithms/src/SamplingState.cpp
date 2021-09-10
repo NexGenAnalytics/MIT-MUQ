@@ -21,6 +21,25 @@ int SamplingState::TotalDim() const {
   return sum;
 }
 
+Eigen::VectorXd SamplingState::ToVector(int blockInd) const
+{
+  if(blockInd>=0){
+    return state.at(blockInd);
+  }else{
+    if(state.size()==1)
+      return state.at(0);
+    
+    Eigen::VectorXd output(TotalDim());
+    unsigned int currInd = 0;
+    for(auto& s : state){
+      output.segment(currInd, s.size()) = s;
+      currInd += s.size();
+    }
+    return output;
+  }
+}
+
+
 double SamplingState::StateValue(unsigned int totalInd) const
 {
   unsigned int sum = 0;

@@ -87,7 +87,7 @@ samps = sampler.Run(x0)
 # Extract the posteior samples as a matrix and compute some posterior statistics
 sampMat = samps.AsMatrix()
 
-postMean = np.mean(sampMat,axis=1)
+postMean = samps.Mean()
 q05 = np.percentile(sampMat,5,axis=1)
 q95 = np.percentile(sampMat,95,axis=1)
 

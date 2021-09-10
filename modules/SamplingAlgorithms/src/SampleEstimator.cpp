@@ -75,7 +75,7 @@ Eigen::VectorXd SampleEstimator::CentralMoment(unsigned int           order,
 
 Eigen::VectorXd SampleEstimator::Mean(int blockInd) const
 {   
-
+    assert(BlockSize(blockInd)>0);
     return CentralMoment(1, Eigen::VectorXd::Zero(BlockSize(blockInd)), blockInd);
 }
     

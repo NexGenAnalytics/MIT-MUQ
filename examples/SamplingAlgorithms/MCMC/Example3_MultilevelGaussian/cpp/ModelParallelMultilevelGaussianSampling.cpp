@@ -49,7 +49,7 @@ int main(int argc, char **argv){
   if (comm->GetRank() == 0) {
     GreedyMLMCMC greedymlmcmc (pt, componentFactory);
     greedymlmcmc.Run();
-    std::cout << "mean QOI: " << greedymlmcmc->QOIs()->Mean().transpose() << std::endl;
+    std::cout << "mean QOI: " << greedymlmcmc.GetQOIs()->Mean().transpose() << std::endl;
   }
 
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     SLMCMC slmcmc (pt, componentFactory);
     slmcmc.Run();
     componentFactory->finalize();
-    std::cout << "mean QOI: " << slmcmc->QOIs()->Mean().transpose() << std::endl;
+    std::cout << "mean QOI: " << slmcmc.GetQOIs()->Mean().transpose() << std::endl;
   }
 
 

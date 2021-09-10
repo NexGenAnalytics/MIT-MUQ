@@ -44,7 +44,7 @@ int main(){
 
     GreedyMLMCMC greedymlmcmc (pt, componentFactory);
     greedymlmcmc.Run();
-    std::cout << "mean QOI: " << greedymlmcmc.MeanQOI().transpose() << std::endl;
+    std::cout << "mean QOI: " << greedymlmcmc.GetQOIs()->Mean().transpose() << std::endl;
     greedymlmcmc.Draw(false);
 
     /*std::cout << std::endl << "*************** single chain reference" << std::endl << std::endl;

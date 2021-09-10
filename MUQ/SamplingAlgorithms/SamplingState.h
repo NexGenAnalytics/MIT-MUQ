@@ -56,6 +56,11 @@ namespace muq {
       /// The total number of parameters in the state, i.e., the sum of state[i].size()
       int TotalDim() const;
 
+      /**
+      If blockInd>=0, then this function simply returns the state vector at the specified block.  Otherwise,
+      this function concatenates all the blocks into a single Eigen::VectorXd.
+      */
+      Eigen::VectorXd ToVector(int blockInd=-1) const;
 
       /** Returns the state value given an index into concatenated state vector.
           @param[in] totalInd Index into the concatenated state.  Maximum value is TotalDim()-1.

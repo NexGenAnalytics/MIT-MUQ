@@ -100,7 +100,11 @@ namespace muq{
       virtual const std::shared_ptr<SamplingState> back() const;
 
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order given that we already know the mean
-      virtual Eigen::VectorXd CentralMoment(unsigned order, Eigen::VectorXd const& mean, int blockNum=-1) const override;
+      virtual Eigen::VectorXd CentralMoment(unsigned               order, 
+                                            Eigen::VectorXd const& mean,
+                                            int                    blockNum=-1) const override;
+      virtual Eigen::VectorXd CentralMoment(unsigned int order, 
+                                            int          blockNum=-1) const override{ return CentralMoment(order, Mean(blockNum), blockNum);};
 
       virtual Eigen::VectorXd Mean(int blockInd=-1) const override;
       virtual Eigen::MatrixXd Covariance(int blockInd=-1) const override{return SampleEstimator::Covariance(blockInd);};
@@ -131,23 +135,110 @@ namespace muq{
                    "effective sample size" (ESS) describes how many independent
                    samples would have been needed to obtain the same estimator
                    variance.  In particular, let \f$\tilde{\mu}_N\f$ be a Monte
-                   Carlo estimator based on \f$N\f$ correlated samples.  The ESS
-                   is then given by the ratio of the esimator variances:
-                   \f[ ESS = N \frac{\mathbb{V}[\hat{\mu}-\mu]}{\mathbb{V}[\tilde{\mu}-\mu]}. \f]
+                   Carlo estimator based on \f$N\f$ correlated samples.  
 
-                   In SampleCollection, the samples are assumed independent, but
-                   not equally weighted, which is typically the case with importance
-                   sampling.  In this setting, the ESS is estimated using
-                   \f[
-                      ESS = \frac{\left(\sum_{i=1}^N w_i}\right)^2}{\sum_{i=1}^N w_i^2}.
-                   \f]
+        If method=="Batch" (default) The overlapping batch method (OBM) described in \cite Flegal2010 
+            is used.  This method is also applied to each component independently,
+            resulting in an ESS estimate for each component.
 
-                   Note that children of this class may compute the ESS with different
-                   approaches.  For example, the MarkovChain class computes the
-                   ESS using the approach of "Monte Carlo errors with less error" by
-                   Ulli Wolff.
+        If method=="MultiBatch",  The multivariate method of \cite Vats2019 is employed.  This 
+            method takes into account the joint correlation of all components of the chain and 
+            returns a single ESS.   This approach is preferred in high dimensional settings.
+
+        @param[in] method A string specifying the method used to estimate the ESS.  Options in SampleCollection are "Batch" or "MultiBatch".   The MarkovChain class also supports a "Wolff" method.
+        @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
       */
-      virtual Eigen::VectorXd ESS(int blockDim=-1) const;
+      virtual Eigen::VectorXd ESS(std::string const& method="Batch") const override{return ESS(-1,method);};
+
+      /**
+      @param[in] blockDim The block of the SampleState that we want to use in the ESS computation.
+      @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
+      */
+      virtual Eigen::VectorXd ESS(int blockDim) const override{return ESS(blockDim,"Batch");};
+
+      /**
+      @param[in] blockDim The block of the SampleState that we want to use in the ESS computation.
+      @param[in] method A string specifying the method used to estimate the ESS.  Options in SampleCollection are "Batch" or "MultiBatch".   The MarkovChain class also supports a "Wolff" method.
+      @return Either a vector of length \f$D\f$ containing an ESS estimate for each component or a vector of length 1 containing a single multivariate ESS estimate.
+      */
+      virtual Eigen::VectorXd ESS(int blockDim, std::string const& method) const override;
+
+      /**
+      Computes the effective sample size using the overlapping or nonoverlapping 
+      batch method.  (See e.g., \cite Flegal2010).
+      
+      @param[in] blockInd The block of the SampleState that we want to use in the ESS computation.
+      @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/3}\f$.  Note that to ensure the convergence of the ESS estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+      @param[in] overlap How much the batches overlap.   Defaults to \f$b_n/2\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+      @return A vector of length \f$D\f$ containing an ESS estimate for each component
+      */
+      Eigen::VectorXd BatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
+
+      /**
+        Computes the multivariate effective sample size of \cite Vats2019.  This implementation is 
+        adapted from the python implementation at https://github.com/Gabriel-p/multiESS .
+
+        The standard definition of a univariate effective sample size is given in terms of the 
+        the ratio between the target distribution variance and the estimator variance.  More 
+        precisely, \f$\text{ESS}_u\f$ is given by
+        \f[
+          \text{ESS}_u = N \frac{\sigma^2}{\hat{\sigma}^2},
+        \f]
+        where \f$N\f$ is the total number of samples in the Monte Carlo estimate,
+        \f$\sigma^2\f$ is the variance of the target random variable, and \f$\hat{\sigma}^2\f$ 
+        is the variance of a Monte Carlo estimator for the mean of the target distribution.
+
+        The multivariate ESS is defined similarly, but using generalized variances.  Let \f$\Sigma\f$ 
+        denote the target distribution covariance and \f$\hat{\Sigma}\f$ the covariance 
+        of the Monte Carlo mean estimator.    The multivariate ESS of \cite Vats2019 is then given by
+        \f[
+          \text{ESS}_m = N \left( \frac{|\Sigma|}{|\hat{\Sigma}|} \right)^{1/D},
+        \f]
+        where \f$|\cdot|\f$ denotes the determinant of the matrix and \f$D\f$ is the dimension of 
+        target random variable.
+
+        As proposed in \cite Vats2019, it is possible to estimate \f$\text{ESS}_m\f$ using overlapping 
+        batches of samples to calculate the estimator covariance \f$\hat{\Sigma}\f$.
+
+        @param[in] blockInd The block of the SampleState that we want to use in the ESS computation.
+        @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/3}\f$.  Note that to ensure the convergence of the ESS estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+        @param[in] overlap How much the batches overlap.   Defaults to \f$b_n/2\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+        @return A double containing the multivariate ESS estimate.
+      */
+      double MultiBatchESS(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
+
+      /**
+        Returns an estimate of the the Monte Carlo standard error (MCSE) \f$\hat{\sigma}\f$ for a Monte Carlo estimate of the mean derived using this SampleEstimator.
+        Recall at the MCSE is the standard deviation of the estimator variance employed in the Central Limit Theorem.
+
+        @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
+        @param[in] method A string describing what method should be used to estimate the MCSE.  Defaults to "Batch".  Options are the same as the ESS function: "Batch", "MultiBatch", and "Wolff".  The "Wolff" option is only valid for the "MarkovChain" and "MultiIndexEstimator" classes.
+        @return A vector containing either the MCSE for each component.
+      */
+      virtual Eigen::VectorXd StandardError(int                blockInd, 
+                                            std::string const& method) const override;
+      virtual Eigen::VectorXd StandardError(int blockInd) const override{return StandardError(blockInd,"Batch");};
+      virtual Eigen::VectorXd StandardError(std::string const& method="Batch") const override{return StandardError(-1,method);};
+
+      /**
+        Estimates the Monte Carlo standard error (square root of estimator variance) using overlapping batch means (OBM).   For details, consult  \cite Flegal2010 .
+      
+        @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
+        @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$\sqrt{N}\f$.  Note that to ensure the convergence of the MCSE estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+        @param[in] overlap How much the batches overlap.   Defaults to \f$0.75*b_n\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+        @return A vector containing either the MCSE for each component of the chain.
+      */
+      virtual Eigen::VectorXd BatchError(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
+
+      /**
+        Estimates the Monte Carlo standard error using the effective sample size coming from the multivariate overlapping batch method of \cite Vats2019 .   
+      
+        @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
+        @param[in] batchSize The size of the batches \f$b_n\f$ to use.  Defaults to \f$N^{1/2}\f$.  Note that to ensure the convergence of the MCSE estimate as \f$N\rightarrow\infty\f$, the batch size must increase with \f$N\f$.
+        @param[in] overlap How much the batches overlap.   Defaults to \f$0.75*b_n\f$, where \f$b_n\f$ is the batch size.  A nonoverlapping batch estimate will be use is overlap=0.  This value bust be smaller than \f$b_n\f$.
+        @return A  vector containing \f$\sqrt{\sigma_i / N_{ess}}\f$, where \f$N_{ess}\f$ is the multivariate ESS estimate return by MultiBatchESS.
+      */
+      virtual Eigen::VectorXd MultiBatchError(int blockInd=-1, int batchSize=-1, int overlap=-1) const;
 
       /** Returns the samples in this collection as a matrix.  Each column of the
           matrix will correspond to a single state in the chain.

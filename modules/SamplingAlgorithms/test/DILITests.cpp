@@ -289,9 +289,9 @@ TEST(MCMC, DILIKernel_ManualConstruction) {
   auto logLikely = graph.CreateModPiece("Likelihood");
 
   pt::ptree pt;
-  const unsigned int numSamps = 10000;
+  const unsigned int numSamps = 30000;
   pt.put("NumSamples",numSamps);
-  pt.put("BurnIn", 0);
+  pt.put("BurnIn", 1000);
   pt.put("PrintLevel",0);
   pt.put("HessianType","Exact");
   pt.put("Adapt Interval", 1000);
@@ -342,13 +342,10 @@ TEST(MCMC, DILIKernel_ManualConstruction) {
   Eigen::MatrixXd trueCov = truePost->GetCovariance();
 
   Eigen::VectorXd ess = samps->ESS();
+  Eigen::VectorXd estStd = samps->StandardError();
 
-  for(int i=0; i<numNodes; ++i){
-
-    // Estimator variance
-    double estVar = trueCov(i,i)/ess(i);
-    EXPECT_NEAR(trueMean(i), sampMean(i), 4.0*std::sqrt(estVar));
-  }
+  for(int i=0; i<numNodes; ++i)
+    EXPECT_NEAR(trueMean(i), sampMean(i), 4.0*estStd(i));
 
   // Check to make sure the CS acceptance rate is close to one
   auto csKernel = std::dynamic_pointer_cast<MHKernel>(kernel->CSKernel());

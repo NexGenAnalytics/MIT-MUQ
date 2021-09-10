@@ -72,7 +72,7 @@ TEST(MCMC, MHKernel_ThinScheduler) {
 }
 
 TEST(MCMC, MHKernel_MHProposal) {
-  const unsigned int N = 1e4;
+  const unsigned int N = 3e4;
 
   // parameters for the sampler
   pt::ptree pt;
@@ -117,14 +117,14 @@ TEST(MCMC, MHKernel_MHProposal) {
   Eigen::VectorXd ess = samps->ESS();
   Eigen::VectorXd var = samps->Variance();
   Eigen::VectorXd mcse = (var.array()/ess.array()).sqrt();
-  EXPECT_NEAR(mu(0), mean(0), 2.0*mcse(0));
-  EXPECT_NEAR(mu(1), mean(1), 2.0*mcse(1));
+  EXPECT_NEAR(mu(0), mean(0), 3.0*mcse(0));
+  EXPECT_NEAR(mu(1), mean(1), 3.0*mcse(1));
 
   Eigen::MatrixXd cov = samps->Covariance();
-  EXPECT_NEAR(1.0, cov(0,0), 3.0*mcse(0));
-  EXPECT_NEAR(0.0, cov(0,1), 3.0*mcse(0));
-  EXPECT_NEAR(0.0, cov(1,0), 3.0*mcse(1));
-  EXPECT_NEAR(1.0, cov(1,1), 3.0*mcse(1));
+  EXPECT_NEAR(1.0, cov(0,0), 5.0*mcse(0));
+  EXPECT_NEAR(0.0, cov(0,1), 5.0*mcse(0));
+  EXPECT_NEAR(0.0, cov(1,0), 5.0*mcse(1));
+  EXPECT_NEAR(1.0, cov(1,1), 5.0*mcse(1));
 }
 
 TEST(MCMC, Diagnostics_Pass) {

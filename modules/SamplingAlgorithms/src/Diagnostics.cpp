@@ -56,7 +56,7 @@ template Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<
 
 
 Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::SplitRankRhat(std::vector<std::shared_ptr<SampleCollection>> const& origChains,
-                                                           boost::property_tree::ptree options)
+                                                                    boost::property_tree::ptree options)
 {
 
   std::vector<std::shared_ptr<SampleCollection>> chains;

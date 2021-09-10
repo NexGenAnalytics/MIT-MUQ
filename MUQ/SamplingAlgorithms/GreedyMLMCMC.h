@@ -8,7 +8,9 @@
 
 #include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 
-namespace pt = boost::property_tree;
+#include "MUQ/Modeling/ModPiece.h"
+#include "MUQ/SamplingAlgorithms/AbstractSamplingProblem.h"
+#include "MUQ/Utilities/MultiIndices/MultiIndexSet.h"
 
 namespace muq {
   namespace SamplingAlgorithms {
@@ -21,7 +23,18 @@ namespace muq {
      */
     class GreedyMLMCMC {
     public:
-      GreedyMLMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory);
+      GreedyMLMCMC (boost::property_tree::ptree                                  pt, 
+                    Eigen::VectorXd                                       const& startPt,
+                    std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models,
+                    std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
+      
+      GreedyMLMCMC (boost::property_tree::ptree                                  pt, 
+                    Eigen::VectorXd                                       const& startPt,
+                    std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems,
+                    std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
+
+      GreedyMLMCMC (boost::property_tree::ptree pt, 
+                    std::shared_ptr<MIComponentFactory> componentFactory);
 
       virtual std::shared_ptr<MultiIndexEstimator> GetSamples() const;
       virtual std::shared_ptr<MultiIndexEstimator> GetQOIs() const;
@@ -38,6 +51,10 @@ namespace muq {
     protected:
       
     private:
+      static std::vector<std::shared_ptr<AbstractSamplingProblem>> CreateProblems(std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models);
+      static std::shared_ptr<MultiIndexSet> ProcessMultis(std::shared_ptr<MultiIndexSet> const& multis, unsigned int numLevels);
+
+
       std::shared_ptr<MIComponentFactory> componentFactory;
       const int numInitialSamples;
       const double e;
@@ -45,6 +62,7 @@ namespace muq {
       const int levels;
       int verbosity;
       std::vector<std::shared_ptr<MIMCMCBox>> boxes;
+      bool useQOIs; // <- Whether or not the sampling problems have QOIs.  If not, the parameters themselves are used for assessing estimator variance.
     };
 
   }

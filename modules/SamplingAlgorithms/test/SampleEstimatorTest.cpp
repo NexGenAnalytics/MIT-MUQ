@@ -44,6 +44,16 @@ public:
         return results.rowwise().mean();
     }
 
+    virtual Eigen::VectorXd ESS(int blockInd, std::string const& method) const override
+    {
+        return samps.cols()*Eigen::VectorXd::Ones(dim);
+    };
+
+    virtual Eigen::VectorXd StandardError(int blockInd, std::string const& method) const override
+    {
+        return (Variance(blockInd).array() / (samps.cols()*Eigen::VectorXd::Ones(dim)).array()).sqrt();
+    }
+
 private:
     Eigen::MatrixXd samps;
     unsigned int dim;

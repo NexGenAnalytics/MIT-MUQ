@@ -64,6 +64,19 @@ namespace SamplingAlgorithms{
       virtual Eigen::VectorXd CentralMoment(unsigned int order, 
                                             int          blockNum=-1) const;
 
+      /** Compute the central moment, as in the other SampleEstimator::CentralMoment function, but use a precomputed (or known) 
+          mean.  Note that using a vector of zeros for the mean allows non-central moments to be computed.
+
+          @param[in] order The order \f$p\f$ of the central moment.   \f$p=2\f$ yields the variance.
+          @param[in] mean A vector containing the mean of \f$x\f$ (if `blockNum==-1`) or \f$x_i\f$ (if `blockNum==i`).
+          @param[in] blockNum (Optional) The block of the random variable \f$x\f$ to use in the expectation.  By default, blockNum=-1
+                      and the expectation is computed with respect to the entire random variable $x$.
+          @return A vector with the same size as \f$x\f$ or \f$x_i\f$ containing an estimate of the central moment.
+      */
+      virtual Eigen::VectorXd CentralMoment(unsigned int           order, 
+                                            Eigen::VectorXd const& mean, 
+                                            int                    blockNum=-1) const;
+
       /**
        The standardize moment of order $p$ is similar to the central moment, but also includes a scaling of the random variable 
        \f$x\f$ by the standard deviation.   Mathematially, the standardized moment is given by 
@@ -111,18 +124,7 @@ namespace SamplingAlgorithms{
                                                  Eigen::VectorXd const& stdDev,
                                                  int                    blockInd=-1) const;
 
-      /** Compute the central moment, as in the other SampleEstimator::CentralMoment function, but use a precomputed (or known) 
-          mean.  Note that using a vector of zeros for the mean allows non-central moments to be computed.
-
-          @param[in] order The order \f$p\f$ of the central moment.   \f$p=2\f$ yields the variance.
-          @param[in] mean A vector containing the mean of \f$x\f$ (if `blockNum==-1`) or \f$x_i\f$ (if `blockNum==i`).
-          @param[in] blockNum (Optional) The block of the random variable \f$x\f$ to use in the expectation.  By default, blockNum=-1
-                      and the expectation is computed with respect to the entire random variable $x$.
-          @return A vector with the same size as \f$x\f$ or \f$x_i\f$ containing an estimate of the central moment.
-      */
-      virtual Eigen::VectorXd CentralMoment(unsigned int           order, 
-                                            Eigen::VectorXd const& mean, 
-                                            int                    blockNum=-1) const;
+      
 
       /**
        Computes the sample mean of \f$x\f$ (if `blockInd==-1`) or \f$x_i\f$ (if `blockInd==i`).  
@@ -233,6 +235,39 @@ namespace SamplingAlgorithms{
       */
       virtual Eigen::VectorXd ExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f,
                                             std::vector<std::string> const& metains = std::vector<std::string>()) const = 0;
+
+
+    /**
+    Returns an estimate of the the Monte Carlo standard error (MCSE) \f$\hat{\sigma}\f$ for a Monte Carlo estimate of the mean derived using this SampleEstimator.
+    Recall at the MCSE is the standard deviation of the estimator variance employed in the Central Limit Theorem.
+
+    @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
+    @param[in] method A string describing what method should be used to estimate the MCSE.  Defaults to "Batch"
+    @return A vector containing either the MCSE for each component (if method!="MultiBatch") or a single component vector containing the square root of the generalized estimator variance (if method=="MultiBatch").
+    */
+    virtual Eigen::VectorXd StandardError(int                blockInd, 
+                                          std::string const& method) const = 0;
+
+    virtual Eigen::VectorXd StandardError(std::string const& method="Batch") const{return StandardError(-1,method);};
+    virtual Eigen::VectorXd StandardError(int blockDim) const{return StandardError(blockDim,"Batch");};
+    
+    /**
+    Returns an estimate of the effective sample size (ESS), which is the number of independent samples of the target 
+    distribution that would be needed to obtain the same statistical accuracy as this estimator.  For independent samples,
+    the estimator variance (squared MCSE) \f$\hat{\sigma}^2\f=\sigma^2/ N\f$.   Given the estimator variance \f$\hat{\sigma}^2\f$,
+    the effective sample size is then given by the ratio of the target distribution variance and the estimator variance:
+    \f[
+        \text{ESS} = \frac{\sigma^2}{\hat{\sigma}^2}.
+    \f]
+   
+    @param[in] blockInd Specifies the block of the sampling state we're interested in.  Defaults to -1, which will result in all blocks of the sampling state being concatenated in the MCSE estimate.
+    @param[in] method A string describing what method should be used to estimate the MCSE.  Defaults to "Batch".   Other options include "MultiBatch" or "Wolff".   For details, see the SampleCollection class.
+    @return A vector containing either the MCSE for each component (if method!="MultiBatch") or a single component vector containing the square root of the generalized estimator variance (if method=="MultiBatch").
+    */
+    virtual Eigen::VectorXd ESS(int                blockInd, 
+                                std::string const& method) const  = 0;
+    virtual Eigen::VectorXd ESS(int blockDim) const {return ESS(blockDim,"Batch");};
+    virtual Eigen::VectorXd ESS(std::string const& method="Batch") const {return ESS(-1,method);};
 
   }; // class SampleEstimator
 

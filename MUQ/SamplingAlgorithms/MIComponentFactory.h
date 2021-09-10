@@ -12,7 +12,9 @@ using namespace muq::Utilities;
 namespace muq {
   namespace SamplingAlgorithms {
 
-    /** @brief Interface defining models on a multiindex structure.
+    /** @class MIComponentFactory
+        @ingroup MIMCMC
+        @brief Interface defining models on a multiindex structure.
         @details Defines all components of a multiindex model. MLMCMC and MIMCMC
         work on this structure.
         In particular, a sampling problem is defined for each multiindex along with
