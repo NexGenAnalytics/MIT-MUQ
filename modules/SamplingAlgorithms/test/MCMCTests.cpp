@@ -203,6 +203,82 @@ TEST(MCMC, Diagnostics_Fail) {
 }
 
 
+TEST(MCMC, Diagnostics_SingularCovarianceMPSRF_Fail) {
+  const unsigned int N = 1e3;
+
+  // create a Gaussian distribution---the sampling problem is built around characterizing this distribution
+  const Eigen::VectorXd mu = 0.01*Eigen::VectorXd::Ones(10);
+  auto dist = std::make_shared<Gaussian>(mu);
+
+  unsigned int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> collections(numChains);
+
+  for(int i=0; i<numChains; ++i){
+    Eigen::VectorXd currState = RandomGenerator::GetNormal(mu.size());
+
+    collections.at(i) = std::make_shared<MarkovChain>();
+    for(int it=0; it<N; ++it){
+      collections.at(i)->Add( std::make_shared<SamplingState>(currState));
+      currState += dist->Sample();
+    }
+  }
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(collections);
+  EXPECT_GT(rhat(0),1.1);
+  EXPECT_GT(rhat(1),1.1);
+
+  boost::property_tree::ptree opts;
+  opts.put("Multivariate",true);
+  Eigen::VectorXd mpsrf = Diagnostics::Rhat(collections, opts);
+  
+  EXPECT_GT(mpsrf(0),1.1);
+}
+
+TEST(MCMC, Diagnostics_SingularCovarianceMPSRF_Pass) {
+  const unsigned int N = 5e3;
+
+  // parameters for the sampler
+  pt::ptree pt;
+  pt.put("MyMCMC.NumSamples", N); // number of Monte Carlo samples
+  pt.put("MyMCMC.PrintLevel",0);
+  pt.put("MyMCMC.BurnIn", 100);
+  pt.put("MyMCMC.KernelList", "Kernel1"); // the transition kernel
+  pt.put("MyMCMC.Kernel1.Method","MHKernel");
+  pt.put("MyMCMC.Kernel1.Proposal", "MyProposal"); // the proposal
+  pt.put("MyMCMC.Kernel1.MyProposal.Method", "MHProposal");
+  pt.put("MyMCMC.Kernel1.MyProposal.ProposalVariance", 0.2); // the variance of the isotropic MH proposal
+
+  // create a Gaussian distribution---the sampling problem is built around characterizing this distribution
+  const Eigen::VectorXd mu = Eigen::VectorXd::Ones(10);
+  auto dist = std::make_shared<Gaussian>(mu)->AsDensity(); // standard normal Gaussian
+
+  // create a sampling problem
+  auto problem = std::make_shared<SamplingProblem>(dist);
+
+  unsigned int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> collections(numChains);
+
+  for(int i=0; i<numChains; ++i){
+    Eigen::VectorXd start = 5*RandomGenerator::GetNormal(mu.size());
+    auto mcmc = std::make_shared<SingleChainMCMC>(pt.get_child("MyMCMC"),problem);
+    collections.at(i) = mcmc->Run(start);
+  }
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(collections);
+  EXPECT_GT(rhat(0),1.0);
+  EXPECT_LT(rhat(0),1.1);
+  EXPECT_GT(rhat(1),1.0);
+  EXPECT_LT(rhat(1),1.1);
+
+  boost::property_tree::ptree opts;
+  opts.put("Multivariate",true);
+  Eigen::VectorXd mpsrf = Diagnostics::Rhat(collections, opts);
+
+  EXPECT_GT(mpsrf(0),1.0);
+  EXPECT_LT(mpsrf(0),1.1);
+}
+
+
 TEST(MCMC, MHKernel_RepeatedRuns) {
   const unsigned int batchSize = 1e3;
   const unsigned int numBatches = 10;
