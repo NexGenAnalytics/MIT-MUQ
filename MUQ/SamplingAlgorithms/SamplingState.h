@@ -66,7 +66,8 @@ namespace muq {
           @param[in] totalInd Index into the concatenated state.  Maximum value is TotalDim()-1.
       */
       double StateValue(unsigned int totalInd) const;
-
+      double& StateValue(unsigned int totalInd);
+      
       /// A map containing extra information like the target density, run time, forward model output, etc...
       std::unordered_map<std::string, boost::any> meta;
 

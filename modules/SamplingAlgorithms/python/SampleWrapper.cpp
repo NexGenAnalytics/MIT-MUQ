@@ -97,8 +97,10 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("Rhat", [](std::vector<std::shared_ptr<MarkovChain>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
     .def("Rhat", [](std::vector<std::shared_ptr<MultiIndexEstimator>> const& collections){return Diagnostics::Rhat(collections);})
     .def("Rhat", [](std::vector<std::shared_ptr<MultiIndexEstimator>> const& collections, py::dict opts){return Diagnostics::Rhat(collections, ConvertDictToPtree(opts));})
-    .def("SplitRankRhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections){return Diagnostics::SplitRankRhat(collections);})
-    .def("SplitRankRhat", [](std::vector<std::shared_ptr<SampleCollection>> const& collections, py::dict opts){return Diagnostics::SplitRankRhat(collections, ConvertDictToPtree(opts));})
+    .def("BasicRhat", &Diagnostics::BasicRhat)
+    .def("BasicMPSRF", &Diagnostics::BasicMPSRF)
+    .def("SplitChains", &Diagnostics::SplitChains)
+    .def("NormalizeChains", &Diagnostics::NormalizeChains)
     .def("ComputeRanks", &Diagnostics::ComputeRanks);
 
 

@@ -128,7 +128,7 @@ TEST(MCMC, MHKernel_MHProposal) {
 }
 
 TEST(MCMC, Diagnostics_Pass) {
-  const unsigned int N = 1e3;
+  const unsigned int N = 5e3;
 
   // parameters for the sampler
   pt::ptree pt;
@@ -163,6 +163,12 @@ TEST(MCMC, Diagnostics_Pass) {
   EXPECT_GT(rhat(1),1.0);
   EXPECT_LT(rhat(1),1.1);
 
+  boost::property_tree::ptree opts;
+  opts.put("Multivariate",true);
+  Eigen::VectorXd mpsrf = Diagnostics::Rhat(collections, opts);
+
+  EXPECT_GT(mpsrf(0),1.0);
+  EXPECT_LT(mpsrf(0),1.1);
 }
 
 TEST(MCMC, Diagnostics_Fail) {
@@ -188,6 +194,12 @@ TEST(MCMC, Diagnostics_Fail) {
   Eigen::VectorXd rhat = Diagnostics::Rhat(collections);
   EXPECT_GT(rhat(0),1.1);
   EXPECT_GT(rhat(1),1.1);
+
+  boost::property_tree::ptree opts;
+  opts.put("Multivariate",true);
+  Eigen::VectorXd mpsrf = Diagnostics::Rhat(collections, opts);
+
+  EXPECT_GT(mpsrf(0),1.1);
 }
 
 

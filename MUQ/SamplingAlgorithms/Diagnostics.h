@@ -19,13 +19,15 @@ namespace muq{
 
 
       /** If this function is given a vector of SampleCollection instances, it can return either the standard scale reduction
-          \f$\hat{R}\f$ diagnostic from \cite Gelman2013 or one of the modifications presented in \cite Vehtari2021.
-          However, if the SampleEstimator inputs cannot be cast to SampleCollections, then a minor modification of 
-          the unsplit \f$\hat{R}\f$ diagnostic from \cite Gelman2013 is employed.  
+          \f$\hat{R}\f$ diagnostic from \cite Gelman2013, one of the modifications presented in \cite Vehtari2021, the multivariate 
+          potential scale reduction factor (MPSRF) of \cite Brooks1998, or multivariate adapations of MPSRF that are similar 
+          to the split and ranked methods of \cite Vehtari2021.
           
-          This simpler diagnostic, which is described in more detail below, only requires sample estimates of the
-          mean and variance.  It does not require access to individual samples or knowledge of the length of each 
-          chain.  It can therefore be employed with methods like multi-index MCMC (see the MIMCMC class), which 
+          NOTE: If the SampleEstimator inputs cannot be cast to SampleCollections, then the unsplit \f$\hat{R}\f$ diagnostic from \cite Gelman2013 is employed.  
+          
+          The basic \f$\hat{R}\f$ estimator of \cite Gelman2013 and the MPSRF estimator of \cite Brooks1998 only require sample estimates of the
+          mean and variance.  They do not require access to individual samples or knowledge of the length of each 
+          chain.  These estimators can therefore be employed with methods like multi-index MCMC (see the MIMCMC class), which 
           utilize more sophisticated approaches for computing sample-based expectations where notions of chain length 
           and the definition of a sample are less straightforward.  
           
@@ -69,7 +71,7 @@ namespace muq{
           can be used to assess whether the chains have converged.   
 
           For general estimator classes (children of SampleEstimator, like MultiIndexSampleEstimator), this function
-          will compute \f$\hat{R}\f$ by expanding \f$W\f$ and \f$B\f$ the  definition of \f$\hat{\text{var}}(x)\f$ into 
+          will compute \f$\hat{R}\f$ by expanding \f$W\f$ and \f$B\f$ in the definition of \f$\hat{\text{var}}(x)\f$ into 
           \f[
             \hat{\text{var}}(x) = \frac{1}{m}\sum_{j=1}^m s_{bj}^2 + \frac{1}{m-1} \sum_{j=1}^m\left( \bar{x}_{\cdot j} - \bar{x}_{\cdot \cdot}\right)^2,
           \f]
@@ -94,7 +96,8 @@ namespace muq{
       Parameter Key | Type | Default Value | Description |
       ------------- | ------------- | ------------- | ------------- |
       "Split"  | boolean | True  | Whether the chains should be split in half as proposed by \cite Vehtari2021. |
-      "Normalize"   | boolean | True  | If the parameters should be rank-transformed (i.e., normalized) before computing Rhat. |
+      "Normalize"   | boolean | True  | If the parameters should be rank-transformed (i.e., normalized) before computing Rhat, as in \cite Vehtari2021. |
+      "Multivariate" | boolean | False | If the MPSRF value should be returned instead of the componentwise \$\hat{R}\f$ statistic. If `true`, the output vector will have a single component.  The MPSRF serves as a worse case estimate of \f$\hat{R}\f$ over all linear combinations of the parameters. |
 
       @param[in] collections A vector of SampleEstimator variables returned by independent runs of an MCMC algorithm.
       @param[in] options (optional) A property tree possibly containing settings for the "Split" or "Normalize" parameters listed above.  Note that these options are only used if the Estimator can be cast to SampleCollection.
@@ -104,18 +107,23 @@ namespace muq{
       Eigen::VectorXd Rhat(std::vector<std::shared_ptr<EstimatorType>> const& estimators,
                            boost::property_tree::ptree                           options = boost::property_tree::ptree());
 
-      /** Computes the standard \f$\hat{R}\f$ diagnostic from \cite Gelman2013 or one of the modifications presented in \cite Vehtari2021
-
-      Parameter Key | Type | Default Value | Description |
-      ------------- | ------------- | ------------- | ------------- |
-      "Split"  | boolean | True  | Whether the chains should be split in half as proposed by \cite Vehtari2021. |
-      "Normalize"   | boolean | True  | If the parameters should be rank-transformed (i.e., normalized) before computing Rhat. |
-
-      @param[in] collections A vector of SampleCollection variables returned by independent runs of an MCMC algorithm.  Assumes that all of the chains have the same length and were initialized with diffuse initial conditions.
-      @returns A vector of \f$\hat{R}\f$ values for each component of the parameters.
+      /** Computes the standard \f$\hat{R}\f$ diagnostic from \cite Gelman2013 on the given chains. 
+      Returns a vector containing \f$\hat{R}\f$ for each component of the chain.
       */
-      Eigen::VectorXd SplitRankRhat(std::vector<std::shared_ptr<SampleCollection>> const& collections,
-                                    boost::property_tree::ptree                           options = boost::property_tree::ptree());
+      Eigen::VectorXd BasicRhat(std::vector<std::shared_ptr<SampleEstimator>> const& collections);
+
+      /** Computes the standard multivariate \f$\hat{R}^p\f$ MPSRF diagnostic from Section 4.1 of \cite Brooks1998 on the given chains.
+
+      NOTE: There is a (N-1)/N scaling term in the MPSRF definition, where $N$ is chain length. If called with general esimators that do not have a "size()" function, like the multilevel MCMC estimators), this term is set to 1.0, which may result in biased estimates for small $N$.
+      */
+      double BasicMPSRF(std::vector<std::shared_ptr<SampleEstimator>> const& collections);
+
+      /** Performs an inplace split of the chains. */
+      std::vector<std::shared_ptr<SampleCollection>> SplitChains(std::vector<std::shared_ptr<SampleCollection>> const& collections);
+
+      /** Performas an inplace normalization of the chains based on ranking the samples and applying a Gaussian transform. */
+      std::vector<std::shared_ptr<SampleCollection>> NormalizeChains(std::vector<std::shared_ptr<SampleCollection>> const& collections);
+
 
       /** For a set of scalar values \f$\{x_1,\ldots, x_S\}\f$, the rank of \f$x_i\f$ is the index of \f$x_i\f$ after sorting this set into a list that satisfies \f$x_i\leq x_{i+1}\f$.  We use \f$r_i\f$  to denote the rank of \f$x_i\f$ and adopt the convention that for repeated values (i.e., \f$x_{i}=x_{i+1}\f$), \f$r_i\f$ is given by the average rank of consecutive repeated values.
 

@@ -53,3 +53,19 @@ double SamplingState::StateValue(unsigned int totalInd) const
 
   return std::numeric_limits<double>::quiet_NaN();
 }
+
+
+double& SamplingState::StateValue(unsigned int totalInd)
+{
+  unsigned int sum = 0;
+  for(auto& s : state){
+
+    if(totalInd < sum + s.size())
+      return s(totalInd - sum);
+
+    sum += s.size();
+  }
+
+  assert(false);
+  return state.at(0)(0);
+}
