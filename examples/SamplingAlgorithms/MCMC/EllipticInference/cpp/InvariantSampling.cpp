@@ -158,7 +158,7 @@ std::shared_ptr<SampleCollection> SampleDILI(std::shared_ptr<ModPiece> const& po
     pt.put("CS.Method", "MHKernel");
     pt.put("CS.Proposal","MyProposal");
     pt.put("CS.MyProposal.Method", "CrankNicolsonProposal");
-    pt.put("CS.MyProposal.Beta",0.5);
+    pt.put("CS.MyProposal.Beta",0.8);
     pt.put("CS.MyProposal.PriorNode","Prior");
 
     // create a sampling problem
