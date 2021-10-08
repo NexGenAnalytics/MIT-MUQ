@@ -22,7 +22,9 @@ public:
     outputs.push_back(Eigen::VectorXd::Ones(4));
   }
 
-  void Evaluate(std::vector<Eigen::VectorXd> const& inputs, int level) override {
+  void Evaluate(std::vector<Eigen::VectorXd> const& inputs, json config) override {
+    int level = config.value<int>("level", 0);
+
     std::cout << "Entered for level " << level << std::endl;
 
     std::ofstream inputsfile ("/tmp/inputs.txt");
