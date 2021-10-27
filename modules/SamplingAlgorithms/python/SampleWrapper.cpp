@@ -121,5 +121,6 @@ void PythonBindings::SampleWrapper(py::module &m)
                                   -> std::shared_ptr<SamplingState> {
                                      return muq::Utilities::AnyCast(self->meta.at(metaKey));
                                   })
-    .def("TotalDim", &SamplingState::TotalDim);
+    .def("TotalDim", &SamplingState::TotalDim)
+    .def("ToVector", &SamplingState::ToVector,py::arg("blockInd")=-1);
 }

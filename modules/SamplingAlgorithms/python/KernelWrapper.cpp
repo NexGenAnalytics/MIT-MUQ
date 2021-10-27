@@ -86,5 +86,10 @@ void PythonBindings::KernelWrapper(py::module &m) {
     .def_static("ExtractForwardModel", &DILIKernel::ExtractForwardModel)
     .def_static("CreateLikelihood", &DILIKernel::CreateLikelihood)
     .def("LISVecs", &DILIKernel::LISVecs)
-    .def("LISVals", &DILIKernel::LISVals);
+    .def("LISVals", &DILIKernel::LISVals)
+    .def("LISDim", &DILIKernel::LISDim)
+    .def("CreateLIS", &DILIKernel::CreateLIS)
+    .def("ToLIS", &DILIKernel::ToLIS)
+    .def("FromLIS", &DILIKernel::FromLIS)
+    .def("ToCS", &DILIKernel::ToCS);
 }
