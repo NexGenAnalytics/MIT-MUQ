@@ -10,7 +10,7 @@ namespace SamplingAlgorithms{
 
   /**
    @class SampleEstimator
-   @ingroup sampling
+   @ingroup mcmc
    @brief Abstract base class for computing sample-based approximations of expectations.
    @details Consider a vector-valued random variable $x$ taking values in \f$\mathbb{R}^N\f$.  Now consider a decomposition of this 
             random variable into \f$M\f$ "blocks" \f$x_1, x_2, \ldots, x_M\f$ with lengths \f$N_1,\ldots, N_M\f$, where \f$\sum N_i = N\f$.    
