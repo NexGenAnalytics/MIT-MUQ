@@ -43,6 +43,7 @@ void PythonBindings::KernelWrapper(py::module &m) {
   py::class_<DRKernel, TransitionKernel, std::shared_ptr<DRKernel>>(m, "DRKernel")
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> problem) {return new DRKernel(ConvertDictToPtree(d), problem);}))
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> problem, std::vector<std::shared_ptr<MCMCProposal>> proposals, std::vector<double> scales) {return new DRKernel(ConvertDictToPtree(d), problem, proposals, scales);}))
+    .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> problem, std::vector<std::shared_ptr<MCMCProposal>> proposals) {return new DRKernel(ConvertDictToPtree(d), problem, proposals);}))
     .def("PostStep", &DRKernel::PostStep)
     .def("Step", &DRKernel::Step)
     .def("Proposals",&DRKernel::Proposals)

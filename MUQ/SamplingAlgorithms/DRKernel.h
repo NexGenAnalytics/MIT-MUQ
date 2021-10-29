@@ -70,6 +70,10 @@ namespace muq {
                std::shared_ptr<AbstractSamplingProblem>   problem,
                std::vector<std::shared_ptr<MCMCProposal>> proposalsIn,
                std::vector<double>                        scales);
+      
+      DRKernel(boost::property_tree::ptree         const& pt,
+               std::shared_ptr<AbstractSamplingProblem>   problem,
+               std::vector<std::shared_ptr<MCMCProposal>> proposalsIn);
 
       virtual ~DRKernel() = default;
 
