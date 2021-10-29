@@ -14,6 +14,8 @@
 
 #include "MUQ/Utilities/HDF5/HDF5File.h"
 
+#include <boost/property_tree/ptree.hpp>
+
 namespace muq{
   namespace SamplingAlgorithms{
 
