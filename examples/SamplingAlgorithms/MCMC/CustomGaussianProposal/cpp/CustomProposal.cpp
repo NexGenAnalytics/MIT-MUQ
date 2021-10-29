@@ -22,6 +22,9 @@ burn in, and print levels.
 #include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/MHProposal.h"
 #include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
+
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -135,20 +138,46 @@ int main(){
   We are now ready to run the MCMC algorithm.  Here we start the chain at the
   target densities mean.   The resulting samples are returned in an instance
   of the SampleCollection class, which internally holds the steps in the MCMC chain
-  as a vector of weighted SamplingState's.
+  as a vector of SamplingStates.
   */
   Eigen::VectorXd startPt = mu;
   std::shared_ptr<SampleCollection> samps = mcmc->Run(startPt);
 
   /***
-  ### 4. Analyze the results
+  ### 4. Run multiple chains to assess convergence
+  
+  */
+  unsigned int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> chains(numChains);
+  chains.at(0) = samps;
 
-  When looking at the entries in a SampleCollection, it is important to note that
-  the states stored by a SampleCollection are weighted even in the MCMC setting.
-  When a proposal $x^\prime$ is rejected, instead of making a copy of $x^{(k-1)}$
-  for $x^{(k)}$, the weight on $x^{(k-1)}$ is simply incremented.  This is useful
-  for large chains in high dimensional parameter spaces, where storing all duplicates
-  could quickly consume available memory.
+  for(unsigned int i=1; i<numChains; ++i){
+
+    // Construct a new sampler.
+    mcmc = std::make_shared<SingleChainMCMC>(chainOpts,kernels);    
+    
+    // Generate a "diffuse" starting point for the chain
+    startPt = std::sqrt(1.5) * RandomGenerator::GetNormal(2);
+
+    // Run the sampler
+    chains.at(i) = mcmc->Run(startPt);
+  }
+
+  /***
+  The $\hat{R}$ statistic compares the intra- and inter-chain variances to assess 
+  whether the chains have converged to the same distribution (the target distribution).
+  Here we use the `Diagnostics` class in MUQ to compute $\hat{R}$ following the split and
+  rank-normalized techniques described in [[Vehtari et al., 2021](https://arxiv.org/abs/1903.08008)].
+  If $\hat{R}$ is close to $1$ (e.g., $\hat{R}<1.01$), then the chains are past burn in and 
+  are likely generating samples of the posterior.
+  */
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(chains);
+  std::cout << "\nRhat:\n" << rhat.transpose() << std::endl;
+
+
+  /***
+  ### 5. Analyze the results
 
   The SampleCollection class provides several functions for computing sample moments.
   For example, here we compute the mean, variance, and third central moment.
@@ -168,7 +197,7 @@ int main(){
   std::cout << "\nSample Third Moment:\n" << sampMom3.transpose() << std::endl << std::endl;
 
   /***
-  ### 5. Inspect the sample meta data.
+  ### 6. Inspect the sample meta data.
 
   In addition to storing the state of the MCMC chain, MUQ may also store extra
   information stored by the transition kernel or proposal.  This "metadata"
@@ -204,7 +233,7 @@ int main(){
   std::cout << "  x* = argmax p(x) = " << samps->at(maxCol)->state.at(0).transpose() << std::endl;
 
   /***
-  ### 6. Extract samples as a matrix for further processing.
+  ### 7. Extract samples as a matrix for further processing.
 
   In some cases you will want to extract a matrix of the MCMC states from the
   `SampleCollection` object.   As shown below, that can be easily accomplished
