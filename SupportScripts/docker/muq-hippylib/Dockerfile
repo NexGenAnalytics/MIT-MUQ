@@ -1,17 +1,14 @@
 FROM quay.io/fenicsproject/stable
-MAINTAINER M. Parno
+LABEL org.opencontainers.image.authors="M. Parno"
 
 # Run with "docker build --build-arg tag=v0.3.1 -t mparno/muq-hippylib:v0.3.1 ."
 ARG tag
 
 USER root
 
+# Install most dependencies
 RUN apt-get update && \
-    apt-get install -yy pwgen npm python3-pip && \
-    npm install -g configurable-http-proxy && \
-    pip3 install --upgrade pip && \
-    pip3 install --upgrade numpy && \
-    pip3 install jupyter pandas jupyterlab && \
+    apt-get install -y wget unzip cmake clang git g++ libgtest-dev libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libopenmpi-dev openmpi-bin libspdlog-dev doxygen python3-dev python3-pip pybind11-dev doxygen && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 USER fenics
@@ -33,11 +30,12 @@ RUN cd /home/fenics/Installations && \
     git clone https://github.com/hippylib/hippylib2muq.git && \
     chmod -R o+rx hippylib2muq
 
+# Install extra python packages for running jupyter notebooks that use MUQ
+RUN pip3 install --user matplotlib  scipy  pandas jupyterlab
 
 # Configure jupyter notebooks
-COPY python3_config.json /usr/local/share/jupyter/kernels/python3/kernel.json
 ENV LD_LIBRARY_PATH /home/fenics/Installations/MUQ_INSTALL/lib:/home/fenics/Installations/MUQ_INSTALL/muq_external/lib
-ENV PYTHONPATH /home/fenics/Installations/MUQ_INSTALL/lib/python:/home/fenics/Installations/hippylib:/home/fenics/Installations/hippylib2muq
+ENV PYTHONPATH /home/fenics/Installations/MUQ_INSTALL/python:/home/fenics/Installations/hippylib:/home/fenics/Installations/hippylib2muq
 
 USER root
 
@@ -45,11 +43,9 @@ USER root
 RUN cd /home/fenics/Installations && \
     git clone --depth=1 https://github.com/h5py/h5py.git && \
     cd h5py && \
-    python3 setup.py configure --hdf5=/home/fenics/Installations/MUQ_INSTALL/muq_external && \
-    python3 setup.py install
+    HDF5_DIR=/home/fenics/Installations/MUQ_INSTALL/muq_external pip install --no-binary=h5py h5py 
 
 RUN mkdir -p /home/fenics/.jupyter
-COPY jupyter_notebook_config.py /home/fenics/.jupyter/jupyter_notebook_config.py
 
 
 WORKDIR /home/fenics/
