@@ -1,8 +1,15 @@
 - example:
-    file: MultilevelGaussianSampling.cpp
+    file: MultilevelMCMC_BasicInterface.cpp
     tag: MCMC
-    title: Multilevel MCMC
-    description: Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it.
+    title: Multilevel MCMC using a high level definition of model hiearchy.
+    description: Uses a list of Gaussian models to define a multilevel sampling problem and applies Multilevel MCMC to it.
+    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cells, 4 for very good documentation
+
+- example:
+    file: MultilevelMCMC_AdvancedInterface.cpp
+    tag: MCMC
+    title: Multilevel MCMC using a low level definition of model hiearchy.
+    description: Creates a SampleProblem that defines a hierarchy of simple Gaussian models and exposes the interface for more complicated multilevel formulations.  Sampling is then performed with Multilevel MCMC.
     doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cells, 4 for very good documentation
 
 
