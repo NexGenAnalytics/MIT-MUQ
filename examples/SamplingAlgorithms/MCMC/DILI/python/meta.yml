@@ -1,6 +1,0 @@
-- example:
-    file: EllipticInference.py
-    tag: MCMC
-    title: DILI MCMC
-    description: Demonstrates the basic usage of the Dimension Independent Likelihood Informed (DILI) MCMC algorithm.
-    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cellss, 4 for very good documentation
