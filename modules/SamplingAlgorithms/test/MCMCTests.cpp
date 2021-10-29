@@ -163,6 +163,13 @@ TEST(MCMC, Diagnostics_Pass) {
   EXPECT_GT(rhat(1),1.0);
   EXPECT_LT(rhat(1),1.1);
 
+  // Single chain Rhat
+  Eigen::VectorXd rhat1 = collections.at(0)->Rhat(4);
+  EXPECT_GT(rhat1(0),1.0);
+  EXPECT_LT(rhat1(0),1.1);
+  EXPECT_GT(rhat1(1),1.0);
+  EXPECT_LT(rhat1(1),1.1);
+
   boost::property_tree::ptree opts;
   opts.put("Multivariate",true);
   Eigen::VectorXd mpsrf = Diagnostics::Rhat(collections, opts);

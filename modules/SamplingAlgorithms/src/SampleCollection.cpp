@@ -2,6 +2,9 @@
 
 #include "MUQ/Utilities/AnyHelpers.h"
 
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
+
+
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 
@@ -665,4 +668,15 @@ unsigned int SampleCollection::BlockSize(int blockInd) const
 unsigned int SampleCollection::NumBlocks() const
 {
   return samples.at(0)->state.size();
+}
+
+
+Eigen::VectorXd SampleCollection::Rhat(int                        blockDim, 
+                                      unsigned int                numSegments, 
+                                      boost::property_tree::ptree options) const
+{   
+    std::vector<std::shared_ptr<const SampleCollection>> chains;
+    chains.push_back( shared_from_this());
+
+    return Diagnostics::Rhat(Diagnostics::SplitChains(chains, numSegments), options);
 }

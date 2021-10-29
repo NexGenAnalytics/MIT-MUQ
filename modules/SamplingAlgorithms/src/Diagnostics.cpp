@@ -25,12 +25,12 @@ Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<std::shar
     for(unsigned int i=0; i<collections.size(); ++i)
       newCollections.at(i) = std::dynamic_pointer_cast<SampleCollection>(collections.at(i));
 
-    // Split and possibly normalize the chains
+    // Split and possibly transform the chains
     if(options.get("Split",true))
       newCollections = SplitChains(newCollections);
 
-    if(options.get("Normalize",true))
-      newCollections = NormalizeChains(newCollections);
+    if(options.get("Transform",false))
+      newCollections = TransformChains(newCollections);
 
     // Now cast the split and ranked sample collections back to a SampleEstimator
     chains.resize(newCollections.size());
@@ -60,30 +60,42 @@ template Eigen::VectorXd muq::SamplingAlgorithms::Diagnostics::Rhat(std::vector<
                                                                     boost::property_tree::ptree                           options);
 
 
-
+std::vector<std::shared_ptr<SampleCollection>> muq::SamplingAlgorithms::Diagnostics::SplitChains(std::vector<std::shared_ptr<SampleCollection>> const& origChains, 
+                                                                                                 unsigned int numSegments)
+{
+  std::vector<std::shared_ptr<const SampleCollection>> constChains;
+  for(int i=0; i<origChains.size(); ++i)
+    constChains.push_back(std::const_pointer_cast<const SampleCollection>(origChains.at(i)));
+  
+  return SplitChains(constChains,numSegments);
+}
 /** Performs a split of the chains. */
-std::vector<std::shared_ptr<SampleCollection>> muq::SamplingAlgorithms::Diagnostics::SplitChains(std::vector<std::shared_ptr<SampleCollection>> const& origChains)
+std::vector<std::shared_ptr<SampleCollection>> muq::SamplingAlgorithms::Diagnostics::SplitChains(std::vector<std::shared_ptr<const SampleCollection>> const& origChains, 
+                                                                                                 unsigned int numSegments)
 {
   std::vector<std::shared_ptr<SampleCollection>> chains;
 
+  double fraction = 1.0/double(numSegments);
+
   // Figure out how long the split chains will be
-  unsigned int chainLength = std::floor(0.5*origChains.at(0)->size());
-  unsigned int numChains = 2*origChains.size();
+  unsigned int chainLength = std::floor(fraction*origChains.at(0)->size());
+  unsigned int numChains = numSegments*origChains.size();
   const unsigned int dim = origChains.at(0)->at(0)->TotalDim();
 
-  chains.resize(2*origChains.size());
+  chains.resize(numChains);
 
   // Extract the split chains
   for(int i=0; i<origChains.size();++i){
-    chains.at(2*i) = origChains.at(i)->head(chainLength);
-    chains.at(2*i+1) = origChains.at(i)->tail(chainLength);
+    for(int j=0; j<numSegments; ++j){
+      chains.at(numSegments*i+j) = origChains.at(i)->segment(j*chainLength, chainLength);
+    }
   }
 
   return chains;
 }
 
-/** Performas a normalization of the chains based on ranking the samples and applying a Gaussian transform. */
-std::vector<std::shared_ptr<SampleCollection>> muq::SamplingAlgorithms::Diagnostics::NormalizeChains(std::vector<std::shared_ptr<SampleCollection>> const& origChains)
+/** Performas a Gaussianization of the chains based on ranking the samples and applying a Gaussian transform. */
+std::vector<std::shared_ptr<SampleCollection>> muq::SamplingAlgorithms::Diagnostics::TransformChains(std::vector<std::shared_ptr<SampleCollection>> const& origChains)
 {
   const unsigned int dim = origChains.at(0)->at(0)->TotalDim();
 

@@ -96,12 +96,12 @@ namespace muq{
       Parameter Key | Type | Default Value | Description |
       ------------- | ------------- | ------------- | ------------- |
       "Split"  | boolean | True  | Whether the chains should be split in half as proposed by \cite Vehtari2021. |
-      "Normalize"   | boolean | True  | If the parameters should be rank-transformed (i.e., normalized) before computing Rhat, as in \cite Vehtari2021. |
+      "Transform"   | boolean | False  | If the parameters should be rank-transformed before computing Rhat, as in \cite Vehtari2021. |
       "Multivariate" | boolean | False | If the MPSRF value should be returned instead of the componentwise \$\hat{R}\f$ statistic. If `true`, the output vector will have a single component.  The MPSRF serves as a worse case estimate of \f$\hat{R}\f$ over all linear combinations of the parameters. |
 
       @param[in] collections A vector of SampleEstimator variables returned by independent runs of an MCMC algorithm.
-      @param[in] options (optional) A property tree possibly containing settings for the "Split" or "Normalize" parameters listed above.  Note that these options are only used if the Estimator can be cast to SampleCollection.
-      @returns A vector of \f$\hat{R}\f$ values for each component of the parameters.
+      @param[in] options (optional) A property tree possibly containing settings for the "Split" or "Transform" parameters listed above.  Note that the Split and transform options are only available for children of the SampleCollection class.
+      @returns If Multivariate==False, a vector of \f$\hat{R}\f$ values for each component of the parameters.  If Multivariate==true, then a length 1 vector containing the MPSRF.
       */
       template<typename EstimatorType>
       Eigen::VectorXd Rhat(std::vector<std::shared_ptr<EstimatorType>> const& estimators,
@@ -118,11 +118,12 @@ namespace muq{
       */
       double BasicMPSRF(std::vector<std::shared_ptr<SampleEstimator>> const& collections);
 
-      /** Performs an inplace split of the chains. */
-      std::vector<std::shared_ptr<SampleCollection>> SplitChains(std::vector<std::shared_ptr<SampleCollection>> const& collections);
+      /** Splits the chains into equally sized segments. */
+      std::vector<std::shared_ptr<SampleCollection>> SplitChains(std::vector<std::shared_ptr<const SampleCollection>> const& collections, unsigned int numSegs=2);
+      std::vector<std::shared_ptr<SampleCollection>> SplitChains(std::vector<std::shared_ptr<SampleCollection>> const& origChains, unsigned int numSegments=2);
 
-      /** Performas an inplace normalization of the chains based on ranking the samples and applying a Gaussian transform. */
-      std::vector<std::shared_ptr<SampleCollection>> NormalizeChains(std::vector<std::shared_ptr<SampleCollection>> const& collections);
+      /** Performas an inplace transformation of the chains based on ranking the samples and applying a Gaussian transform. */
+      std::vector<std::shared_ptr<SampleCollection>> TransformChains(std::vector<std::shared_ptr<SampleCollection>> const& collections);
 
 
       /** For a set of scalar values \f$\{x_1,\ldots, x_S\}\f$, the rank of \f$x_i\f$ is the index of \f$x_i\f$ after sorting this set into a list that satisfies \f$x_i\leq x_{i+1}\f$.  We use \f$r_i\f$  to denote the rank of \f$x_i\f$ and adopt the convention that for repeated values (i.e., \f$x_{i}=x_{i+1}\f$), \f$r_i\f$ is given by the average rank of consecutive repeated values.

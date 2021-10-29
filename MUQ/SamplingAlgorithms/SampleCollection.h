@@ -66,7 +66,7 @@ namespace muq{
     /** @class SampleCollection
         @brief A class to hold and analyze a collection of SamplingState objects
     */
-    class SampleCollection : public SampleEstimator{
+    class SampleCollection : public SampleEstimator, public std::enable_shared_from_this<SampleCollection>{
     public:
       SampleCollection() = default;
 
@@ -302,6 +302,36 @@ namespace muq{
       /** Returns the nubmer of block \f$M\f$. */
       virtual unsigned int NumBlocks() const override;
 
+      /**
+      To help assess the convergence of a MCMC chain, this function returns either an estimate of the standard scale reduction \f$\hat{R}\f$ diagnostic from \cite Gelman2013,
+      one of the modifications presented in \cite Vehtari2021, the multivariate potential scale reduction factor
+      (MPSRF) of \cite Brooks1998, or multivariate adapations of MPSRF that are similar to the split and ranked
+      methods of \cite Vehtari2021.   
+
+      These scale reduction factors are typically computed using multiple chains.  This function instead splits 
+      a single chain into multiple segments and then treats each segment as chain in the usual \f$\hat{R}\f$ estimators.
+      This approach is similar to the split techniques of \cite Vehtari2021.
+
+      For more details on the definition and computation of \f$\hat{R}\f$, see Diagnostics::Rhat.
+
+      Parameter Key | Type | Default Value | Description |
+      ------------- | ------------- | ------------- | ------------- |
+      "Transform"   | boolean | False  | If the parameters should be rank-transformed before computing Rhat, as in \cite Vehtari2021. |
+      "Multivariate" | boolean | False | If the MPSRF value should be returned instead of the componentwise \$\hat{R}\f$ statistic. If `true`, the output vector will have a single component.  The MPSRF serves as a worse case estimate of \f$\hat{R}\f$ over all linear combinations of the parameters. |
+
+      @param[in] blockDim  Specifies the block of the sampling state we're interested in. If blockDim=-1, then all blocks will be concatenated together.
+      @param[in] options (optional) A property tree possibly containing settings for the "Multivariate" or "Transform" parameters listed above.
+      @returns If Multivariate==False, a vector of \f$\hat{R}\f$ values for each component of the parameters.  If Multivariate==true, then a length 1 vector containing the MPSRF.
+
+      */
+      virtual Eigen::VectorXd Rhat(int                         blockDim, 
+                                   unsigned int                numSegments=4, 
+                                   boost::property_tree::ptree options = boost::property_tree::ptree()) const;
+
+      /** Same as the other Rhat function, except all blocks are concatenated together. */
+      virtual Eigen::VectorXd Rhat(unsigned int                numSegments=4, 
+                                   boost::property_tree::ptree options = boost::property_tree::ptree()) const{return Rhat(-1,numSegments,options);};
+                                  
     protected:
 
       std::vector<std::shared_ptr<SamplingState>> samples;
