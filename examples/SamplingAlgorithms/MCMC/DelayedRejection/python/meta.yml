@@ -1,6 +1,0 @@
-- example:
-    file: EllipticInference.py
-    tag: MCMC
-    title: Delayed Rejection MCMC
-    description: Illustrates thee use of delayed rejection MCMC on a Bayesian inverse problem constructed from an elliptic PDE forward model.
-    doc_level: 1 # 1 for no description, 2 for minimal description, 3 for several descriptive cellss, 4 for very good documentation

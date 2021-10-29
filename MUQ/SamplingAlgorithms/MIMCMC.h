@@ -5,7 +5,7 @@
 
 #include "MUQ/SamplingAlgorithms/MIMCMCBox.h"
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
-#include "MUQ/SamplingAlgorithms/SamplingAlgorithm.h"
+#include "MUQ/SamplingAlgorithms/MultiIndexEstimator.h"
 
 namespace pt = boost::property_tree;
 
@@ -18,14 +18,23 @@ namespace muq {
         @details A basic MIMCMC method based on a fixed
         number of samples for all model indices.
      */
-    class MIMCMC : public SamplingAlgorithm {
+    class MIMCMC {
     public:
-      MIMCMC (pt::ptree pt, std::shared_ptr<MIComponentFactory> componentFactory);
+      MIMCMC(boost::property_tree::ptree options,
+             std::shared_ptr<MIComponentFactory> const& componentFactory);
 
-      virtual std::shared_ptr<SampleCollection> GetSamples() const override;
-      virtual std::shared_ptr<SampleCollection> GetQOIs() const override;
+      MIMCMC(boost::property_tree::ptree                                  pt, 
+             Eigen::VectorXd                                       const& startPt,
+             std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models,
+             std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
+      
+      MIMCMC(boost::property_tree::ptree                                  pt, 
+             Eigen::VectorXd                                       const& startPt,
+             std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems,
+             std::shared_ptr<MultiIndexSet>                        const& multis = nullptr);
 
-      Eigen::VectorXd MeanQOI();
+      virtual std::shared_ptr<MultiIndexEstimator> GetSamples() const;
+      virtual std::shared_ptr<MultiIndexEstimator> GetQOIs() const;
 
       /**
        * @brief Access an MIMCMCBox
@@ -35,11 +44,6 @@ namespace muq {
        * associated with that model.
        */
       std::shared_ptr<MIMCMCBox> GetBox(std::shared_ptr<MultiIndex> index);
-
-      /**
-       * @brief Evaluate parameter mean via MI telescoping sum.
-       */
-      Eigen::VectorXd MeanParam();
 
       /**
        * @brief Draw MI structure (mostly debugging purposes)
@@ -53,7 +57,7 @@ namespace muq {
        */
       std::shared_ptr<MultiIndexSet> GetIndices();
 
-      virtual std::shared_ptr<SampleCollection> RunImpl(std::vector<Eigen::VectorXd> const& x0) override;
+      virtual std::shared_ptr<MultiIndexEstimator> Run();
 
       /**
        * @brief Write HDF5 output for the entire MIMCMC method
@@ -67,6 +71,9 @@ namespace muq {
       std::vector<std::shared_ptr<MIMCMCBox>> boxes;
 
       std::string multiindexToConfigString (std::shared_ptr<MultiIndex> index);
+
+      static std::vector<std::shared_ptr<AbstractSamplingProblem>> CreateProblems(std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models);
+      static std::shared_ptr<MultiIndexSet> ProcessMultis(std::shared_ptr<MultiIndexSet> const& multis, unsigned int numLevels);
     };
 
   }
