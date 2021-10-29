@@ -251,8 +251,8 @@ At the base level, we specify the number of steps in the chain with the entry "N
   Eigen::VectorXd batchESS = samps->ESS("Batch");
   Eigen::VectorXd batchMCSE = samps->StandardError("Batch");
 
-  Eigen::VectorXd spectralESS = samps.ESS("Wolff");
-  Eigen::VectorXd spectralMCSE = samps.StandardError("Wolff");
+  Eigen::VectorXd spectralESS = samps->ESS("Wolff");
+  Eigen::VectorXd spectralMCSE = samps->StandardError("Wolff");
 
   std::cout << "ESS:\n";
   std::cout << "  Batch:    " << batchESS.transpose() << std::endl;

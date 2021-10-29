@@ -463,7 +463,7 @@ int main(){
 
     boost::property_tree::ptree opts;
     opts.put("Split", true);
-    opts.put("Normalize", false);
+    opts.put("Transform", false);
     opts.put("Multivariate",true);
 
     Eigen::VectorXd diliMPSRF = Diagnostics::Rhat(chains, opts);

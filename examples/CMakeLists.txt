@@ -20,7 +20,8 @@ add_custom_target(examples
 
                           GaussianSampling
                           GaussianGammaSampling
-                          MultilevelGaussianSampling
+                          BasicMultilevel
+                          AdvancedMultilevel
                           MultiindexGaussianSampling
 
                           BlockOperations

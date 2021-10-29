@@ -97,7 +97,7 @@ for i in range(numChains):
     chains[i] = sampler.Run([prior.Sample()])
 
 # Compute the convergence diagnostic.  If close to 1, the chains have converged
-mpsrf = ms.Diagnostics.Rhat(chains, {'Split':True, 'Normalize':False, 'Multivariate':True})
+mpsrf = ms.Diagnostics.Rhat(chains, {'Split':True, 'Transform':False, 'Multivariate':True})
 print('MPSRF: {:0.3f}'.format(mpsrf[0]))
 if(mpsrf[0]>1.1):
     print('  Chains have NOT converged!  Consider increasing the length of each chain.')

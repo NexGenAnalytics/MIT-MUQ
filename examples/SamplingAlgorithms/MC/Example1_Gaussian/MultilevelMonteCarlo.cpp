@@ -38,7 +38,7 @@ int main(){
   MIMCMC mimcmc(pt, componentFactory);
   //GreedyMLMCMC greedymlmcmc (pt, componentFactory);
   mimcmc.Run();
-  std::cout << "mean QOI: " << mimcmc.MeanQOI().transpose() << std::endl;
+  std::cout << "mean QOI: " << mimcmc.GetQOIs()->Mean().transpose() << std::endl;
 
   //mimcmc.GetBox(std::make_shared<MultiIndex>(1,0));
   //std::cout << "coarsest: " << mimcmc.GetBox(std::make_shared<MultiIndex>(1,0))->FinestChain()->GetQOIs()->Mean().transpose() << std::endl;

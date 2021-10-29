@@ -14,6 +14,8 @@
 #include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
 #include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
+#include "MUQ/Utilities/RandomGenerator.h"
+
 #include <boost/property_tree/ptree.hpp>
 
 namespace pt = boost::property_tree;
@@ -22,10 +24,25 @@ using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 
 
-#include "Problem.h"
-
-
 int main(){
+
+  Eigen::MatrixXd tgtCov(2,2);
+  tgtCov << 1.0, 0.3,
+            0.3, 1.5;
+  
+  Eigen::VectorXd tgtMu(2);
+  tgtMu << 0.8, 2.4;
+
+  // Create a multiindex set specifying all the different model levels
+  auto multis = MultiIndexFactory::CreateFullTensor(2,1);
+
+  // Make up a "hierarchy" of models from Gaussian distributions with difference variances
+  std::vector<std::shared_ptr<ModPiece>> models(multis->Size());
+  models.at(0) = std::make_shared<Gaussian>(tgtMu, tgtCov*2.0)->AsDensity();
+  models.at(1) = std::make_shared<Gaussian>(tgtMu, tgtCov*1.3)->AsDensity();
+  models.at(2) = std::make_shared<Gaussian>(tgtMu, tgtCov*1.5)->AsDensity();
+  models.at(3) = std::make_shared<Gaussian>(tgtMu, tgtCov)->AsDensity();
+  
 
   pt::ptree pt;
 
@@ -48,28 +65,25 @@ int main(){
   pt.put("MLMCMC.Subsampling_2_0", 5);
   pt.put("MLMCMC.Subsampling_2_1", 5);
   pt.put("MLMCMC.Subsampling_2_2", 5);
-  auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
-
-
+  
   unsigned int numChains = 5;
   std::vector<std::shared_ptr<MultiIndexEstimator>> estimators(numChains);
 
   for(int chainInd=0; chainInd<numChains; ++chainInd){
     Eigen::VectorXd x0 = RandomGenerator::GetNormal(2);
-    auto componentFactory = std::make_shared<MyMIComponentFactory>(x0, pt);
-
+   
     std::cout << "\n=============================\n";
     std::cout << "Running MIMCMC Chain " << chainInd << ": \n";
     std::cout << "-----------------------------\n";
 
-    MIMCMC mimcmc (pt, componentFactory);
+    MIMCMC mimcmc (pt, x0, models, multis);
     estimators.at(chainInd) = mimcmc.Run();
 
     std::cout << "mean QOI: " << estimators.at(chainInd)->Mean().transpose() << std::endl;
 
     std::stringstream filename;
     filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
-    greedymlmcmc.WriteToFile(filename.str());
+    mimcmc.WriteToFile(filename.str());
   }
   
   std::cout << "\n=============================\n";
@@ -80,24 +94,6 @@ int main(){
   std::cout << "  MCSE (chain 0):     " << estimators.at(0)->StandardError().transpose() << std::endl;
   std::cout << "  ESS (chain 0):      " << estimators.at(0)->ESS().transpose() << std::endl;
   std::cout << "  Variance (chain 0): " << estimators.at(0)->Variance().transpose() << std::endl;
-  std::cout << std::endl;
-
-
-
-  std::cout << "\n=============================\n";
-  std::cout << "Running Single Level Chain" << ": \n";
-  std::cout << "-----------------------------\n";
-
-  SLMCMC slmcmc (pt, componentFactory);
-  auto samps = slmcmc.Run();
-
-  std::cout << "\n=============================\n";
-  std::cout << "Single Level Summary: \n";
-  std::cout << "-----------------------------\n";
-  std::cout << "  Mean:               " << samps->Mean().transpose() << std::endl;
-  std::cout << "  MCSE:               " << samps->StandardError().transpose() << std::endl;
-  std::cout << "  ESS:                " << samps->ESS().transpose() << std::endl;
-  std::cout << "  Variance:           " << samps->Variance().transpose() << std::endl;
   std::cout << std::endl;
 
   return 0;

@@ -167,7 +167,7 @@ int main(){
   The $\hat{R}$ statistic compares the intra- and inter-chain variances to assess 
   whether the chains have converged to the same distribution (the target distribution).
   Here we use the `Diagnostics` class in MUQ to compute $\hat{R}$ following the split and
-  rank-normalized techniques described in [[Vehtari et al., 2021](https://arxiv.org/abs/1903.08008)].
+  rank-transformed techniques described in [[Vehtari et al., 2021](https://arxiv.org/abs/1903.08008)].
   If $\hat{R}$ is close to $1$ (e.g., $\hat{R}<1.01$), then the chains are past burn in and 
   are likely generating samples of the posterior.
   */
