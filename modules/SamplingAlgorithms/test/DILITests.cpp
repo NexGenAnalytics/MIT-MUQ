@@ -387,10 +387,10 @@ TEST(MCMC, DILIKernel_AutomaticConstruction) {
   auto logLikely = graph.CreateModPiece("Likelihood");
 
   pt::ptree pt;
-  const unsigned int numSamps = 10000;
+  const unsigned int numSamps = 40000;
   pt.put("NumSamples",numSamps);
   pt.put("BurnIn", 0);
-  pt.put("PrintLevel",0);
+  pt.put("PrintLevel",3);
   pt.put("HessianType","Exact");
   pt.put("Adapt Interval", 0);
   pt.put("Prior Node", "Prior");
@@ -433,13 +433,12 @@ TEST(MCMC, DILIKernel_AutomaticConstruction) {
   Eigen::VectorXd trueMean = truePost->GetMean();
   Eigen::MatrixXd trueCov = truePost->GetCovariance();
 
-  Eigen::VectorXd ess = samps->ESS();
+  Eigen::VectorXd mcse = samps->StandardError("Batch");
 
   for(int i=0; i<numNodes; ++i){
 
     // Estimator variance
-    double estVar = trueCov(i,i)/ess(i);
-    EXPECT_NEAR(trueMean(i), sampMean(i), 3.5*std::sqrt(estVar));
+    EXPECT_NEAR(trueMean(i), sampMean(i), 4.0*std::sqrt(mcse(i)));
   }
 }
 
