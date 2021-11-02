@@ -102,7 +102,8 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
     .def("ApplyHessianByFD", (Eigen::VectorXd (ModPiece::*)(unsigned int, unsigned int, unsigned int, std::vector<Eigen::VectorXd> const&, Eigen::VectorXd const&, Eigen::VectorXd const&)) &ModPiece::ApplyHessianByFD)
     .def("EnableCache", &ModPiece::EnableCache)
     .def("DisableCache", &ModPiece::DisableCache)
-    .def("CacheStatus", &ModPiece::CacheStatus);
+    .def("CacheStatus", &ModPiece::CacheStatus)
+    .def("SetWarnLevel", &ModPiece::SetWarnLevel);
 
   py::class_<PyModPiece, PyModPieceTramp, ModPiece, WorkPiece, std::shared_ptr<PyModPiece> > pymp(m, "PyModPiece");
   pymp

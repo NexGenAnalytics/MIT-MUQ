@@ -114,14 +114,17 @@ TEST(MCMC, MHKernel_MHProposal) {
 
   //boost::any anyMean = samps.Mean();
   Eigen::VectorXd mean = samps->Mean();
-  EXPECT_NEAR(mu(0), mean(0), 1.2e-1);
-  EXPECT_NEAR(mu(1), mean(1), 1.2e-1);
+  Eigen::VectorXd ess = samps->ESS();
+  Eigen::VectorXd var = samps->Variance();
+  Eigen::VectorXd mcse = (var.array()/ess.array()).sqrt();
+  EXPECT_NEAR(mu(0), mean(0), 2.0*mcse(0));
+  EXPECT_NEAR(mu(1), mean(1), 2.0*mcse(1));
 
   Eigen::MatrixXd cov = samps->Covariance();
-  EXPECT_NEAR(1.0, cov(0,0), 1.2e-1);
-  EXPECT_NEAR(0.0, cov(0,1), 1.2e-1);
-  EXPECT_NEAR(0.0, cov(1,0), 1.2e-1);
-  EXPECT_NEAR(1.0, cov(1,1), 1.2e-1);
+  EXPECT_NEAR(1.0, cov(0,0), 3.0*mcse(0));
+  EXPECT_NEAR(0.0, cov(0,1), 3.0*mcse(0));
+  EXPECT_NEAR(0.0, cov(1,0), 3.0*mcse(1));
+  EXPECT_NEAR(1.0, cov(1,1), 3.0*mcse(1));
 }
 
 TEST(MCMC, Diagnostics_Pass) {
@@ -183,8 +186,8 @@ TEST(MCMC, Diagnostics_Fail) {
   }
 
   Eigen::VectorXd rhat = Diagnostics::Rhat(collections);
-  EXPECT_GT(rhat(0),1.3);
-  EXPECT_GT(rhat(1),1.3);
+  EXPECT_GT(rhat(0),1.1);
+  EXPECT_GT(rhat(1),1.1);
 }
 
 
@@ -200,7 +203,7 @@ TEST(MCMC, MHKernel_RepeatedRuns) {
   pt.put("MyMCMC.Kernel1.Method","MHKernel");
   pt.put("MyMCMC.Kernel1.Proposal", "MyProposal"); // the proposal
   pt.put("MyMCMC.Kernel1.MyProposal.Method", "MHProposal");
-  pt.put("MyMCMC.Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
+  pt.put("MyMCMC.Kernel1.MyProposal.ProposalVariance", 1.0); // the variance of the isotropic MH proposal
 
   // create a Gaussian distribution---the sampling problem is built around characterizing this distribution
   const Eigen::VectorXd mu = Eigen::VectorXd::Ones(2);
@@ -210,7 +213,7 @@ TEST(MCMC, MHKernel_RepeatedRuns) {
   auto problem = std::make_shared<SamplingProblem>(dist);
 
   // starting point
-  const Eigen::VectorXd start = mu;
+  const Eigen::VectorXd start = mu+RandomGenerator::GetNormal(2); // initial point from target distribution
 
   // evaluate
   // create an instance of MCMC

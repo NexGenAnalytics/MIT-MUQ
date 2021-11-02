@@ -123,5 +123,3 @@ public:
 private:
   pt::ptree pt;
 };
-
-

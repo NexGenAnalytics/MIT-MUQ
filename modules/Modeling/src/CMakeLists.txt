@@ -126,7 +126,7 @@ CreateCompileGroup(
 )
 
 CreateCompileGroup(
-    MODELING_SUNDIALS_MODELS
+    MODELING_ODE
     "ODE integrators using Sundials"
     muqModeling
     "MODELING_CORE"

@@ -48,6 +48,7 @@ pipelines:
             name: documentation
             image: mparno/muq-build
             script:
+              - pip3 install jinja2
               - cd $BITBUCKET_CLONE_DIR/build
               - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
               - make doc

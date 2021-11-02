@@ -37,7 +37,7 @@ INCLUDE(CheckFunctionExists)
 project(MUQ)
 set(${CMAKE_PROJECT_NAME}_MAJOR_VERSION 0)
 set(${CMAKE_PROJECT_NAME}_MINOR_VERSION 3)
-set(${CMAKE_PROJECT_NAME}_PATCH_VERSION 3)
+set(${CMAKE_PROJECT_NAME}_PATCH_VERSION 4)
 set(${CMAKE_PROJECT_NAME}_VERSION ${${CMAKE_PROJECT_NAME}_MAJOR_VERSION}.${${CMAKE_PROJECT_NAME}_MINOR_VERSION}.${${CMAKE_PROJECT_NAME}_PATCH_VERSION})
 
 message(STATUS "\n\nThis is MUQ, the MIT UQ Library!\n\n")
@@ -165,25 +165,35 @@ MESSAGE("${MUQ_LOG_SUMMARY}")
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
 
-	message(STATUS "To build documentation, run 'make doc'")
-
-	option(MUQDOC_INCLUDE_ANALYTICS OFF)
-	if(MUQDOC_INCLUDE_ANALYTICS)
-		message(STATUS "Will include google analytics header information in doxygen output.")
-		set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/analytics_header.html)
+	if(PYTHON_EXECUTABLE)
+		set(Python3_EXECUTABLE ${PYTHON_EXECUTABLE})
+		set(Python3_Interpreter_FOUND ON)
 	else()
-		set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/noanalytics_header.html)
+		find_package(Python3 COMPONENTS Interpreter)
 	endif()
 
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/documentation/muq.doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile @ONLY)
-    add_custom_target(doc
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/documentation/scripts/doxygen_preprocessing.py ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen" VERBATIM
-    )
+	if(Python3_Interpreter_FOUND)
 
+		message(STATUS "PYTHON3 EXE: ${Python3_EXECUTABLE}")
+		message(STATUS "To build documentation, run 'make doc'")
 
+		option(MUQDOC_INCLUDE_ANALYTICS OFF)
+		if(MUQDOC_INCLUDE_ANALYTICS)
+			message(STATUS "Will include google analytics header information in doxygen output.")
+			set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/analytics_header.html)
+		else()
+			set(ANALYTICS_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/documentation/doxFiles/noanalytics_header.html)
+		endif()
+
+	    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/documentation/muq.doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile @ONLY)
+	    add_custom_target(doc
+	        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/documentation/scripts/doxygen_preprocessing.py ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+	        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/muq.doxyfile
+	        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	        COMMENT "Generating API documentation with Doxygen" VERBATIM
+	    )
+
+	endif(Python3_Interpreter_FOUND)
 endif(DOXYGEN_FOUND)
 
 add_subdirectory(examples EXCLUDE_FROM_ALL)

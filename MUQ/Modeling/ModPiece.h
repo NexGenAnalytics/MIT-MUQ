@@ -441,6 +441,14 @@ namespace muq{
     void DisableCache(){cacheEnabled=false;};
     bool CacheStatus() const{return cacheEnabled;};
 
+
+    /** Set the warning level for finite difference defaults.
+        If newLevel==0, no warnings or errors are thrown.
+        If newLevel==1, a warning is printed to std::cout.
+        If newLevel==2, an exception is thrown.
+    */
+    virtual void SetWarnLevel(unsigned int newLevel){fdWarnLevel=newLevel;};
+
     const Eigen::VectorXi inputSizes;
     const Eigen::VectorXi outputSizes;
 
@@ -478,6 +486,15 @@ namespace muq{
     Eigen::VectorXd jacobianAction;
     Eigen::MatrixXd jacobian;
     Eigen::VectorXd hessAction;
+
+    /** Specifies is MUQ should warn users when derivative functions
+        (e.g, Jacobian, ApplyJacobian, Gradient, ApplyHessian) default to finite
+        differences.
+        If fdWarnLevel==0, no warnings or errors are thrown.
+        If fdWarnLevel==1, a warning is printed to std::cout.
+        If fdWarnLevel==2, an exception is thrown.
+    */
+    unsigned int fdWarnLevel = 0;
 
     void CheckInputs(ref_vector<Eigen::VectorXd> const& input, std::string const& funcName);
 

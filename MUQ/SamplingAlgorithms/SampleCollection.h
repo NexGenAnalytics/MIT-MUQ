@@ -109,6 +109,12 @@ namespace muq{
       virtual Eigen::MatrixXd Covariance(int blockInd=-1) const;
       virtual Eigen::MatrixXd Covariance(Eigen::VectorXd const& mean, int blockInd=-1) const;
 
+      /** Computes running estimates of the covariance.
+
+          This function returns a vector of matrices where index \f$n\f$ of the
+          vector contains a Monte Carlo estimate of the covariance that is constructed
+          using the first \f$n\f$ samples in this SampleCollection.
+      */
       virtual std::vector<Eigen::MatrixXd> RunningCovariance(int blockInd=-1) const;
       virtual std::vector<Eigen::MatrixXd> RunningCovariance(Eigen::VectorXd const& mean, int blockInd=-1) const;
 
@@ -182,8 +188,20 @@ namespace muq{
       */
       std::set<std::string> ListMeta(bool requireAll=true) const;
 
+      /**
+      Using samples of \f$x\f$ stored in this sample collection, this function
+      computes the expected value of \f$f(x)\f$ for some function \f$f\f$ defined
+      as a muq::Modeling::ModPiece.  The output is a vector containing the expected
+      value of \f$f\f$.
+      */
       virtual Eigen::VectorXd ExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
 
+      /**
+      Computes running estimates of the expected value.  Returns a std::vector
+      of Eigen::VectorXd instances.   Index \f$n\f$ of the std::vector contains
+      a Monte Carlo  estimate of the expected value of \f$f\f$ using the first
+      \f$n\f$ samples of the sample collection.
+      */
       std::vector<Eigen::VectorXd> RunningExpectedValue(std::shared_ptr<muq::Modeling::ModPiece> const& f, std::vector<std::string> const& metains = std::vector<std::string>()) const;
 
 

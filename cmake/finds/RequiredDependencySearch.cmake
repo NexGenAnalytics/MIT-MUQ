@@ -22,24 +22,6 @@ macro (GetDependency name)
 
                     # If the test code compiled...
                     if(NOT ${name}_TEST_FAIL)
-                        # Check the library architectures on APPLE
-                        if(APPLE)
-                          message(STATUS "Checking architecture of ${${name}_LIBRARIES}")
-
-                          foreach(libname IN LISTS ${name}_LIBRARIES)
-                            execute_process(COMMAND lipo -info "${libname}" OUTPUT_VARIABLE ARCH_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-                            message(STATUS "  Checking library ${libname} against ${CMAKE_OSX_ARCHITECTURES} and ${OSX_ARCHITECTURES}")
-                            message(STATUS "  ARCH_TYPE = ${ARCH_TYPE}")
-                            if("${ARCH_TYPE}" MATCHES "*${CMAKE_OSX_ARCHITECTURES}*")
-                            message(STATUS "  WE HAVE A MATCH!")
-                            else()
-                            message(STATUS "  DOES NOT MATCH!")
-                            endif()
-                          endforeach(libname)
-
-                        endif()
-
                         set(USE_INTERNAL_${name} 0)
                     else()
                         set(USE_INTERNAL_${name} 1)
@@ -155,14 +137,14 @@ if (${dindex} GREATER -1)
 
     # store include directory information
     if(NOT DEFINED Boost_INCLUDE_DIRS)
-        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS})
+        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIR})
     endif()
 
     include_directories(${Boost_INCLUDE_DIRS})
     LIST(APPEND ${CMAKE_PROJECT_NAME}_EXTERNAL_INCLUDES ${Boost_INCLUDE_DIRS})
 
     if(NOT DEFINED Boost_LIBRARIES)
-        set(Boost_LIBRARIES ${BOOST_LIBRARIES})
+        set(Boost_LIBRARIES ${BOOST_LIBRARY})
         set(Boost_LIBRARIES_STATIC ${BOOST_LIBRARIES_STATIC})
     endif()
 

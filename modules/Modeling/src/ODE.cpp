@@ -117,6 +117,12 @@ void ODE::IntegratorOptions::SetOptions(boost::property_tree::ptree const& opts)
   reltol = opts.get("RelativeTolerance", 1e-5);
   abstol = opts.get("AbsoluteTolerance", 1e-5);
 
+  sensRelTol = opts.get("SensRelTol", -1);
+  sensAbsTol = opts.get("SensAbsTol", -1);
+
+  adjRelTol = opts.get("SensRelTol", -1);
+  adjAbsTol = opts.get("SensAbsTol", -1);
+
   maxStepSize = opts.get("MaximumStepSize", -1);
   maxNumSteps = opts.get("MaximumSteps", -1);
 
@@ -724,8 +730,13 @@ void ODE::JacobianImpl(unsigned int outWrt,
   CheckFlag((void *)sensState, "CVodeSetNonlinearSolverSensSim", 0);
 
   // set sensitivity tolerances
-  flag = CVodeSensEEtolerances(cvode_mem);
-  CheckFlag(&flag, "CVodeSensEEtolerances", 1);
+  if((intOpts.sensRelTol<=0)||(intOpts.sensAbsTol<=0)){
+    flag = CVodeSensEEtolerances(cvode_mem);
+    CheckFlag(&flag, "CVodeSensEEtolerances", 1);
+  }else{
+    Eigen::VectorXd sensAbsTol = intOpts.sensAbsTol*Eigen::VectorXd::Ones(paramSize);
+    flag = CVodeSensSStolerances(cvode_mem, intOpts.sensRelTol, sensAbsTol.data());
+  }
 
   //Eigen::VectorXd absTolVec = Eigen::VectorXd::Constant(paramSize, intOpts.abstol);
   // flag = CVodeSensSStolerances(cvode_mem, intOpts.reltol, absTolVec.data());

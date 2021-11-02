@@ -241,6 +241,16 @@ void ModPiece::JacobianImpl(unsigned int                const  outputDimWrt,
                             unsigned int                const  inputDimWrt,
                             ref_vector<Eigen::VectorXd> const& input)
 {
+  if(fdWarnLevel==1){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::cout << "WARNING: In " << className << ", defaulting to finite difference approximation of JacobianImpl." << std::endl;
+  }else if(fdWarnLevel==2){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "Class " << className << " attempted to use a finite difference approximation of ApplyJacobianImpl.";
+    throw std::runtime_error(msg.str());
+  }
+
   jacobian = JacobianByFD(outputDimWrt, inputDimWrt, input);
 }
 
@@ -249,6 +259,16 @@ void ModPiece::ApplyJacobianImpl(unsigned int                const  outputDimWrt
                                  ref_vector<Eigen::VectorXd> const& input,
                                  Eigen::VectorXd             const& vec)
 {
+  if(fdWarnLevel==1){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::cout << "WARNING: In " << className << ", defaulting to finite difference approximation of ApplyJacobianImpl." << std::endl;
+  }else if(fdWarnLevel==2){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "Class " << className << " attempted to use a finite difference approximation of ApplyJacobianImpl.";
+    throw std::runtime_error(msg.str());
+  }
+
   jacobianAction = ApplyJacobianByFD(outputDimWrt, inputDimWrt, input, vec);
 }
 
