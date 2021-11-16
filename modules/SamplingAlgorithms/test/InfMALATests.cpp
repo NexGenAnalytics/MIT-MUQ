@@ -94,13 +94,11 @@ TEST(MCMC, InfMALA) {
 
   Eigen::VectorXd sampMean = samps->Mean();
   Eigen::MatrixXd sampCov = samps->Covariance();
+  
+  Eigen::VectorXd mcse = samps->StandardError();
 
-  Eigen::VectorXd ess = samps->ESS();
-  Eigen::VectorXd sampVar = samps->Variance();
-  Eigen::VectorXd mcse = (sampVar.array() / ess.array()).sqrt();
-
-  EXPECT_NEAR(postMean(0), sampMean(0), 2.0*mcse(0));
-  EXPECT_NEAR(postMean(1), sampMean(1), 2.0*mcse(1));
+  EXPECT_NEAR(postMean(0), sampMean(0), 3.0*mcse(0));
+  EXPECT_NEAR(postMean(1), sampMean(1), 3.0*mcse(1));
 
   EXPECT_GE(N, dens->GetNumCalls("Evaluate"));
   EXPECT_GE(N, dens->GetNumCalls("Gradient"));

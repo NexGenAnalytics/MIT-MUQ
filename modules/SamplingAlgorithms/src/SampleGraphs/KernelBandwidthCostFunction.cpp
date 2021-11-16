@@ -5,7 +5,7 @@ using namespace muq::Optimization;
 using namespace muq::SamplingAlgorithms;
 
 KernelBandwidthCostFunction::KernelBandwidthCostFunction(std::shared_ptr<const SampleGraph> const& graph, Eigen::VectorXd const& bandwidth, pt::ptree const& pt) :
-CostFunction(Eigen::VectorXi::Ones(1)),
+CostFunction(1),
 graph(graph),
 bandwidth(bandwidth),
 delta(pt.get<double>("StepSize", 1.0)),
@@ -30,4 +30,4 @@ double KernelBandwidthCostFunction::BandwidthCost(double const para) const {
   return (chiplus-chi)/delta;
 }
 
-double KernelBandwidthCostFunction::CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) { return BandwidthCost(input[0] (0)); }
+double KernelBandwidthCostFunction::Cost() { return BandwidthCost(x(0)); }

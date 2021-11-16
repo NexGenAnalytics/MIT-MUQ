@@ -187,6 +187,9 @@ public:
   /// Reset the ordering of the indices
   void ResetIndices();
 
+  /// Write the samples to file
+  void WriteToFile(std::string const& filename, std::string const& dataset="/") const;
+
 protected:
 
   /// The number of <tt>openMP</tt> threads available to this object.

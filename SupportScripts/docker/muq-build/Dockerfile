@@ -1,18 +1,18 @@
 FROM debian:latest
-MAINTAINER M. Parno
+LABEL org.opencontainers.image.authors="M. Parno"
 
 USER root
 
 # Install most dependencies
 RUN apt-get update && \
-    apt-get install -y wget unzip cmake clang git g++ libgtest-dev libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libopenmpi-dev openmpi-bin libspdlog-dev doxygen python-dev python-pip python3-dev python3-pip pybind11-dev doxygen && \
+    apt-get install -y wget unzip cmake clang git g++ libgtest-dev libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libopenmpi-dev openmpi-bin libspdlog-dev doxygen python3-dev python3-pip pybind11-dev doxygen && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Make sure gtest libraries and header files are installed
 RUN cd /usr/src/gtest && \
     cmake CMakeLists.txt && \
     make && \
-    cp *.a /usr/lib && cd ~
+    cp lib/*.a /usr/lib && cd ~
 
 # Install nanoflann
 RUN git clone --depth=1 https://github.com/jlblancoc/nanoflann.git && \

@@ -44,10 +44,10 @@ protected:
 
   /// The cost associated with each bandwidth parameter
   /**
-  @param[in] input There is only one input, the (one dimensional) bandwidth parameter
+  There is only one input, the (one dimensional) bandwidth parameter
   \return The cost associated with this bandwidth parameter
   */
-  virtual double CostImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& input) override;
+  virtual double Cost() override;
 
 private:
 

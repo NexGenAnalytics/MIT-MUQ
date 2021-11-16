@@ -122,9 +122,7 @@ TEST_F(SampleGraphTests, RandomVariableConstruction) {
     std::vector<std::pair<std::size_t, double> > neighbors;
     graph->FindNeighbors(x, k, neighbors);
     EXPECT_EQ(neighbors.size(), k);
-    for( const auto& neigh : neighbors ) {
-      EXPECT_TRUE(neigh.first<n);
-    }
+    for( const auto& neigh : neighbors ) { EXPECT_TRUE(neigh.first<n); }
   }
 
   // find the nearest neighbors to the point with lag

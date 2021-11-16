@@ -150,7 +150,7 @@ void SampleGraph::FindNeighbors(Eigen::VectorXd const& point, std::size_t const 
   while( clouds[ind].lag>lag ) { --ind; }
 
   // find the nearest neighbors---neighbors in a specified radius
-  std::vector<std::size_t> neighInd(k);
+  std::vector<unsigned int> neighInd(k);
   std::vector<double> neighDist(k);
   const std::size_t nfound = kdtrees[ind]->knnSearch(point.data(), k, neighInd.data(), neighDist.data());
 
@@ -220,29 +220,15 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
 
       // we need to find neighbors within this distnace
       double neighDist = bandwidth(ind);
-      if( neighDist<1.0e-14 ) {
-        std::cout << std::endl;
-        std::cout << "bandwidth: " << bandwidth.transpose() << std::endl;
-        std::cout << "neighDist: " << neighDist << std::endl;
-        std::cout << std::endl;
-      }
       assert(neighDist>1.0e-14);
       neighDist *= -bandwidthParameter*neighDist*std::log(sparsityTol);
-      /*if( neighDist<1.0e-14 ) {
-        std::cout << std::endl;
-        std::cout << "bandwidth: " << bandwidth.transpose() << std::endl;
-        std::cout << "bandwidth parameter: " << bandwidthParameter << std::endl;
-        std::cout << "neighDist: " << neighDist << std::endl;
-        std::cout << "log sparsityTol: " << std::log(sparsityTol) << std::endl;
-        std::cout << std::endl;
-      }*/
-      //assert(neighDist>1.0e-14);
+      assert(neighDist>1.0e-14);
 
       // find the nearest neighbors
       std::vector<std::pair<std::size_t, double> > neighbors;
       FindNeighbors(Point(ind), neighDist, neighbors, i);
-      if( neighbors.size()<=1 ) { FindNeighbors(Point(ind), (std::size_t)5, neighbors, i); }
-      assert(neighbors.size()>1);
+      //if( neighbors.size()<=1 ) { FindNeighbors(Point(ind), (std::size_t)5, neighbors, i); }
+      //assert(neighbors.size()>1);
 
       // add the kernel evaluations to the kernel matrix
       const double scale = bandwidthParameter*bandwidth(ind);
@@ -327,4 +313,8 @@ std::size_t SampleGraph::Cloud::kdtree_get_point_count() const {
 double SampleGraph::Cloud::kdtree_get_pt(std::size_t const p, std::size_t const i) const {
   assert(samples);
   return samples->at(indices[lag+p])->state[0] [i];
+}
+
+void SampleGraph::WriteToFile(std::string const& filename, std::string const& dataset) const {
+  samples->WriteToFile(filename, dataset);
 }

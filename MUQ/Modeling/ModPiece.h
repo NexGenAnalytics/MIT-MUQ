@@ -243,6 +243,26 @@ namespace muq{
     }
 
 
+    inline Eigen::VectorXd const& ApplyHessian(unsigned int outWrt,
+                                           unsigned int inWrt1,
+                                           unsigned int inWrt2,
+                                           Eigen::VectorXd const& last,
+                                           Eigen::VectorXd const& sens,
+                                           Eigen::VectorXd const& vec) {
+      ref_vector<Eigen::VectorXd> invec;
+      invec.push_back(std::cref(last));
+      return ApplyHessian(outWrt, inWrt1, inWrt2, invec, sens, vec);
+    }
+
+    template<typename... Args>
+    inline Eigen::VectorXd  const& ApplyHessian(unsigned int wrtOut,
+                                            unsigned int wrtIn1,
+                                            unsigned int wrtIn2,
+                                            Args const&... args) {
+      ref_vector<Eigen::VectorXd> invec;
+      return ApplyHessianRecurse(wrtOut, wrtIn1, wrtIn2, invec, args...);
+    }
+
     /** @brief Compute the Jacobian of this ModPiece.
       @details This function computes the Jacobian matrix of some output \f$f_i(x_1, \ldots, x_{M_x})\f$
                with respect to one of the inputs \f$x_j\f$.
@@ -387,14 +407,14 @@ namespace muq{
 
     @seealso ApplyHessianByFD
     */
-    virtual Eigen::VectorXd ApplyHessian(unsigned int const outWrt,
+    virtual Eigen::VectorXd const& ApplyHessian(unsigned int const outWrt,
                                          unsigned int const inWrt1,
                                          unsigned int const inWrt2,
                                          std::vector<Eigen::VectorXd> const& input,
                                          Eigen::VectorXd              const& sens,
                                          Eigen::VectorXd              const& vec);
 
-    virtual Eigen::VectorXd ApplyHessian(unsigned int const outWrt,
+    virtual Eigen::VectorXd const& ApplyHessian(unsigned int const outWrt,
                                          unsigned int const inWrt1,
                                          unsigned int const inWrt2,
                                          ref_vector<Eigen::VectorXd> const& input,
@@ -566,6 +586,37 @@ namespace muq{
         vec.push_back(std::cref((NextType&)last));
         return Gradient(outWrt, inWrt, vec, sens);
     }
+
+    template<typename NextType, typename... Args>
+    inline Eigen::VectorXd const& ApplyHessianRecurse(unsigned int outWrt,
+                                                      unsigned int inWrt1,
+                                                      unsigned int inWrt2,
+                                                      ref_vector<Eigen::VectorXd>& invec,
+                                                      NextType const& ith,
+                                                      Args const&... args) {
+
+      static_assert(std::is_same<Eigen::VectorXd,
+                  NextType>::value,
+                  "In ModPiece::ApplyHessian, cannot cast input to Eigen::VectorXd.");
+
+      invec.push_back(std::cref((NextType&)ith));
+      return ApplyHessianRecurse(outWrt, inWrt1, inWrt2, invec, args...);
+
+    }
+
+    template<typename NextType>
+    inline Eigen::VectorXd const& ApplyHessianRecurse(unsigned int outWrt,
+                                                  unsigned int inWrt1,
+                                                  unsigned int inWrt2,
+                                                  ref_vector<Eigen::VectorXd>& invec,
+                                                  NextType const& last,
+                                                  Eigen::VectorXd const& sens,
+                                                  Eigen::VectorXd const& vec) {
+        static_assert(std::is_same<Eigen::VectorXd, NextType>::value, "In ModPiece::ApplyHessian, cannot cast input to Eigen::VectorXd.");
+        invec.push_back(std::cref((NextType&)last));
+        return ApplyHessian(outWrt, inWrt1, inWrt2, invec, sens, vec);
+    }
+
 
     template<typename... Args>
     inline Eigen::MatrixXd const& Jacobian(unsigned int outWrt, unsigned int inWrt, ref_vector<Eigen::VectorXd>& vec, Eigen::VectorXd const& ith, Args const&... args) {     \

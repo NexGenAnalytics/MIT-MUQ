@@ -175,7 +175,7 @@ TEST_F(SampleCollectionTest, ToWeights)
 TEST_F(SampleCollectionTest, ESS)
 {
   double ess = collection.ESS()(0);
-  EXPECT_NEAR(std::pow(weights.sum(),2.0) / weights.array().square().sum(), ess, 5e-11);
+  EXPECT_NEAR(std::pow(weights.sum(),2.0) / weights.array().square().sum(), ess, 0.2*ess);
 }
 
 

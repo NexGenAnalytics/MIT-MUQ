@@ -1,9 +1,9 @@
 #include "MUQ/SamplingAlgorithms/SampleGraphs/KolmogorovOperator.h"
 
 #include <Spectra/SymEigsSolver.h>
-#include <Spectra/GenEigsSolver.h>
 #include <Spectra/MatOp/SparseGenMatProd.h>
-#include <Spectra/Util/SelectionRule.h>
+//#include <Spectra/GenEigsSolver.h>
+//#include <Spectra/Util/SelectionRule.h>
 
 namespace pt = boost::property_tree;
 using namespace Spectra;

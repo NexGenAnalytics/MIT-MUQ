@@ -2,6 +2,7 @@ CreateTestGroup(
     SAMPLING_ALGORITHM
 
     SampleCollectionTests.cpp
+    SampleEstimatorTest.cpp
     MarkovChainTests.cpp
     MIMCMCTests.cpp
     MLMCMCTests.cpp

@@ -4,7 +4,7 @@ add_subdirectory(Approximation/MonotoneRegression)
 add_subdirectory(SamplingAlgorithms/MC/Example1_Gaussian)
 
 add_subdirectory(SamplingAlgorithms/MCMC/Example1_Gaussian/cpp)
-add_subdirectory(SamplingAlgorithms/MCMC/Example2_GaussianInverseGamma)
+add_subdirectory(SamplingAlgorithms/MCMC/Example2_GaussianInverseGamma/cpp)
 add_subdirectory(SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp)
 add_subdirectory(SamplingAlgorithms/MCMC/Example4_MultiindexGaussian/cpp)
 
@@ -20,7 +20,8 @@ add_custom_target(examples
 
                           GaussianSampling
                           GaussianGammaSampling
-                          MultilevelGaussianSampling
+                          BasicMultilevel
+                          AdvancedMultilevel
                           MultiindexGaussianSampling
 
                           BlockOperations
