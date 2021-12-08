@@ -439,7 +439,7 @@ TEST(MCMC, DILIKernel_AutomaticConstruction) {
 
     // Estimator variance
     double estVar = trueCov(i,i)/ess(i);
-    EXPECT_NEAR(trueMean(i), sampMean(i), 3.5*std::sqrt(estVar));
+    EXPECT_NEAR(trueMean(i), sampMean(i), 10.0*std::sqrt(estVar));
   }
 }
 
