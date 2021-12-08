@@ -83,6 +83,7 @@ CreateCompileGroup(
     MHProposal.cpp
     AMProposal.cpp
     MALAProposal.cpp
+    SMMALAProposal.cpp
     InfMALAProposal.cpp
     MixtureProposal.cpp
 
