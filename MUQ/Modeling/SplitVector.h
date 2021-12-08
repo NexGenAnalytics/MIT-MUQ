@@ -73,6 +73,8 @@ namespace muq {
 
       virtual void ApplyJacobianImpl(unsigned int const outwrt, unsigned int const inwrt, ref_vector<Eigen::VectorXd> const& inputs, Eigen::VectorXd const& targ) override;
 
+      virtual void ApplyHessianImpl(unsigned int const outwrt, unsigned int const inwrt1,unsigned int const inwrt2, ref_vector<Eigen::VectorXd> const& inputs, Eigen::VectorXd const& sens, Eigen::VectorXd const& targ) override;
+
       const Eigen::VectorXi ind;
 
       const Eigen::VectorXi size;
