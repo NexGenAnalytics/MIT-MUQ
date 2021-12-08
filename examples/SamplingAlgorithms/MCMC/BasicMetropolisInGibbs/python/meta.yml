@@ -1,5 +1,5 @@
 - example:
-    file: MetropolisInGibbs.ipynb
+    file: BasicMetropolisInGibbs.ipynb
     tag: MCMC
     title: Basic Metropolis-In-Gibbs Sampling
     description: Sampling independent Gaussian random variables with a random walk Metropolis-In-Gibbs sampler.

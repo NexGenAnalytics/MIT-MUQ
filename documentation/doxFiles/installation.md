@@ -48,4 +48,20 @@ cmake ..
 make
 @endcodeblock
 
-Note: On newer Macs with the Apple M1 processor, you might have to set <code>-DCMAKE_OSX_ARCHITECTURES=x86_64</code> when running cmake.
+> **_NOTE:_**  On newer Macs with the Apple M1 processor, you might have to set <code>-DCMAKE_OSX_ARCHITECTURES=x86_64</code> when running cmake.
+
+> **_NOTE:_**  When using MUQ with MPI, you will need to tell CMake to use MPI compilers both when building MUQ and when compiling the examples.    For example, building the examples may require the following CMake command 
+@codeblock{bash,Bash}
+mkdir build
+cd build
+cmake -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc ..
+make
+@endcodeblock
+
+> **_NOTE:_** If you install MUQ to a non-standard location, such as `~/Installations/MUQ_INSTALL`, you may need to tell CMake where to look for the MUQ configuration.   This can be accomplished by explicitly defining the `CMAKE_PREFIX_PATH` variable in your CMake command.  For example,
+@codeblock{bash,Bash}
+mkdir build
+cd build
+cmake -DCMAKE_PREFIX_PATH=~/Installations/MUQ_INSTALL/lib/cmake/MUQ ..
+make
+@endcodeblock

@@ -134,7 +134,7 @@ TEST(MCMC, InverseGammaProposal_ModelInput) {
   boost::property_tree::ptree opts;
   opts.put("InverseGammaNode", "Variance Density");
   opts.put("GaussianNode", "Gaussian Density");
-  opts.put("NumSamples", 10000);
+  opts.put("NumSamples", 30000);
   opts.put("BurnIn", 1000);
   opts.put("ProposalVariance", 0.5);
   opts.put("PrintLevel",0);
@@ -164,8 +164,8 @@ TEST(MCMC, InverseGammaProposal_ModelInput) {
   Eigen::VectorXd ess = samps->ESS();
   Eigen::VectorXd postVar = samps->Variance();
 
-  Eigen::VectorXd mcStd = (postVar.array()/ess.array()).sqrt();// Monte Carlo standard error
-  EXPECT_NEAR(mean(0), postMean(0), 3.0*mcStd(0));
-  EXPECT_NEAR(mean(1), postMean(1), 3.0*mcStd(1));
-  EXPECT_NEAR(beta/(alpha-1), postMean(2), 3.0*mcStd(2));
+  Eigen::VectorXd mcStd = samps->StandardError();// Monte Carlo standard error
+  EXPECT_NEAR(mean(0), postMean(0), 4.0*mcStd(0));
+  EXPECT_NEAR(mean(1), postMean(1), 4.0*mcStd(1));
+  EXPECT_NEAR(beta/(alpha-1), postMean(2), 4.0*mcStd(2));
 }

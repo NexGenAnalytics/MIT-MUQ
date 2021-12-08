@@ -1,6 +1,9 @@
 #ifndef PARALLELMIMCMCBOX_H_
 #define PARALLELMIMCMCBOX_H_
 
+#include "MUQ/config.h"
+
+
 #if MUQ_HAS_MPI
 
 #if !MUQ_HAS_PARCER
@@ -15,6 +18,8 @@
 #include "MUQ/SamplingAlgorithms/DummyKernel.h"
 #include "MUQ/SamplingAlgorithms/MIDummyKernel.h"
 #include "MUQ/SamplingAlgorithms/MIKernel.h"
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
 
 namespace pt = boost::property_tree;

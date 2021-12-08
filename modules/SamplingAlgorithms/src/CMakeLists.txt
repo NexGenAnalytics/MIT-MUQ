@@ -50,6 +50,7 @@ CreateCompileGroup(
 
     SamplingState.cpp
     SampleCollection.cpp
+    SampleEstimator.cpp
     #DistributedCollection.cpp
     MarkovChain.cpp
 
@@ -61,12 +62,17 @@ CreateCompileGroup(
     MHKernel.cpp
     DRKernel.cpp
     DILIKernel.cpp
+
+    # MIMCMC Stack
     MIKernel.cpp
     GreedyMLMCMC.cpp
     MIMCMC.cpp
     MIMCMCBox.cpp
+    MultiIndexEstimator.cpp
+    DefaultComponentFactory.cpp
     SLMCMC.cpp
     SubsamplingMIProposal.cpp
+    
     GMHKernel.cpp
 
     MCMCFactory.cpp
@@ -99,6 +105,8 @@ if(MUQ_USE_MPI)
       DistributedCollection.cpp
       ParallelAbstractSamplingProblem.cpp
       ParallelMIComponentFactory.cpp
+      ParallelMIMCMCWorker.cpp
+      ParallelFixedSamplesMIMCMC.cpp
   )
 
 endif()
