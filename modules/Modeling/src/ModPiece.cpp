@@ -367,15 +367,56 @@ Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const 
                                        Eigen::VectorXd             const& sens,
                                        Eigen::VectorXd             const& vec)
 {
-  assert(inWrt2<inputSizes.size()+1);
-  assert(outWrt<sens.size());
-  assert(outputSizes(outWrt)==sens.size());
-  if(inWrt2<inputSizes.size()){
-    assert(inputSizes(inWrt2)==vec.size());
-  }else{
-    assert(vec.size()==outputSizes(outWrt));
+
+  if(inWrt2>inputSizes.size()){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+    msg << "  inWrt2 should be less than inputSizes.size()+1, but inWrt2 is \"" << inWrt2 << "\" and inputSizes.size() is \"" << inputSizes.size() << "\"";
+   
+    throw muq::WrongSizeError(msg.str());
   }
 
+  if(outWrt>=outputSizes.size()){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+    msg << "  outWrt should be less than outputSizes.size(), but outWrt is \"" << outWrt << "\" and outputSizes.size() is \"" << outputSizes.size() << "\"";
+   
+    throw muq::WrongSizeError(msg.str());
+  }
+
+  if(sens.size()!=outputSizes(outWrt)){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+    msg << "  The sensitivity vector has sens.size() but \"" << sens.size() << "\" but it was expected to be outputSizes[outWrt]=\"" << outputSizes(outWrt) << "\"";
+   
+    throw muq::WrongSizeError(msg.str());
+  }
+
+  if(inWrt2<inputSizes.size()){
+    if(inputSizes(inWrt2)!=vec.size()){
+      std::string className = muq::Utilities::demangle(typeid(*this).name());
+      std::stringstream msg;
+      msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+      msg << "  The vector has size vec.size()=\"" << vec.size() << "\" but it was expected to be inputSizes(inWrt2)=\"" << inputSizes(inWrt2) << "\"";
+    
+      throw muq::WrongSizeError(msg.str());
+    }
+  }else{
+    if(outputSizes(outWrt)!=vec.size()){
+      std::string className = muq::Utilities::demangle(typeid(*this).name());
+      std::stringstream msg;
+      msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+      msg << "  The vector has size vec.size()=\"" << vec.size() << "\" but it was expected to be outputSizes(outWrt)=\"" << outputSizes(outWrt) << "\"";
+    
+      throw muq::WrongSizeError(msg.str());
+    }
+  }
+
+  // /////////////////////
+  // Done with error checking...
   numHessActCalls++;
   auto start_time = std::chrono::high_resolution_clock::now();
 
