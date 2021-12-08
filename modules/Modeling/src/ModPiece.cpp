@@ -371,7 +371,7 @@ Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const 
   if(inWrt2>inputSizes.size()){
     std::string className = muq::Utilities::demangle(typeid(*this).name());
     std::stringstream msg;
-    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
     msg << "  inWrt2 should be less than inputSizes.size()+1, but inWrt2 is \"" << inWrt2 << "\" and inputSizes.size() is \"" << inputSizes.size() << "\"";
    
     throw muq::WrongSizeError(msg.str());
@@ -380,7 +380,7 @@ Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const 
   if(outWrt>=outputSizes.size()){
     std::string className = muq::Utilities::demangle(typeid(*this).name());
     std::stringstream msg;
-    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
     msg << "  outWrt should be less than outputSizes.size(), but outWrt is \"" << outWrt << "\" and outputSizes.size() is \"" << outputSizes.size() << "\"";
    
     throw muq::WrongSizeError(msg.str());
@@ -389,8 +389,8 @@ Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const 
   if(sens.size()!=outputSizes(outWrt)){
     std::string className = muq::Utilities::demangle(typeid(*this).name());
     std::stringstream msg;
-    msg << "\nError evaluating " << className << "::ApplyHessian:\n";
-    msg << "  The sensitivity vector has sens.size() but \"" << sens.size() << "\" but it was expected to be outputSizes[outWrt]=\"" << outputSizes(outWrt) << "\"";
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
+    msg << "  The sensitivity vector has sens.size()=" << sens.size() << " but it was expected to be outputSizes[outWrt]=" << outputSizes(outWrt);
    
     throw muq::WrongSizeError(msg.str());
   }
