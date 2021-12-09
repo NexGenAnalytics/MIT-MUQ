@@ -45,3 +45,16 @@ void SplitVector::ApplyJacobianImpl(unsigned int const outwrt, unsigned int cons
   assert(targ.size()==inputSizes(0));
   jacobianAction = targ.segment(ind(outwrt), size(outwrt));
 }
+
+void SplitVector::ApplyHessianImpl(unsigned int const outwrt, unsigned int const inwrt1,unsigned int const inwrt2, ref_vector<Eigen::VectorXd> const& inputs, Eigen::VectorXd const& sens, Eigen::VectorXd const& targ) {
+
+  assert(inwrt1==0);
+  assert(inwrt2<2);
+
+  hessAction = Eigen::VectorXd::Zero(inputSizes(0));
+
+  // If hessian wrt sensitivity...
+  if(inwrt2==1){
+    hessAction.segment(ind(outwrt), size(outwrt)) = Eigen::VectorXd::Ones(size(outwrt));
+  }
+}
