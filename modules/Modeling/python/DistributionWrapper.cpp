@@ -9,6 +9,7 @@
 #include "MUQ/Modeling/Distributions/Distribution.h"
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 #include "MUQ/Modeling/Distributions/InverseGamma.h"
+#include "MUQ/Modeling/Distributions/Gamma.h"
 #include "MUQ/Modeling/Distributions/UniformBox.h"
 
 #include <pybind11/pybind11.h>
@@ -190,4 +191,11 @@ void muq::Modeling::PythonBindings::DistributionWrapper(py::module &m)
       .def(py::init<Eigen::VectorXd const&,Eigen::VectorXd const&>())
       .def_readonly("alpha", &InverseGamma::alpha)
       .def_readonly("beta", &InverseGamma::beta);
+    
+    py::class_<Gamma, Distribution, std::shared_ptr<Gamma>>(m, "Gamma")
+      .def(py::init<double,double>())
+      .def(py::init<Eigen::VectorXd const&,Eigen::VectorXd const&>())
+      .def_readonly("alpha", &Gamma::alpha)
+      .def_readonly("beta", &Gamma::beta)
+      .def_static("FromMoments", &Gamma::FromMoments);
 }
