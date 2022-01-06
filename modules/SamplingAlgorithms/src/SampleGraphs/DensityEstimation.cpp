@@ -9,7 +9,9 @@ SampleGraph(rv, options),
 manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
 numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
 sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
-tuneDimension(options.get<bool>("TuneDimension", false))
+tuneDimension(options.get<bool>("TuneDimension", false)),
+powminDens(options.get<double>("DensityMinLog2Bandwidth", -4)),
+powmaxDens(options.get<double>("DensityMaxLog2Bandwidth", 0))
 {}
 
 DensityEstimation::DensityEstimation(std::shared_ptr<SampleCollection> const& samples, pt::ptree const& options) :
@@ -17,7 +19,9 @@ SampleGraph(samples, options),
 manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
 numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
 sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
-tuneDimension(options.get<bool>("TuneDimension", false))
+tuneDimension(options.get<bool>("TuneDimension", false)),
+powminDens(options.get<double>("DensityMinLog2Bandwidth", -4)),
+powmaxDens(options.get<double>("DensityMaxLog2Bandwidth", 0))
 {}
 
 DensityEstimation::DensityEstimation(Eigen::MatrixXd const& mat, pt::ptree const& options) :
@@ -25,7 +29,9 @@ SampleGraph(mat, options),
 manifoldDim(options.get<double>("ManifoldDimension", 1.0)),
 numNearestNeighbors(options.get<std::size_t>("NumNearestNeighbors", 25)),
 sparsityTol(options.get<double>("SparsityTolerance", 1.0e-1)),
-tuneDimension(options.get<bool>("TuneDimension", false))
+tuneDimension(options.get<bool>("TuneDimension", false)),
+powminDens(options.get<double>("DensityMinLog2Bandwidth", -4)),
+powmaxDens(options.get<double>("DensityMaxLog2Bandwidth", 0))
 {}
 
 double DensityEstimation::DensityBandwidthParameter() const { return densityBandwidthParameter; }
@@ -36,7 +42,7 @@ void DensityEstimation::TuneDensityBandwidth() const {
   for( std::size_t i=0; i<NumSamples(); ++i ) { bandwidth(i) = std::sqrt(SquaredBandwidth(Point(i), numNearestNeighbors)); }
 
   double dimensionEstimate;
-  std::tie(densityBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(bandwidth, densityBandwidthParameter);
+  std::tie(densityBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(bandwidth, powminDens, powmaxDens, densityBandwidthParameter);
   if( tuneDimension ) { manifoldDim = 2.0*dimensionEstimate; }
 }
 
@@ -51,7 +57,7 @@ Eigen::VectorXd DensityEstimation::EstimateDensity(double epsilon, bool const tu
   // get the optimal bandwidth parameter
   if( tune ) {
     double dimensionEstimate;
-    std::tie(epsilon, dimensionEstimate) = TuneKernelBandwidth(bandwidth, epsilon);
+    std::tie(epsilon, dimensionEstimate) = TuneKernelBandwidth(bandwidth, powminDens, powmaxDens, epsilon);
 
     // update the stored values
     densityBandwidthParameter = epsilon;
@@ -69,4 +75,5 @@ Eigen::VectorXd DensityEstimation::EstimateDensity(double epsilon, bool const tu
 
   // compute the density estimate
   return kernel*bandwidth.array().inverse().matrix();
+  //return bandwidth.array().inverse().matrix().asDiagonal()*kernel*Eigen::VectorXd::Ones(NumSamples());
 }

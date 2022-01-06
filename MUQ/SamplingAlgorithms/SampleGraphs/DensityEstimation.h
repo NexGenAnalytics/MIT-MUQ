@@ -89,6 +89,10 @@ private:
 
   /// The number of nearest neighbors used to compute the bandwidth parameter
   const std::size_t numNearestNeighbors;
+
+  const double powminDens;
+
+  const double powmaxDens;
 };
 
 } // SamplingAlgorithms

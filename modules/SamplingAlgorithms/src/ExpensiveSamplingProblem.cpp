@@ -93,6 +93,10 @@ double ExpensiveSamplingProblem::LogDensity(std::shared_ptr<SamplingState> const
   if( beta.first>0.0 ) { state->meta["cumulative random refinement"] = cumbeta; }
   state->meta["cumulative structural refinement"] = cumgamma;
 
+  if( step%10000==0 ) {
+    std::cout << "num refine: " << cumgamma << " step: " << step << std::endl;
+  }
+
   const double logtarg = reg->EvaluateRegressor(state->state[0],
                                 std::vector<Eigen::VectorXd>(neighbors.begin(), neighbors.begin()+reg->kn),
                                 std::vector<Eigen::VectorXd>(results.begin(), results.begin()+reg->kn)) (0);

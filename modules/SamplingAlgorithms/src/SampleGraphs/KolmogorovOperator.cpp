@@ -12,9 +12,11 @@ using namespace muq::SamplingAlgorithms;
 
 KolmogorovOperator::KolmogorovOperator(std::shared_ptr<RandomVariable> const& rv, pt::ptree const& options) :
 DensityEstimation(rv, options),
-beta(options.get<double>("VariableBandwidth", -0.5)),
 operatorParameter(options.get<double>("OperatorParameter", 1.0)),
-neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())))
+beta(options.get<double>("VariableBandwidth", (operatorParameter-2.0)/(manifoldDim+2.0))),
+neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples()))),
+powminOperator(options.get<double>("OperatorMinLog2Bandwidth", -4)),
+powmaxOperator(options.get<double>("OperatorMaxLog2Bandwidth", 0))
 {
   // the normalization parameter
   alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0;
@@ -22,9 +24,11 @@ neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())
 
 KolmogorovOperator::KolmogorovOperator(std::shared_ptr<SampleCollection> const& samples, pt::ptree const& options) :
 DensityEstimation(samples, options),
-beta(options.get<double>("VariableBandwidth", -0.5)),
 operatorParameter(options.get<double>("OperatorParameter", 1.0)),
-neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())))
+beta(options.get<double>("VariableBandwidth", (operatorParameter-2.0)/(manifoldDim+2.0))),
+neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples()))),
+powminOperator(options.get<double>("OperatorMinLog2Bandwidth", -4)),
+powmaxOperator(options.get<double>("OperatorMaxLog2Bandwidth", 0))
 {
   // the normalization parameter
   alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0;
@@ -32,9 +36,11 @@ neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())
 
 KolmogorovOperator::KolmogorovOperator(Eigen::MatrixXd const& mat, pt::ptree const& options) :
 DensityEstimation(mat, options),
-beta(options.get<double>("VariableBandwidth", -0.5)),
 operatorParameter(options.get<double>("OperatorParameter", 1.0)),
-neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples())))
+beta(options.get<double>("VariableBandwidth", (operatorParameter-2.0)/(manifoldDim+2.0))),
+neigs(options.get<std::size_t>("NumEigenpairs", 5*std::log((double)NumSamples()))),
+powminOperator(options.get<double>("OperatorMinLog2Bandwidth", -4)),
+powmaxOperator(options.get<double>("OperatorMaxLog2Bandwidth", 0))
 {
   // the normalization parameter
   alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0;
@@ -47,7 +53,7 @@ void KolmogorovOperator::TuneOperatorBandwidth(Eigen::VectorXd const& density) c
   const Eigen::VectorXd scaledDens = density.array().pow(beta);
 
   double dimensionEstimate;
-  std::tie(operatorBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(scaledDens, operatorBandwidthParameter);
+  std::tie(operatorBandwidthParameter, dimensionEstimate) = TuneKernelBandwidth(scaledDens, powminOperator, powmaxOperator, operatorBandwidthParameter);
   if( tuneDimension ) { alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0; }
 }
 
@@ -57,44 +63,47 @@ Eigen::VectorXd KolmogorovOperator::DiscreteOperator(Eigen::VectorXd const& dens
   // compute the bandwidth function
   const Eigen::VectorXd scaledDens = density.array().pow(beta);
 
+  const double scalem = 4.0;
+
   // if not supplied, use the stored value---the scaling means that the parameter the kernel requries is actually 2*eps
-  epsilon = (std::isnan(epsilon)? 4.0*operatorBandwidthParameter : 4.0*epsilon);
+  epsilon = (std::isnan(epsilon)? scalem*operatorBandwidthParameter : scalem*epsilon);
 
   // get the optimal kolmogorov bandwidth parameter
   if( tune ) {
     double dimensionEstimate;
-    std::tie(epsilon, dimensionEstimate) = TuneKernelBandwidth(scaledDens, epsilon);
+    std::tie(epsilon, dimensionEstimate) = TuneKernelBandwidth(scaledDens, powminOperator, powmaxOperator, epsilon);
+    //epsilon = 0.8*epsilon;
 
     // update the stored values
-    operatorBandwidthParameter = epsilon/4.0;
+    operatorBandwidthParameter = epsilon/scalem;
     if( tuneDimension ) { alpha = 1.0 + beta + (manifoldDim*beta - operatorParameter)/2.0; }
   }
 
   // compute the unnormalized kernel and store the normalization in the bandwidth vector
   std::vector<Eigen::Triplet<double> > entries;
   assert(epsilon>1.0e-14);
-  //assert(scaledDens.norm()>1.0e-14);
   Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, epsilon, scaledDens, entries, !tune);
-  Eigen::VectorXd similarity = rowsum.array()/scaledDens.array().pow(beta*manifoldDim);
+  Eigen::VectorXd similarity = (rowsum.array()*scaledDens.array().pow(-manifoldDim)).pow(-alpha);
 
   // loop through the non-zeros
   for( auto& entry : entries ) {
-    entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()/std::pow(similarity(entry.row())*similarity(entry.col()), alpha));
+    entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()*similarity(entry.row())*similarity(entry.col()));
   }
-
-  matrix.resize(n, n);
-  matrix.setFromTriplets(entries.begin(), entries.end());
 
   // recompute the normalization (in the bandwidth vector)
   rowsum = Eigen::VectorXd::Zero(NumSamples());
   for( const auto& entry : entries ) { rowsum(entry.row()) += entry.value(); }
 
   similarity = scaledDens.array()*rowsum.array().sqrt();
-  rowsum = similarity.array().inverse(); // hold the inverse for computational efficiency
 
-  matrix = rowsum.asDiagonal()*matrix*rowsum.asDiagonal();
-  matrix -= (scaledDens.array()*scaledDens.array()).inverse().matrix().asDiagonal();
-  matrix /= epsilon/4.0;
+  epsilon = epsilon/scalem;
+
+  for( auto& entry : entries ) { entry = Eigen::Triplet<double>(entry.row(), entry.col(), entry.value()/(epsilon*similarity(entry.row())*similarity(entry.col())) ); }
+
+  for( std::size_t i=0; i<n; ++i ) { entries.emplace_back(i, i, -1.0/(epsilon*scaledDens(i)*scaledDens(i))); }
+
+  matrix.resize(n, n);
+  matrix.setFromTriplets(entries.begin(), entries.end());
 
   return similarity;
 }

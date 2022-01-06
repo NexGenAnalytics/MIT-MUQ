@@ -14,6 +14,7 @@ using namespace muq::SamplingAlgorithms;
 SampleGraph::SampleGraph(std::shared_ptr<RandomVariable> const& rv, pt::ptree const& options) :
 samples(BuildSamples(rv, options.get<std::size_t>("NumSamples"))),
 numThreads(options.get<std::size_t>("NumThreads", 1))
+
 {
   Initialize(options);
 }
@@ -60,10 +61,10 @@ void SampleGraph::Initialize(pt::ptree const& options) {
   if( auto opts = options.get_child_optional("BandwidthCostOptimization") ) { bandwidthOptimizationOptions = *opts; }
   bandwidthOptimizationOptions.put("StepSize", bandwidthOptimizationOptions.get<double>("StepSize", 1.0));
   bandwidthOptimizationOptions.put("SparsityTolerance", bandwidthOptimizationOptions.get<double>("SparsityTolerance", 1.0e-1));
-  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-3));
-  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-3));
-  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-3));
-  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-3));
+  bandwidthOptimizationOptions.put("Ftol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Ftol.AbsoluteTolerance", 1.0e-10));
+  bandwidthOptimizationOptions.put("Ftol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Ftol.RelativeTolerance", 1.0e-10));
+  bandwidthOptimizationOptions.put("Xtol.AbsoluteTolerance", bandwidthOptimizationOptions.get<double>("Xtol.AbsoluteTolerance", 1.0e-10));
+  bandwidthOptimizationOptions.put("Xtol.RelativeTolerance", bandwidthOptimizationOptions.get<double>("Xtol.RelativeTolerance", 1.0e-10));
   bandwidthOptimizationOptions.put("MaxEvaluations", bandwidthOptimizationOptions.get<std::size_t>("MaxEvaluations", 10000));
   bandwidthOptimizationOptions.put("Algorithm", bandwidthOptimizationOptions.get<std::string>("Algorithm", "SBPLX"));
   bandwidthOptimizationOptions.put("Minimize", false);
@@ -101,6 +102,12 @@ void SampleGraph::BuildKDTrees() const {
 }
 
 Eigen::VectorXd SampleGraph::Point(std::size_t const i) const {
+  assert(samples);
+  assert(i<samples->size());
+  return samples->at(i)->state[0];
+}
+
+Eigen::VectorXd& SampleGraph::Point(std::size_t const i) {
   assert(samples);
   assert(i<samples->size());
   return samples->at(i)->state[0];
@@ -173,9 +180,9 @@ double SampleGraph::SquaredBandwidth(Eigen::VectorXd const& x, std::size_t const
   double sum = 0.0;
   for( const auto& neigh : neighbors ) { sum += neigh.second; }
   if( sum<1.0e-14 ) {
-    std::cout << "k: " << k << " size: " << neighbors.size() << std::endl;
-    for( const auto& neigh : neighbors ) { std::cout << neigh.second << " "; }
-    std::cout << std::endl << std::endl;
+    //std::cout << "k: " << k << " size: " << neighbors.size() << std::endl;
+    //for( const auto& neigh : neighbors ) { std::cout << neigh.second << " "; }
+    //std::cout << std::endl << std::endl;
   }
   assert(sum>0.0);
   return sum;
@@ -198,8 +205,8 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double bandwidthParameter, Eigen::Vect
 }
 
 Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandwidthParameter, Eigen::VectorXd const& bandwidth, std::vector<Eigen::Triplet<double> >& entries, bool const rebuildTrees) const {
-  //assert(bandwidthParameter>1.0e-14);
-  assert(sparsityTol<1.0);
+  assert(bandwidthParameter>1.0e-14);
+  assert(sparsityTol<1.0+1.0e-14);
   assert(bandwidth.size()==NumSamples());
 
   // re build the kd trees based on the bandwidth ordering
@@ -214,8 +221,12 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
   {
     std::vector<Eigen::Triplet<double> > entries_private;
 
+    //std::cout << "inside parallel" << std::endl;
+
+    assert(indices.size()==n);
     #pragma omp for nowait
     for( std::size_t i=0; i<n; ++i ) {
+      //std::cout << std::endl << "i: " << i << " of " << n << std::endl;
       const std::size_t ind = indices[i];
 
       // we need to find neighbors within this distnace
@@ -227,25 +238,44 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
       // find the nearest neighbors
       std::vector<std::pair<std::size_t, double> > neighbors;
       FindNeighbors(Point(ind), neighDist, neighbors, i);
-      //if( neighbors.size()<=1 ) { FindNeighbors(Point(ind), (std::size_t)5, neighbors, i); }
-      //assert(neighbors.size()>1);
+      assert(neighbors.size()>0);
+
+      //std::cout << "found neighbors, size: " << neighbors.size() << std::endl;
 
       // add the kernel evaluations to the kernel matrix
       const double scale = bandwidthParameter*bandwidth(ind);
+      //std::size_t cnt = 0;
+      std::vector<Eigen::Triplet<double> > entries_neighs;
+      entries_neighs.reserve(2*neighbors.size());
+      //std::cout << "starting" << std::endl;
       for( const auto& neigh : neighbors ) {
+        //std::cout << "cnt: " << cnt++ << " of " << neighbors.size() << std::endl;
+	      assert(neigh.first<indices.size());
         const std::size_t jnd = indices[neigh.first];
         assert(i<=neigh.first);
         const double eval = std::exp(-neigh.second/(scale*bandwidth(jnd)));
+        //std::cout << "HI" << std::endl;
         if( eval>=sparsityTol ) {
-          entries_private.emplace_back(ind, jnd, eval);
-          if( ind!=jnd ) { entries_private.emplace_back(jnd, ind, eval); }
+          entries_neighs.emplace_back(ind, jnd, eval);
+          if( ind!=jnd ) { entries_neighs.emplace_back(jnd, ind, eval); }
         }
+        //std::cout << std::endl;
       }
+
+      //std::cout << "storing entries ... " << std::endl;
+
+      entries_private.insert(entries_private.end(), std::make_move_iterator(entries_neighs.begin()), std::make_move_iterator(entries_neighs.end()));
+
+      //std::cout << "~~~~~~~~~~~~~~~~" << std::endl << std::endl;
     }
+
+    //std::cout << "GOT THIS FAR" << std::endl;
 
     #pragma omp critical
     entries.insert(entries.end(), std::make_move_iterator(entries_private.begin()), std::make_move_iterator(entries_private.end()));
   }
+
+  //std::cout << "finished computing entries" << std::endl;
 
   // the sum of each row in the kernel matrix
   Eigen::VectorXd rowsum = Eigen::VectorXd::Zero(n);
@@ -260,7 +290,6 @@ Eigen::VectorXd SampleGraph::KernelMatrix(double const sparsityTol, double bandw
 
   // compute the triplets
   std::vector<Eigen::Triplet<double> > entries;
-  //assert(bandwidthParameter>1.0e-14);
   const Eigen::VectorXd rowsum = KernelMatrix(sparsityTol, bandwidthParameter, bandwidth, entries, rebuildTrees);
   kernel.setFromTriplets(entries.begin(), entries.end());
 
@@ -273,11 +302,75 @@ double SampleGraph::Kernel(double const scale, Eigen::VectorXd const& xi, Eigen:
   return std::exp(-diff.dot(diff)/scale);
 }
 
-std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double const epsilon) const {
+std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double powmin, double powmax, double const epsilon) const {
   BuildKDTrees(bandwidth);
 
   // create the cost function
   auto cost = std::make_shared<KernelBandwidthCostFunction>(shared_from_this(), bandwidth, bandwidthOptimizationOptions);
+
+  double mincost = cost->BandwidthCost(powmin);
+  double maxcost = cost->BandwidthCost(powmax);
+  double power = (powmin+powmax)/2.0;
+  double bestcost = cost->BandwidthCost(power);
+
+  if( bestcost<mincost ) {
+    power = powmin;
+    bestcost = mincost;
+  } else if( bestcost<maxcost ) {
+    power = powmax;
+    bestcost = maxcost;
+  }
+
+  double prevcost = std::numeric_limits<double>::quiet_NaN();
+
+  while( std::isnan(prevcost) | std::abs(prevcost-bestcost)>1.0e-6 ) {
+    prevcost= bestcost;
+    //std::cout << "powmax: " << powmax << " powmin: " << powmin << std::endl;
+    //std::cout << "mincost: " << mincost << " powmax: " << maxcost << " best cost: " << bestcost << std::endl;
+
+    double lower = (power+mincost)/2.0;
+    double lowercost = (std::abs(lower-power)<1.0e-14? bestcost : cost->BandwidthCost(lower));
+    if( lowercost>mincost ) {
+      powmin = lower;
+      mincost = lowercost;
+    }
+    if( lowercost>bestcost ) {
+      power = lower;
+      bestcost = lowercost;
+    }
+
+    double upper = (power+maxcost)/2.0;
+    double uppercost = (std::abs(upper-power)<1.0e-14?  bestcost : cost->BandwidthCost(upper));
+    if( uppercost>maxcost ) {
+      powmax = upper;
+      maxcost = uppercost;
+    }
+    if( uppercost>bestcost ) {
+      power = upper;
+      bestcost = uppercost;
+    }
+  }
+
+  //std::cout << "cost: " << bestcost << " eps: " << std::pow(2.0, power) << std::endl;
+  //std::cout << "intrinsic dim: " << 2.0*bestcost << std::endl;
+  return std::pair<double, double>(std::pow(2.0, power), bestcost);
+
+
+  /*const Eigen::VectorXd power = Eigen::VectorXd::LinSpaced(15, powmin, powmax);
+
+  double maxcost = 0.0;
+  double optpower = 0.0;
+  for( std::size_t i=0; i<power.size(); ++i ) {
+    double const cst = cost->BandwidthCost(power(i));
+    std::cout << "cost: " << cst << " eps: " << std::pow(2.0, power(i)) << std::endl;
+    if( maxcost<cst ) {
+      maxcost = cst;
+      optpower = power(i);
+    }
+  }
+  std::cout << "intrinsic dim: " << 2.0*maxcost << std::endl;
+  return std::pair<double, double>(std::pow(2.0, optpower), maxcost);*/
+
   auto opt = std::make_shared<NLoptOptimizer>(cost, bandwidthOptimizationOptions);
 
   // the initial condition for the optimization is the current parameter value
@@ -287,6 +380,8 @@ std::pair<double, double> SampleGraph::TuneKernelBandwidth(Eigen::VectorXd const
   std::pair<Eigen::VectorXd, double> soln = opt->Solve(inputs);
   const double eps = std::max(1.0e-8, std::pow(2.0, soln.first(0)));
   assert(eps>1.0e-14);
+  //std::cout << "cost: " << soln.second << " eps: " << eps << std::endl;
+  //std::cout << "intrinsic dim: " << 2.0*soln.second << std::endl;
   return std::pair<double, double>(eps, soln.second);
 }
 

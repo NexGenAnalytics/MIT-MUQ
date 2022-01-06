@@ -85,6 +85,13 @@ public:
   */
   Eigen::VectorXd Point(std::size_t const i) const;
 
+  /// Get the \f$i^{th}\f$ sample
+  /**
+  @param[in] i We want this sample
+  \return Get the \f$i^{th}\f$ sample
+  */
+  Eigen::VectorXd& Point(std::size_t const i);
+
   /// The number of samples that make up the graph
   std::size_t NumSamples() const;
 
@@ -174,7 +181,7 @@ public:
   @param[in] epsilon The initial guess for the bandwidth parameter
   \return First: The optimal kernel bandwidth parameter, Second: the cost at the optimal point (should be half the manifold dimension)
   */
-  std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double const epsilon = 1.0) const;
+  std::pair<double, double> TuneKernelBandwidth(Eigen::VectorXd const& bandwidth, double powmin, double powmax, double const epsilon = 1.0) const;
 
   /// Compute the cost of the bandwidth parameter
   /**

@@ -114,13 +114,13 @@ public:
   /// The operator bandwidth parameter
   double OperatorBandwidthParameter() const;
 
+  /// The parameter \f$c\f$---determines how much the density function is weighted in the Kolmogorov operator.
+  const double operatorParameter;
+
   /// The variable bandwidth parameter \f$\beta\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
   const double beta;
 
 private:
-
-  /// The parameter \f$c\f$---determines how much the density function is weighted in the Kolmogorov operator.
-  const double operatorParameter;
 
   /// The second variable bandwidth parameter \f$\alpha\f$---parameterizes the bandwidth function for the unnormalized kernel matrix.
   mutable double alpha;
@@ -130,6 +130,10 @@ private:
 
   /// The bandwidth tuning parameter for the operator estimation problem
   mutable double operatorBandwidthParameter = 1.0e-1;
+
+  const double powminOperator;
+
+  const double powmaxOperator;
 };
 
 } // namespace SamplingAlgorithms

@@ -363,6 +363,6 @@ TEST_F(SampleGraphTests, BandwidthParameterTuning) {
 
   // tune the bandwidth parameter
   double optPara, cost;
-  std::tie(optPara, cost) = graph->TuneKernelBandwidth(bandwidth);
+  std::tie(optPara, cost) = graph->TuneKernelBandwidth(bandwidth, -5, 0);
   EXPECT_NEAR(2.0*cost, dim, 1.0e-1);
 }
