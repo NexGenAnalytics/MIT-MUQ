@@ -87,7 +87,7 @@ Eigen::VectorXd Gamma::ApplyLogDensityHessian(unsigned int                const 
 std::shared_ptr<Gamma> Gamma::FromMoments(Eigen::VectorXd const& mean,
                                           Eigen::VectorXd const& var)
 {
-   Eigen::VectorXd alpha = mean.array() / var.array();
-   Eigen::VectorXd beta = alpha.array() / mean.array();
+   Eigen::VectorXd beta = mean.array() / var.array();
+   Eigen::VectorXd alpha = mean.array()*beta.array();
    return std::make_shared<Gamma>(alpha,beta);
 }
