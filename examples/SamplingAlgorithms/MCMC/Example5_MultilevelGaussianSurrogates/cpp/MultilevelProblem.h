@@ -118,8 +118,6 @@ public:
     centroid(0) = 30.0;
     centroid(1) = 30.0;
 
-    centroid = Eigen::VectorXd::Zero(1);
-
     return std::make_shared<ExpensiveSamplingProblem>(posterior, centroid, _pt);
     //return std::make_shared<ExpensiveSamplingProblem>(posterior, qoi, centroid, _pt);
   }
@@ -133,8 +131,6 @@ public:
     Eigen::VectorXd start = Eigen::VectorXd::Ones(2);
     start(0) = 30.0;
     start(1) = 30.0;
-
-    start = Eigen::VectorXd::Zero(1);
 
     return start;
   }
