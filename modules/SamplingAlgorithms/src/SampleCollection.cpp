@@ -424,6 +424,16 @@ Eigen::VectorXd SampleCollection::MultiBatchError(int blockInd, int batchSize, i
 }
 
 
+std::shared_ptr<SampleCollection> SampleCollection::FromMatrix(Eigen::MatrixXd const& samps)
+{
+  const unsigned int numSamps = samps.cols();
+  
+  std::shared_ptr<SampleCollection> output = std::make_shared<SampleCollection>();
+  for(unsigned int col=0; col<numSamps; ++col)
+    output->Add( std::make_shared<SamplingState>(samps.col(col)));
+  
+  return output;
+}
 
 Eigen::MatrixXd SampleCollection::AsMatrix(int blockDim) const
 {

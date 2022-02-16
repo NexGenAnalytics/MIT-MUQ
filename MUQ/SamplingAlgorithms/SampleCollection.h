@@ -247,6 +247,10 @@ namespace muq{
       */
       virtual Eigen::MatrixXd AsMatrix(int blockDim=-1) const;
 
+      /** Constructs a SampleCollection from a matrix of samples.  Each column of the matrix is a sample.
+      */
+      static std::shared_ptr<SampleCollection> FromMatrix(Eigen::MatrixXd const& samps);
+
       /** Returns a vector of unnormalized sample weights for computing empirical expectations.
           If the samples were generated with MC or MCMC, the weights will all be
           1.  Importance sampling will generate non-unit weights.   Note that these

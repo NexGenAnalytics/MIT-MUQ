@@ -66,6 +66,7 @@ void PythonBindings::SampleWrapper(py::module &m)
 
   py::class_<SampleCollection, SampleEstimator, std::shared_ptr<SampleCollection>> sampColl(m, "SampleCollection");
   sampColl
+    .def(py::init<>())
     .def("__getitem__", (const std::shared_ptr<SamplingState> (SampleCollection::*)(unsigned) const) &SampleCollection::at)
 //    .def("at", &SampleCollection::at)
     .def("size", &SampleCollection::size)
@@ -74,6 +75,7 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("Add", &SampleCollection::Add)
     .def("Weights", &SampleCollection::Weights)
     .def("AsMatrix", &SampleCollection::AsMatrix, py::arg("blockDim")=-1)
+    .def_static("FromMatrix", &SampleCollection::FromMatrix)
     .def("GetMeta", (Eigen::MatrixXd (SampleCollection::*)(std::string const&) const) &SampleCollection::GetMeta)
     .def("ListMeta", &SampleCollection::ListMeta, py::arg("requireAll")=true)
     .def("WriteToFile", (void (SampleCollection::*)(std::string const&, std::string const&) const) &SampleCollection::WriteToFile, py::arg("filename"), py::arg("dataset") = "/")
@@ -86,6 +88,7 @@ void PythonBindings::SampleWrapper(py::module &m)
     .def("MultiBatchError", &SampleCollection::MultiBatchError, py::arg("blockDim")=-1, py::arg("batchSize")=-1, py::arg("overlap")=-1);
 
   py::class_<MarkovChain, SampleCollection, SampleEstimator, std::shared_ptr<MarkovChain>>(m,"MarkovChain")
+    .def(py::init<>())
     .def("WolfESS", &MarkovChain::WolffESS, py::arg("blockInd")=-1)
     .def("WolfError", &MarkovChain::WolffError, py::arg("blockInd")=-1)
     .def_static("SingleComponentWolffESS", &MarkovChain::SingleComponentWolffESS);
