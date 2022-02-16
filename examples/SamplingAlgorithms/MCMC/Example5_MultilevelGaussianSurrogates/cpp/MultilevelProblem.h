@@ -107,7 +107,7 @@ public:
 
     // Set up model
     json config;
-    config["level"] = 0;
+    config["level"] = index->GetValue(0);
     auto posterior = std::make_shared<HTTPModPiece>(host, config);
 
     posterior_list.push_back(posterior);
