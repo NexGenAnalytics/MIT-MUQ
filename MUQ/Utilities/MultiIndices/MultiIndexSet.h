@@ -13,6 +13,7 @@
 namespace muq{
   namespace Utilities{
 
+    class H5Object;
     class MultiIndexSet;
     class MultiIndexFactory;
 
@@ -272,6 +273,59 @@ namespace muq{
 
       /// Returns the number of forward neighbors (active or inactive)
       virtual unsigned int NumForward(unsigned int activeInd) const;
+
+      /**
+       @brief Saves the multiindex set to a group in an HDF5 file. 
+       @details This function will create (or replace) a dataset in an HDF5 file containing the active multiindices in this set.
+       Note that all information about the multiindex limiter will be lost when saving.   The dataset defaults to "/multiindices"
+       and will contain an \f$N\times D\f$ matrix of integers, where \f$N\f$ is the number of active multiindices in this set and 
+       \f$D\f$ is the length of each multiindex.
+
+       @param[in] filename A string to the HDF5 file that this multiindexset should be stored in.   If the file doesn't exist, it will be created.
+       @param[in] dsetName The path to the dataset in the HDF5 file where the multiindices will be stored.  If the datset already exists, it will be replaced.   Defaults to "/multiindices".
+       */
+      void ToHDF5(std::string filename, std::string dsetName="/multiindices") const;
+
+      /** @brief Saves the multiindex set to an HDF5 group object.   
+          @details This function will create (or replace) a dataset in an HDF5 file containing the active multiindices in this set.
+       Note that all information about the multiindex limiter will be lost when saving.  The dataset will be an \f$N\times D\f$ matrix
+       of integers, where \f$N\f$ is the number of active multiindices in this set and  \f$D\f$ is the length of each multiindex.
+
+       ## Typical Usage:
+@code{.cpp}
+std::shared_ptr<MultiIndexSet> mset = MultiIndexFactory::CreateTotalOrder(2,5);
+
+// Save to HDF5
+muq::Utilities::H5Object fout = muq::Utilities::OpenFile("SavedMultis.h5");
+mset->ToHDF5(fout, "/SomeGroup/multis");
+
+// Load from HDF5
+std::shared_ptr<MultiIndexSet> mset2 = MultiIndexSet::FromHDF5(fout["/SomeGroup/multis"]);
+@endcode
+          @param[in] group An HDF5 object for the group where the dataset should be created.
+          @param[in] dsetName A string containing the name of a new dataset to create inside the group.
+      */
+      void ToHDF5(muq::Utilities::H5Object &group, std::string dsetName="multiindices") const;
+
+      /**
+       @brief Loads a multiindex set from an HDF5 file.  
+       @details This function works in tandem with the MultiIndexSet::ToHDF5 function.   It will read the multiindices in the HDF5
+       file and return a pointer to a MultiIndexSet object containing those active multiindices.  No limiter information is stored 
+       in the HDF5 file, so the limiter in the returned MultiIndexSet will be an instance of the NoLimiter class.
+
+       @param[in] filename A string to an HDF5 file.  If the file doesn't exist, an exception will be thrown.
+       @param[in] dsetName The path to the dataset in the HDF5 file containing the multiindices.
+       @return std::shared_ptr<MultiIndexSet> 
+       */
+      static std::shared_ptr<MultiIndexSet> FromHDF5(std::string filename, std::string dsetName="/multiiindices");
+
+      /** @brief Loads the multiindex from an existing HDF5 group.   
+          @details This function will read the multiindices in an an HDF5 dataset and construct an instance of the MultiIndexSet class.
+          @param[in] dset An HDF5 dataset containing an \f$N\timesD\f$ matrix of non-negative integers defining the multiindices.  Each row is a multiindex.
+          
+          @see ToHDF5
+      */
+      static std::shared_ptr<MultiIndexSet> FromHDF5(muq::Utilities::H5Object &dset);
 
     protected:
 
