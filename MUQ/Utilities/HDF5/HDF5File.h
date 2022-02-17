@@ -97,55 +97,55 @@ namespace Utilities
 	    hid_t dataID;
 	    if( DoesDataSetExist(name) ) {
 
-        // open the data
-        dataID = H5Dopen(fileID, name.c_str(), H5P_DEFAULT);
+			// open the data
+			dataID = H5Dopen(fileID, name.c_str(), H5P_DEFAULT);
 
-        // get the dataspace dimension size
-        hsize_t* dims = (hsize_t*)malloc(2*sizeof(hsize_t));
-        H5Sget_simple_extent_dims(H5Dget_space(dataID), dims, nullptr);
+			// get the dataspace dimension size
+			hsize_t dims[2];
+			H5Sget_simple_extent_dims(H5Dget_space(dataID), dims, nullptr);
 
-        if( (dimsf[0]!=dims[0]) || (dimsf[1]!=dims[1]) ) { // if the data size changes ...
-          // Extend the dataset
-          H5Dset_extent(dataID, dimsf);
-        }
+			if( (dimsf[0]!=dims[0]) || (dimsf[1]!=dims[1]) ) { // if the data size changes ...
+				// Extend the dataset
+				H5Dset_extent(dataID, dimsf);
+			}
 
-      } else {
+		} else {
 
-        // get the parent path
-        std::string parentPath = GetParentPath(name);
+			// get the parent path
+			std::string parentPath = GetParentPath(name);
 
-        // make sure the parent exists (and create it if it does not)
-        CreateGroup(parentPath);
+			// make sure the parent exists (and create it if it does not)
+			CreateGroup(parentPath);
 
-        // modify data set creation properties --- enable chunking
-        const hid_t prop = H5Pcreate(H5P_DATASET_CREATE);
+			// modify data set creation properties --- enable chunking
+			const hid_t prop = H5Pcreate(H5P_DATASET_CREATE);
 
-        // set chunk size to be (1,1) -- may be a bad idea of the data set is extremely large
-        hsize_t chunk[2] = {100,100};
-        if(fixedRows>0){
-          chunk[0] = std::min<hsize_t>(chunk[0],fixedRows);
-        }
+			// set chunk size to be (1,1) -- may be a bad idea of the data set is extremely large
+			hsize_t chunk[2] = {100,100};
+			if(fixedRows>0){
+			chunk[0] = std::min<hsize_t>(chunk[0],fixedRows);
+			}
 
-        if(fixedCols>0){
-          chunk[1] = std::min<hsize_t>(chunk[1],fixedRows);
-        }
-        H5Pset_chunk(prop, 2, chunk);
+			if(fixedCols>0){
+			chunk[1] = std::min<hsize_t>(chunk[1],fixedRows);
+			}
+			H5Pset_chunk(prop, 2, chunk);
 
-        // create a dataset for each process
-        dataID = H5Dcreate(fileID,  // Location identifier
-                           name.c_str(), // Dataset name
-                           HDF5_Type<scalarType>::GetFlag(), // Datatype identifier
-                           filespace,  // Dataspace identifier
-                           H5P_DEFAULT,  // Link creation property list
-                           prop,  // Dataset creation property list
-                           H5P_DEFAULT); // Dataset access property list
+			// create a dataset for each process
+			dataID = H5Dcreate(fileID,  // Location identifier
+							name.c_str(), // Dataset name
+							HDF5_Type<scalarType>::GetFlag(), // Datatype identifier
+							filespace,  // Dataspace identifier
+							H5P_DEFAULT,  // Link creation property list
+							prop,  // Dataset creation property list
+							H5P_DEFAULT); // Dataset access property list
 
-        // close the creation properties
-        H5Pclose(prop);
+			// close the creation properties
+			H5Pclose(prop);
 	    }
 
 	    // constant reference (avoid copying) to the data transpose because of column versus row major conventions
-	    const Eigen::Matrix<scalarType, fixedRows, fixedCols>& dataset_ = dataset.transpose();
+	    Eigen::Matrix<scalarType, fixedRows, fixedCols> dataset_ = dataset.transpose();
 
 	    // write the data to file
 	    H5Dwrite(dataID, HDF5_Type<scalarType>::GetFlag(), H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_.data());

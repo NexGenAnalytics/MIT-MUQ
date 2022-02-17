@@ -103,16 +103,12 @@ public:
     H5Object& operator=(Eigen::Matrix<ScalarType, fixedRows, fixedCols> const& val)
     {
       assert(path.length()>0);
-      if(isDataset)
-      {
+      if(isDataset){
         file->WriteMatrix(path, val);
+      }else{
+        throw std::runtime_error("Error in H5Object::operator=.  Unable to save matrix to path \"" + path + "\" because it is a group.");
       }
-      else
-      {
-        assert(false);
-      }
-
-        return *this;
+      return *this;
     };
 
     template<typename scalarType, int rows, int cols>
@@ -201,6 +197,8 @@ public:
     void Flush();
 
     void Print(std::string prefix = "") const;
+    
+    std::string Path() const{return path;};
 
     std::shared_ptr<HDF5File> file;
 

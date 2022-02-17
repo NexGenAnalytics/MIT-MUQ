@@ -6,7 +6,7 @@
 namespace muq{
 namespace Utilities{
 
-  /** Demangles a string returned by type_inf::name. */
+  /** Demangles a string returned by type_info::name. */
   std::string demangle(const char* name);
 
 }
