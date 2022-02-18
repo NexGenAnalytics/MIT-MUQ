@@ -1,6 +1,9 @@
 add_subdirectory(Approximation/GaussianProcess_CO2)
 add_subdirectory(Approximation/MonotoneRegression)
 
+add_subdirectory(Modeling/FlowEquation/cpp)
+add_subdirectory(Modeling/HTTPModel)
+
 add_subdirectory(SamplingAlgorithms/MC/Example1_Gaussian)
 
 add_subdirectory(SamplingAlgorithms/MCMC/Example1_Gaussian/cpp)
@@ -15,8 +18,12 @@ add_custom_target(examples
                   DEPENDS GaussianProcess_CO2_exe
                           MonotoneRegression
 
+                          FlowEquation
+
                           MonteCarlo
                           MultilevelMonteCarlo
+
+                          HTTPModel
 
                           GaussianSampling
                           GaussianGammaSampling
