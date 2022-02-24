@@ -35,7 +35,6 @@ TEST(Approximation_GP, MaternStateSpace)
 
 }
 
-
 TEST(Approximation_GP, ConstantStateSpace)
 {
 

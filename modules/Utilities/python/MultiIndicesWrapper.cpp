@@ -108,6 +108,12 @@ void muq::Utilities::PythonBindings::MultiIndicesWrapper(py::module &m)
     .def("GetAdmissibleForwardNeighbors", &MultiIndexSet::GetAdmissibleForwardNeighbors)
     .def("IsAdmissible", (bool (MultiIndexSet::*)(std::shared_ptr<MultiIndex> const&) const) &MultiIndexSet::IsAdmissible)
     .def("IsExpandable", &MultiIndexSet::IsExpandable)
-    .def("IsActive", (bool (MultiIndexSet::*)(std::shared_ptr<MultiIndex> const&) const) &MultiIndexSet::IsActive);
+    .def("IsActive", (bool (MultiIndexSet::*)(std::shared_ptr<MultiIndex> const&) const) &MultiIndexSet::IsActive)
+    .def("ToHDF5", (void (MultiIndexSet::*)(std::string, std::string) const) &MultiIndexSet::ToHDF5, py::arg("filename"),py::arg("dsetName")="/multiindices")
+    .def_static("FromHDF5", [](std::string filename, std::string dsetName){return MultiIndexSet::FromHDF5(filename, dsetName);})
+    .def_static("FromHDF5", [](std::string filename){return MultiIndexSet::FromHDF5(filename, "/multiindices");});
+
+//    .def_static("FromHDF5", (std::shared_ptr<MultiIndexSet> (MultiIndexSet::*)(std::string, std::string)) &MultiIndexSet::FromHDF5, py::arg("filename"), py::arg("dsetName")=std::string("/multiindices"));
+
 
 }

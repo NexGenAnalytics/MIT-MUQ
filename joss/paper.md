@@ -1,8 +1,8 @@
 ---
 title: 'MUQ: The MIT Uncertainty Quantification Library'
 tags:
-  - python
-  - c++
+  - Python
+  - C++
   - Bayesian Inference
   - Inverse Problems
   - Uncertainty Quantification
@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary
 
-Scientists and engineers frequently rely on mathematical and numerical models to interpret observational data, forecast system behavior, and make decisions. However, unknown and neglected physics, limited and noisy data, and numerical error result in uncertain model predictions. The MIT Uncertainty Quantification library (MUQ) is a modular software framework for defining and solving uncertainty quantification problems involving complex models.  MUQ is written in c++ but uses pybind11 [@pybind11] to provide a nearly comprehensive python interface.  Users can access nearly all of MUQ's capabilities from either language.
+Scientists and engineers frequently rely on mathematical and numerical models to interpret observational data, forecast system behavior, and make decisions. However, unknown and neglected physics, limited and noisy data, and numerical error result in uncertain model predictions. The MIT Uncertainty Quantification library (MUQ) is a modular software framework for defining and solving uncertainty quantification problems involving complex models.  MUQ is written in C++ but uses pybind11 [@pybind11] to provide a nearly comprehensive Python interface.  Users can access nearly all of MUQ's capabilities from either language.
 
 MUQ provides users many commonly used UQ tools and its modular design allows developers to easily modify, extend, and advance existing algorithms. For example, MUQ allows exact sampling of non-Gaussian distributions (e.g., Markov chain Monte Carlo and importance sampling), approximating computationally intensive forward models (e.g., polynomial chaos expansions and Gaussian process regression), working with integral covariance operators (e.g., Gaussian processes and Karhunen-Lo&egrave;ve decompositions), and characterizing predictive uncertainties. The software is designed to support algorithm developers who want to easily construct new algorithms by exploiting a wide variety of existing algorithmic building blocks. Many UQ algorithms are model agnostic: Different physics-based or statistical models can be substituted into the algorithm based on the application. Therefore, MUQ enables users to quickly implement new models and exploit state-of-the art UQ algorithms.  
 

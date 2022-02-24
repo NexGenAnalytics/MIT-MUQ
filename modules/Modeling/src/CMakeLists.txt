@@ -47,6 +47,8 @@ CreateCompileGroup(
     CombineVectors.cpp
     SumPiece.cpp
 
+    HTTPModel/HTTPModPiece.cpp
+
     MultiLogisticLikelihood.cpp
 
     ReplicateOperator.cpp
