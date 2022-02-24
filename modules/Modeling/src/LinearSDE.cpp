@@ -22,17 +22,25 @@ LinearSDE::LinearSDE(std::shared_ptr<LinearOperator>    Fin,
       throw muq::WrongSizeError("The system transition matrix, F, must be square, but F has " + std::to_string(F->rows()) + " rows and " + std::to_string(F->cols()) + " columns."); 
     }
 
-    if(F->rows() != L->rows())
-    {
-      throw muq::WrongSizeError("F and L must have the same number of rows, but F has " + std::to_string(F->rows()) + " rows and L has " + std::to_string(L->rows()) + " rows.");
+    if(L){
+        if(F->rows() != L->rows())
+        {
+            throw muq::WrongSizeError("F and L must have the same number of rows, but F has " + std::to_string(F->rows()) + " rows and L has " + std::to_string(L->rows()) + " rows.");
+        }
     }
 
     // Extract options from the ptree
     ExtractOptions(options);
     
     // Compute the Cholesky decomposition of the white noise process
-    sqrtQ = Q.llt().matrixL();
+    if(L){
+        sqrtQ = Q.llt().matrixL();
+    }
 };
+
+LinearSDE::LinearSDE(std::shared_ptr<LinearOperator>    Fin,
+                     boost::property_tree::ptree        options) : LinearSDE(Fin, nullptr, Eigen::MatrixXd(), options){};
+
 
 void LinearSDE::ExtractOptions(boost::property_tree::ptree options)
 {
@@ -50,19 +58,24 @@ Eigen::VectorXd LinearSDE::EvolveState(Eigen::VectorXd const& f0,
     
     // Take all but the last step.  The last step might be a partial step
     for(int i=0; i<numTimes-1; ++i)
-    {
-        z = sqrt(dt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols()) ).eval();
-        
-        f += dt*F->Apply(f) + L->Apply( z );
+    {   
+        if(L){
+            z = sqrt(dt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols()) ).eval();
+            f += dt*F->Apply(f) + L->Apply( z );
+        }else{
+            f += dt*F->Apply(f);
+        }
     }
 
     // Now take the last step
     double lastDt = T-(numTimes-1)*dt;
-    
-    z = sqrt(lastDt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols())).eval();
+    if(L){
+        z = sqrt(lastDt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols())).eval();
+        f += lastDt*F->Apply(f) + L->Apply( z );
+    }else{
+        f += lastDt*F->Apply(f);
+    }
 
-    f += lastDt*F->Apply(f) + L->Apply( z );
-    
     return f;
 }
 
@@ -77,8 +90,13 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> LinearSDE::EvolveDistribution(Eigen:
 
     const int numTimes = std::ceil(T/dt);
     
-    Eigen::MatrixXd LQLT = L->Apply( L->Apply(Q).transpose().eval() );
-    LQLT = 0.5*(LQLT + LQLT.transpose()); // <- Make sure LQLT is symmetric
+    Eigen::MatrixXd LQLT;
+    if(L){
+        LQLT = L->Apply( L->Apply(Q).transpose().eval() );
+        LQLT = 0.5*(LQLT + LQLT.transpose()); // <- Make sure LQLT is symmetric
+    }else{
+        LQLT = Eigen::MatrixXd::Zero(F->rows(), F->rows());
+    }
     
     Eigen::MatrixXd Fgamma, k1, k2, k3, k4;
 
@@ -167,8 +185,13 @@ std::pair<Eigen::MatrixXd, Eigen::MatrixXd> LinearSDE::Discretize(double deltaT)
 
     const int numTimes = std::ceil(deltaT/dt);
     
-    Eigen::MatrixXd LQLT = L->Apply( L->Apply(Q).transpose().eval() );
-    LQLT = 0.5*(LQLT + LQLT.transpose()); // <- Make sure LQLT is symmetric
+    Eigen::MatrixXd LQLT;
+    if(L){
+        LQLT = L->Apply( L->Apply(Q).transpose().eval() );
+        LQLT = 0.5*(LQLT + LQLT.transpose()); // <- Make sure LQLT is symmetric
+    }else{
+        LQLT = Eigen::MatrixXd::Zero(F->rows(), F->rows());
+    }
     
     Eigen::MatrixXd Fgamma, k1, k2, k3, k4;
 
