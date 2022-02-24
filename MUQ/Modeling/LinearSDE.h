@@ -13,12 +13,16 @@ namespace muq
 namespace Modeling
 {
 
-    /** @brief Defines a linear time invariant stochastic differential equation.
+    /** @brief Defines a linear time invariant stochastic differential equation with Gaussian process noise.
         @details This class defines a LTI SDE of the form
-\f[
-\frac{\partial f(t)}{\partial t} = F f(t) + L w(t),
-\f]
-where \f$f(t)\f$ is the solution in \f$\mathbb{R}^M\f$, \f$F\f$ is an \f$M\timesM\f$ matrix, \f$L\f$ is an \f$M\times N\f$ matrix, and \f$w(t)\f$ is a white noise process with an \f$N\timesN\f$ covariance matrix \f$Q\f$.
+        \f[
+            \frac{\partial f(t)}{\partial t} = F f(t) + L w(t),
+        \f]
+        where \f$f(t)\f$ is the solution in \f$\mathbb{R}^M\f$, \f$F\f$ is an \f$M\timesM\f$ matrix, \f$L\f$ is an \f$M\times N\f$ matrix,
+        and \f$w(t)\f$ is a white noise process with an \f$N\timesN\f$ covariance matrix \f$Q\f$.
+
+        It is possible to ignore the process noise by setting the matrix \f$L\f$ to a nullptr in the constructor.  This is used in the 
+        statespace representation of the constant Gaussian process covariance kernel.
     */
     class LinearSDE
     {
@@ -39,6 +43,9 @@ where \f$f(t)\f$ is the solution in \f$\mathbb{R}^M\f$, \f$F\f$ is an \f$M\times
         LinearSDE(std::shared_ptr<muq::Modeling::LinearOperator>    Fin,
                   std::shared_ptr<muq::Modeling::LinearOperator>    Lin,
                   Eigen::MatrixXd                             const& Qin,
+                  boost::property_tree::ptree                        options);
+
+        LinearSDE(std::shared_ptr<muq::Modeling::LinearOperator>    Fin,
                   boost::property_tree::ptree                        options);
 
 
