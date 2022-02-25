@@ -1,5 +1,6 @@
 #include "MUQ/Approximation/GaussianProcesses/ConcatenateKernel.h"
 #include "MUQ/Modeling/LinearAlgebra/BlockDiagonalOperator.h"
+#include "MUQ/Modeling/LinearAlgebra/ZeroOperator.h"
 #include "MUQ/Modeling/LinearSDE.h"
 
 using namespace muq::Approximation;
@@ -96,26 +97,35 @@ std::tuple<std::shared_ptr<muq::Modeling::LinearSDE>, std::shared_ptr<muq::Model
   for(unsigned int i=0; i<numKernels; ++i){
     std::tie(sdes.at(i), obsOps.at(i), statCovs.at(i)) = kernels.at(i)->GetStateSpace(sdeOptions);
     totalStatSize += statCovs.at(i).rows();
-    totalProcSize += sdes.at(i)->GetL()->cols();
+    if(sdes.at(i)->GetL())
+      totalProcSize += sdes.at(i)->GetL()->cols();
   }
 
   std::shared_ptr<muq::Modeling::LinearOperator> combinedObsOp = std::make_shared<BlockDiagonalOperator>(obsOps);
 
   // Create a new SDE:
-  std::vector<std::shared_ptr<muq::Modeling::LinearOperator>> allFs(numKernels);
-  std::vector<std::shared_ptr<muq::Modeling::LinearOperator>> allLs(numKernels);
+  std::vector<std::shared_ptr<muq::Modeling::LinearOperator>> allFs;
+  std::vector<std::shared_ptr<muq::Modeling::LinearOperator>> allLs;
   Eigen::MatrixXd newProcessCov = Eigen::MatrixXd::Zero(totalProcSize, totalProcSize);
   Eigen::MatrixXd newStatCov = Eigen::MatrixXd::Zero(totalStatSize, totalStatSize);
 
   unsigned int currStatRow = 0;
   unsigned int currProcRow = 0;
   for(unsigned int i=0; i<numKernels; ++i){
-    allFs.at(i) = sdes.at(i)->GetF();
-    allLs.at(i) = sdes.at(i)->GetL();
+
+    // Collect stochastic parts
+    if(sdes.at(i)->GetL()){
+      allLs.push_back(sdes.at(i)->GetL());
     
-    newProcessCov.block(currProcRow,currProcRow, allLs.at(i)->cols(), allLs.at(i)->cols()) = sdes.at(i)->GetQ();
+      newProcessCov.block(currProcRow,currProcRow, allLs.back()->cols(), allLs.back()->cols()) = sdes.at(i)->GetQ();
+      currProcRow += allLs.back()->cols();
+    }else{
+      allLs.push_back(std::make_shared<ZeroOperator>(sdes.at(i)->GetF()->rows(),0));
+    }
+
+    // Collect deterministic parts
+    allFs.push_back( sdes.at(i)->GetF() );
     newStatCov.block(currStatRow,currStatRow, statCovs.at(i).rows(), statCovs.at(i).cols()) = statCovs.at(i); 
-    currProcRow += allLs.at(i)->cols();
     currStatRow += statCovs.at(i).rows();
   }
 
