@@ -23,7 +23,8 @@ add_custom_target(examples
                           MonteCarlo
                           MultilevelMonteCarlo
 
-                          HTTPModel
+                          HTTPModelClient
+                          HTTPModelServer
 
                           GaussianSampling
                           GaussianGammaSampling

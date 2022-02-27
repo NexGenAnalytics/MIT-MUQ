@@ -10,5 +10,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) # Only look for MUQ when 
   message("INCLUDE DIRS: ${MUQ_INCLUDE_DIRS}")
 endif()
 
-add_executable(HTTPModel HTTPModel.cpp)
-target_link_libraries(HTTPModel ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+add_executable(HTTPModelClient HTTPModelClient.cpp)
+target_link_libraries(HTTPModelClient ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
+
+add_executable(HTTPModelServer HTTPModelServer.cpp)
+target_link_libraries(HTTPModelServer ${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})

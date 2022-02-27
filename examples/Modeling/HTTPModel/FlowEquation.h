@@ -1,3 +1,10 @@
+#include "MUQ/Modeling/ModPiece.h"
+
+#include <boost/property_tree/ptree.hpp>
+
+#include <Eigen/Core>
+#include <Eigen/Sparse>
+
 /***
 ## Class Definition
 
@@ -14,9 +21,6 @@ This class solves the 1D elliptic PDE of the form
     the conductivity $k(x)$, which is represented as piecewise constant within each
     of the $N$ cells.   There is a single output of this ModPiece: the head $h(x)$ at the
     $N+1$ nodes in the discretization.
-
-    INPUTS:
-
 
 */
 class FlowEquation : public muq::Modeling::ModPiece
