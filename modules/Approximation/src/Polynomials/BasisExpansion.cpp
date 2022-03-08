@@ -317,7 +317,7 @@ void BasisExpansion::ToHDF5(muq::Utilities::H5Object &group) const
     for(auto const& pair : nameMap){
       std::shared_ptr<IndexedScalarBasis> testBasis = pair.second();
 
-      if(demangle(typeid(*testBasis).name())==demangle(typeid(*basis).name())){
+      if(GetTypeName(testBasis)==GetTypeName(basis)){
         matchFound = true;
         type_strs.push_back(pair.first);
       }
