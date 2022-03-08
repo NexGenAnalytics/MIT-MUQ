@@ -29,10 +29,10 @@ namespace Modeling
 
     public:
 
-        template<typename Derived1, typename Derived2>
-        LinearSDE(Eigen::Matrix<Derived1,Eigen::Dynamic, Eigen::Dynamic>   const& Fin,
-                  Eigen::Matrix<Derived2,Eigen::Dynamic, Eigen::Dynamic>   const& Lin,
-                  Eigen::MatrixXd                                          const& Qin,
+        template<typename EigenType1, typename EigenType2>
+        LinearSDE(EigenType1           const& Fin,
+                  EigenType2           const& Lin,
+                  Eigen::MatrixXd      const& Qin,
                   boost::property_tree::ptree options) : LinearSDE(muq::Modeling::LinearOperator::Create(Fin),
                                                                    muq::Modeling::LinearOperator::Create(Lin),
                                                                    Qin,
