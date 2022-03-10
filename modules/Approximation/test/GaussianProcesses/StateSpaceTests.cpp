@@ -150,7 +150,7 @@ TEST(Approximation_GP, PeriodicStateSpace)
     const double sigma2 = 1.0;
     const double length = 0.6;
     const double period = 0.25;
-    const double periodN = 50; // how many steps per period
+    const unsigned int periodN = 50; // how many steps per period
 
     PeriodicKernel kernel(1, sigma2, length, period);
 
@@ -167,8 +167,11 @@ TEST(Approximation_GP, PeriodicStateSpace)
     Eigen::MatrixXd realization = gp.Sample(obsTimes);
 
     // Make sure the sample is periodic
-    for(int i=0; i<obsTimes.size()-periodN-1; ++i)
-        EXPECT_NEAR(realization(0,i), realization(0,i+periodN), 1e-1);
+    for(int i=0; i<obsTimes.size()-periodN-1; ++i){
+        double old = realization(0,i);
+        double next = realization(0,i+periodN);
+        EXPECT_NEAR(old,next, 1e-1);
+    }
 
 }
 
