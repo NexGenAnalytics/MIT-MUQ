@@ -7,6 +7,6 @@
 using namespace muq::Inference::PythonBindings;
 namespace py = pybind11;
 
-PYBIND11_MODULE(pymuqInference_, m) {
+PYBIND11_MODULE(pymuqInference, m) {
   KalmanWrapper(m);
 }

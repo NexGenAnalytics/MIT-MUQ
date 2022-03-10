@@ -4,12 +4,16 @@
 #include "MUQ/Inference/Filtering/KalmanFilter.h"
 #include "MUQ/Inference/Filtering/KalmanSmoother.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+
 using namespace muq::Inference::PythonBindings;
 using namespace muq::Inference;
 using namespace muq::Modeling;
 namespace py = pybind11;
 
-void KalmanWrapper(pybind11::module &m)
+void muq::Inference::PythonBindings::KalmanWrapper(pybind11::module &m)
 {
     py::class_<KalmanFilter, std::shared_ptr<KalmanFilter>>(m, "KalmanFilter")
       .def_static("Analyze", static_cast<std::pair<Eigen::VectorXd,Eigen::MatrixXd> (*)

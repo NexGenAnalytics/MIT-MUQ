@@ -2,6 +2,7 @@
 #define KALMANFILTER_H
 
 #include "MUQ/Modeling/LinearAlgebra/LinearOperator.h"
+#include "MUQ/Modeling/LinearAlgebra/EigenLinearOperator.h"
 
 #include <Eigen/Core>
 
