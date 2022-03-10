@@ -1,7 +1,7 @@
 CreateCompileGroup(
     INFERENCE_FILTERING_PYTHON
     "Python wrappers for the filtering tools in the inference module."
-    pymuqInference_
+    "pymuqInference"
     "INFERENCE_FILTERING"
     "PYTHON"
     ""
