@@ -1,6 +1,13 @@
 #include "AllClassWrappers.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+#include "pybind11_json.h"
+
 #include "MUQ/Modeling/ConstantVector.h"
+#include "MUQ/Modeling/HTTPModel/HTTPModPiece.h"
+#include "MUQ/Modeling/HTTPModel/HTTPModPieceServer.h"
 #include "MUQ/Modeling/ModPiece.h"
 #include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Modeling/MultiLogisticLikelihood.h"
@@ -10,10 +17,6 @@
 #include "MUQ/Modeling/SplitVector.h"
 #include "MUQ/Modeling/WorkGraph.h"
 #include "MUQ/Modeling/SumPiece.h"
-
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
 #include <string>
 
@@ -123,6 +126,13 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
   ocp
     .def(py::init<std::shared_ptr<ModPiece>>())
     .def("HitRatio", &OneStepCachePiece::HitRatio);
+
+  py::class_<HTTPModPiece, ModPiece, WorkPiece, std::shared_ptr<HTTPModPiece>> hmp(m, "HTTPModPiece");
+  hmp
+    .def(py::init( [](std::string host) {return new HTTPModPiece(host); }))
+    .def(py::init( [](std::string host, py::dict config) {return new HTTPModPiece(host, config); }));
+
+  m.def("serveModPiece", &serveModPiece);
 
   py::class_<ConstantVector, ModPiece, WorkPiece, std::shared_ptr<ConstantVector>> cv(m, "ConstantVector");
   cv
