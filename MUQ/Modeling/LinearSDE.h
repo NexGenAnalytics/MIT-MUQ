@@ -56,14 +56,90 @@ namespace Modeling
 
         /** Given the mean and covariance of the solution at time \f$t\f$, compute the mean and covariance of the solution at time \f$t+T\f$.
          */
-        std::pair<Eigen::VectorXd, Eigen::MatrixXd> EvolveDistribution(Eigen::VectorXd const& muIn,
-                                                                       Eigen::MatrixXd const& gammaIn,
-                                                                       double                 T) const; 
+        template<typename EigenRefVector, typename EigenRefMatrix>
+        std::pair<Eigen::VectorXd, Eigen::MatrixXd> EvolveDistribution(EigenRefVector const& mu0,
+                                                                       EigenRefMatrix const& gamma0,
+                                                                       double                T) const
+        {
+            if(T<std::numeric_limits<double>::epsilon()){
+                return std::make_pair(mu0,gamma0);
+            }
+
+            Eigen::VectorXd mu = mu0;
+            Eigen::MatrixXd gamma = gamma0;
+
+            const int numTimes = std::ceil(T/dt);
+
+            // Fourth-Order Stochastic Runge-Kutta method
+            if(integratorType=="SRK4"){
+
+                Eigen::MatrixXd Fgamma, k1, k2, k3, k4;
+
+                // Take all but the last step because the last step might be a partial step.
+                for(int i=0; i<numTimes-1; ++i)
+                {
+                    k1 = F->Apply(mu);
+                    k2 = F->Apply(mu + 0.5*dt*k1);
+                    k3 = F->Apply(mu + 0.5*dt*k2);
+                    k4 = F->Apply(mu + dt*k3);
+                    mu = mu + (dt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
+                    
+                    Fgamma = F->Apply(gamma);
+                    k1 = Fgamma + Fgamma.transpose() + LQLT;
+                    Fgamma = F->Apply(gamma + 0.5*dt*k1);
+                    k2 = Fgamma + Fgamma.transpose() + LQLT;
+                    Fgamma = F->Apply(gamma + 0.5*dt*k2);
+                    k3 = Fgamma + Fgamma.transpose() + LQLT;
+                    Fgamma = F->Apply(gamma + dt*k3);
+                    k4 = Fgamma + Fgamma.transpose() + LQLT;
+
+                    gamma = gamma + (dt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
+                }
+
+                // Take the last step
+                double lastDt = T-(numTimes-1)*dt;
+
+                k1 = F->Apply(mu);
+                k2 = F->Apply(mu + 0.5*lastDt*k1);
+                k3 = F->Apply(mu + 0.5*lastDt*k2);
+                k4 = F->Apply(mu + lastDt*k3);
+                mu = mu + (lastDt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
+                
+                Fgamma = F->Apply(gamma);
+                k1 = Fgamma + Fgamma.transpose() + LQLT;
+                Fgamma = F->Apply(gamma + 0.5*lastDt*k1);
+                k2 = Fgamma + Fgamma.transpose() + LQLT;
+                Fgamma = F->Apply(gamma + 0.5*lastDt*k2);
+                k3 = Fgamma + Fgamma.transpose() + LQLT;
+                Fgamma = F->Apply(gamma + lastDt*k3);
+                k4 = Fgamma + Fgamma.transpose() + LQLT;
+                
+                gamma = gamma + (lastDt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
+
+            // Euler-Maruyama method
+            }else{
+
+                // Take all but the last step because the last step might be a partial step.
+                for(int i=0; i<numTimes-1; ++i){
+                    mu += dt*F->Apply(mu);
+                    gamma += dt*dt*(F->Apply(F->Apply(gamma).transpose().eval()).transpose()) + dt*LQLT;
+                }
+
+                // Take the last step
+                double lastDt = T-(numTimes-1)*dt;
+
+                mu += lastDt*F->Apply(mu);
+                gamma += lastDt*lastDt*(F->Apply(F->Apply(gamma).transpose().eval()).transpose()) + lastDt*LQLT;
+
+            }
+            return std::make_pair(mu,gamma);
+        }
 
         /** Evolve the mean and covariance of the system using a std::pair to hold the distribution.
          */
-        std::pair<Eigen::VectorXd, Eigen::MatrixXd> EvolveDistribution(std::pair<Eigen::VectorXd,Eigen::MatrixXd> const& muCov,
-                                                                       double                                            T) const{
+        template<typename EigenRefVector, typename EigenRefMatrix>
+        std::pair<Eigen::VectorXd, Eigen::MatrixXd> EvolveDistribution(std::pair<EigenRefVector,EigenRefMatrix> const& muCov,
+                                                                       double                                          T) const{
             return EvolveDistribution(muCov.first, muCov.second, T);
         }; 
 
@@ -109,7 +185,9 @@ Q = \left[\begin{array}{cccc} Q_1 & 0 & \cdots & \\ 0 & Q_2 & 0 \\ \vdots & & \d
         Eigen::MatrixXd sqrtQ;
 
         double dt; // time step used in SDE integration
+        std::string integratorType; // Type of integratin to use (either EM for "Euler Maruyama" or "SRK4" for Stochastic Runge Kutta)
 
+        Eigen::MatrixXd LQLT;
     };
 
 

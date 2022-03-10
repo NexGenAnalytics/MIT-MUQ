@@ -27,5 +27,5 @@ Eigen::MatrixXd KalmanSmoother::ComputeC(Eigen::MatrixXd                        
                                          Eigen::MatrixXd                          const& nextDist_t_cov,
                                          std::shared_ptr<muq::Modeling::LinearOperator> const& F)
 {
-    return  nextDist_t_cov.llt().solve( F->Apply(currDist_t_cov) ).transpose();
+    return  nextDist_t_cov.ldlt().solve( F->Apply(currDist_t_cov) ).transpose();
 }
