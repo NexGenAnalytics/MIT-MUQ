@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "nlohmann/json.hpp"
+#include "MUQ/Modeling/HTTPModel/json.h"
 
 #include "pybind11/pybind11.h"
 
