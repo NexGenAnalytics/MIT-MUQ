@@ -21,6 +21,7 @@ CreateCompileGroup(
     ""
 
     SamplingProblem.cpp
+    InferenceProblem.cpp
 )
 
 CreateCompileGroup(

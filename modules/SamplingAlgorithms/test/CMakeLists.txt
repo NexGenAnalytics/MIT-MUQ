@@ -23,6 +23,7 @@ CreateTestGroup(
   SAMPLING_PROBLEMS
 
   SamplingProblemTests.cpp
+  InferenceProblemTests.cpp
 )
 
 CreateTestGroup(
