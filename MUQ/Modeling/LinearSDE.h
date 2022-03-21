@@ -5,6 +5,8 @@
 #include "MUQ/Modeling/LinearAlgebra/LinearOperator.h"
 #include "MUQ/Modeling/LinearAlgebra/EigenLinearOperator.h"
 
+#include "MUQ/Utilities/RandomGenerator.h"
+
 #include <boost/property_tree/ptree.hpp>
 #include <random>
 
@@ -51,8 +53,51 @@ namespace Modeling
 
         /** Given \f$f(t)\f$, the state of the system at time \f$t\f$, return a random realization of the state at time \f$t+\delta t\f$.
          */
-        Eigen::VectorXd EvolveState(Eigen::VectorXd const& f0,
-                                    double                 T) const;
+        template<typename EigenRefVector>
+        Eigen::VectorXd EvolveState(EigenRefVector const& f0,
+                                    double                 T) const
+        {
+            Eigen::VectorXd fnext(f0.size());
+            EvolveState(f0, T, Eigen::Ref<Eigen::VectorXd>(fnext));
+            return fnext;
+        }
+
+        template<typename EigenRefVector1, typename EigenRefVector2>
+        void EvolveState(EigenRefVector1 const& f0,
+                         double                 T,
+                         EigenRefVector2        f) const
+        {   
+            f = f0;
+
+            if(T<std::numeric_limits<double>::epsilon()){
+                return;
+            }
+
+            const int numTimes = std::ceil(T/dt);
+
+            Eigen::VectorXd z;
+            
+            // Take all but the last step.  The last step might be a partial step
+            for(int i=0; i<numTimes-1; ++i)
+            {   
+                if(L){
+                    z = sqrt(dt) * (sqrtQ.triangularView<Eigen::Lower>() * muq::Utilities::RandomGenerator::GetNormal(sqrtQ.cols()) ).eval();
+                    f += dt*F->Apply(f) + L->Apply( z );
+                }else{
+                    f += dt*F->Apply(f);
+                }
+            }
+
+            // Now take the last step
+            double lastDt = T-(numTimes-1)*dt;
+            if(L){
+                z = sqrt(lastDt) * (sqrtQ.triangularView<Eigen::Lower>() * muq::Utilities::RandomGenerator::GetNormal(sqrtQ.cols())).eval();
+                f += lastDt*F->Apply(f) + L->Apply( z );
+            }else{
+                f += lastDt*F->Apply(f);
+            }
+        }
+
 
         /** Given the mean and covariance of the solution at time \f$t\f$, compute the mean and covariance of the solution at time \f$t+T\f$.
          */
@@ -61,12 +106,34 @@ namespace Modeling
                                                                        EigenRefMatrix const& gamma0,
                                                                        double                T) const
         {
-            if(T<std::numeric_limits<double>::epsilon()){
-                return std::make_pair(mu0,gamma0);
+            Eigen::VectorXd mu(mu0.size());
+            Eigen::MatrixXd cov(gamma0.rows(), gamma0.cols());
+
+            EvolveDistribution(mu0,gamma0, T, Eigen::Ref<Eigen::VectorXd>(mu), Eigen::Ref<Eigen::MatrixXd>(cov));
+            return std::make_pair(mu,cov);
+        }
+
+        template<typename EigenRefVector1, typename EigenRefMatrix1, typename EigenRefVector2, typename EigenRefMatrix2>
+        void EvolveDistribution(EigenRefVector1 const& mu0,
+                                EigenRefMatrix1 const& gamma0,
+                                double                 T,
+                                EigenRefVector2        mu,
+                                EigenRefMatrix2        gamma) const
+        {
+            
+            if(mu0.size()!=mu.size()){
+                throw std::runtime_error("In LinearSDE::EvolveDistribution: mu0 and mu have different sizes.");
+            }
+            if((gamma0.rows()!=gamma.rows())||(gamma0.cols()!=gamma.cols())){
+                throw std::runtime_error("In LinearSDE::EvolveDistribution: gamma0 and gamma have different sizes.");
             }
 
-            Eigen::VectorXd mu = mu0;
-            Eigen::MatrixXd gamma = gamma0;
+            mu = mu0;
+            gamma = gamma0;
+            
+            if(T<std::numeric_limits<double>::epsilon()){
+                return;
+            }
 
             const int numTimes = std::ceil(T/dt);
 
@@ -132,7 +199,6 @@ namespace Modeling
                 gamma += lastDt*lastDt*(F->Apply(F->Apply(gamma).transpose().eval()).transpose()) + lastDt*LQLT;
 
             }
-            return std::make_pair(mu,gamma);
         }
 
         /** Evolve the mean and covariance of the system using a std::pair to hold the distribution.

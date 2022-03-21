@@ -26,6 +26,6 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> KalmanSmoother::Analyze(std::pair<Ei
 Eigen::MatrixXd KalmanSmoother::ComputeC(Eigen::MatrixXd                          const& currDist_t_cov,
                                          Eigen::MatrixXd                          const& nextDist_t_cov,
                                          std::shared_ptr<muq::Modeling::LinearOperator> const& F)
-{
+{   
     return  nextDist_t_cov.ldlt().solve( F->Apply(currDist_t_cov) ).transpose();
 }

@@ -61,41 +61,41 @@ void LinearSDE::ExtractOptions(boost::property_tree::ptree options)
     }
 }
 
-Eigen::VectorXd LinearSDE::EvolveState(Eigen::VectorXd const& f0,
-                                       double                 T) const
-{   
-    if(T<std::numeric_limits<double>::epsilon()){
-        return f0;
-    }
+// Eigen::VectorXd LinearSDE::EvolveState(Eigen::VectorXd const& f0,
+//                                        double                 T) const
+// {   
+//     if(T<std::numeric_limits<double>::epsilon()){
+//         return f0;
+//     }
 
-    Eigen::VectorXd f = f0;
+//     Eigen::VectorXd f = f0;
 
-    const int numTimes = std::ceil(T/dt);
+//     const int numTimes = std::ceil(T/dt);
 
-    Eigen::VectorXd z;
+//     Eigen::VectorXd z;
     
-    // Take all but the last step.  The last step might be a partial step
-    for(int i=0; i<numTimes-1; ++i)
-    {   
-        if(L){
-            z = sqrt(dt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols()) ).eval();
-            f += dt*F->Apply(f) + L->Apply( z );
-        }else{
-            f += dt*F->Apply(f);
-        }
-    }
+//     // Take all but the last step.  The last step might be a partial step
+//     for(int i=0; i<numTimes-1; ++i)
+//     {   
+//         if(L){
+//             z = sqrt(dt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols()) ).eval();
+//             f += dt*F->Apply(f) + L->Apply( z );
+//         }else{
+//             f += dt*F->Apply(f);
+//         }
+//     }
 
-    // Now take the last step
-    double lastDt = T-(numTimes-1)*dt;
-    if(L){
-        z = sqrt(lastDt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols())).eval();
-        f += lastDt*F->Apply(f) + L->Apply( z );
-    }else{
-        f += lastDt*F->Apply(f);
-    }
+//     // Now take the last step
+//     double lastDt = T-(numTimes-1)*dt;
+//     if(L){
+//         z = sqrt(lastDt) * (sqrtQ.triangularView<Eigen::Lower>() * RandomGenerator::GetNormal(sqrtQ.cols())).eval();
+//         f += lastDt*F->Apply(f) + L->Apply( z );
+//     }else{
+//         f += lastDt*F->Apply(f);
+//     }
 
-    return f;
-}
+//     return f;
+// }
 
 
 // std::pair<Eigen::VectorXd, Eigen::MatrixXd> LinearSDE::EvolveDistribution(Eigen::VectorXd const& mu0,
