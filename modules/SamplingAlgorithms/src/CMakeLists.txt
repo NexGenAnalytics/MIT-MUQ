@@ -88,6 +88,7 @@ CreateCompileGroup(
     SMMALAProposal.cpp
     InfMALAProposal.cpp
     MixtureProposal.cpp
+    IndependenceProposal.cpp
 
     InverseGammaProposal.cpp
     CrankNicolsonProposal.cpp

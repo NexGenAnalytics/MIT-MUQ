@@ -219,15 +219,22 @@ void ParallelTempering::AdaptTemperatures(){
     cumProbs(0) = 0.0;//cumulativeSwapProb(0) / attemptedSwaps(0);
     for(unsigned int i=1; i<numTemps; ++i)
         cumProbs(i) = cumProbs(i-1) + 1.0- (cumulativeSwapProb(i-1) / attemptedSwaps(i-1));
-    
+
+    if((cumProbs.maxCoeff()-cumProbs.minCoeff())<1e-8)
+        return;
+
     for(unsigned int i=1; i<numTemps-1; ++i){
         double desiredVal = cumProbs(numTemps-1) * double(i)/(numTemps-1);
         
         // Use linear interpolation to get the temperature that would achieve this value
         int j;
         for(j=0; j<numTemps; ++j){
-            if(cumProbs(j) > desiredVal)
+            if(cumProbs(j) >= desiredVal)
                 break;
+        }
+        if((j==0)||(j==numTemps)){
+            std::cout << "Cumulative probs: " << cumProbs.transpose() << std::endl;
+            std::cout << "desiredVal: " << desiredVal << std::endl;
         }
         assert(j!=numTemps);
         assert(j>0);
@@ -301,7 +308,7 @@ void ParallelTempering::CheckForMeta(std::shared_ptr<SamplingState> const& state
 }
 
 void ParallelTempering::SwapStates() {
-
+  
     // Figure out if this is an even swap or an odd swap
     unsigned int startInd;
     if(seoSwaps){
@@ -419,7 +426,7 @@ void ParallelTempering::SaveSamples(std::vector<std::vector<std::shared_ptr<Samp
 
             ++sampNums.at(chainInd);
             // Increment the number of samples and break if we're the posterior chain and we hit the max. number
-            if(chainInd==0){
+            if(chainInd==numTemps-1){
                 if( sampNums.at(numTemps-1)>=numSamps ) { return; }
             }
         }
@@ -432,9 +439,11 @@ void ParallelTempering::SaveSamples(std::vector<std::vector<std::shared_ptr<Samp
 
 std::vector<std::vector<std::shared_ptr<TransitionKernel>>> ParallelTempering::StackKernels(std::vector<std::shared_ptr<TransitionKernel>> const& kerns)
 {
-    std::vector<std::vector<std::shared_ptr<TransitionKernel>>> newKernels(kerns.size(), std::vector<std::shared_ptr<TransitionKernel>>(1));
-    for(unsigned int i=0; i<kerns.size(); ++i)
+    std::vector<std::vector<std::shared_ptr<TransitionKernel>>> newKernels(kerns.size());
+    for(unsigned int i=0; i<kerns.size(); ++i){
+        newKernels.resize(1);
         newKernels.at(i).at(0) = kerns.at(i);
+    }
     return newKernels;
 }
 
@@ -477,7 +486,6 @@ std::vector<std::vector<std::shared_ptr<TransitionKernel>>> ParallelTempering::E
   }
 
   return kernels;
-
 }
 
 bool ParallelTempering::ShouldSave(unsigned int chainInd, unsigned int const sampNum) const 

@@ -17,7 +17,7 @@ CreateTestGroup(
     CrankNicolsonTests.cpp
     InfMALATests.cpp
     InverseGammaProposalTests.cpp
-
+    IndependenceProposalTests.cpp
     ParallelTemperingTests.cpp
 )
 

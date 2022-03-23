@@ -8,6 +8,7 @@
 #include "MUQ/SamplingAlgorithms/MHProposal.h"
 #include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
 #include "MUQ/SamplingAlgorithms/InverseGammaProposal.h"
+#include "MUQ/SamplingAlgorithms/IndependenceProposal.h"
 
 #include "MUQ/Utilities/PyDictConversion.h"
 
@@ -65,4 +66,9 @@ void PythonBindings::ProposalWrapper(py::module &m) {
   py::class_<InfMALAProposal, MCMCProposal, std::shared_ptr<InfMALAProposal>>(m, "InfMALAProposal")
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob) {return new InfMALAProposal(ConvertDictToPtree(d), prob);} ))
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<muq::Modeling::GaussianBase> prop) {return new InfMALAProposal(ConvertDictToPtree(d), prob, prop);} ));
+
+  py::class_<IndependenceProposal, MCMCProposal, std::shared_ptr<IndependenceProposal>>(m,"IndependenceProposal")
+    .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob) {return new IndependenceProposal(ConvertDictToPtree(d), prob);} ))
+    .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<muq::Modeling::Distribution> dist) {return new IndependenceProposal(ConvertDictToPtree(d), prob, dist);} ));
+    
 }
