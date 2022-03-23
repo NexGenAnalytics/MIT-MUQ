@@ -29,6 +29,7 @@ namespace muq {
 
       virtual ~SamplingProblem() = default;
 
+      virtual std::shared_ptr<AbstractSamplingProblem> Clone() const override{return std::make_shared<SamplingProblem>(target, qoi);};
 
       virtual double LogDensity(std::shared_ptr<SamplingState> const& state) override;
 

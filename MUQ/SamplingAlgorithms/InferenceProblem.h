@@ -64,6 +64,8 @@ namespace muq {
       /** Get the inverse temperature of this problem. */
       double GetInverseTemp() const{return inverseTemp;}
 
+      virtual std::shared_ptr<AbstractSamplingProblem> Clone() const override;
+      
     protected:
 
       /// The log-likelihood function

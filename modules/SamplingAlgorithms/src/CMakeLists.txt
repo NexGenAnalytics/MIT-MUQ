@@ -48,6 +48,7 @@ CreateCompileGroup(
     #MonteCarlo.cpp
     ImportanceSampling.cpp
     SingleChainMCMC.cpp
+    ParallelTempering.cpp
 
     SamplingState.cpp
     SampleCollection.cpp

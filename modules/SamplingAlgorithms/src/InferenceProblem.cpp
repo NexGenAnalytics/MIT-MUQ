@@ -26,8 +26,13 @@ double InferenceProblem::LogDensity(std::shared_ptr<SamplingState> const& state)
   assert(prior);
 
   lastState = state;
-
-  return inverseTemp * likely->Evaluate(state->state).at(0)(0) + prior->Evaluate(state->state).at(0)(0);
+  double likelyVal = likely->Evaluate(state->state).at(0)(0);
+  double priorVal = prior->Evaluate(state->state).at(0)(0);
+  state->meta["LogLikelihood"] = likelyVal;
+  state->meta["LogPrior"] = priorVal;
+  state->meta["InverseTemp"] = inverseTemp;
+  
+  return inverseTemp * likelyVal + priorVal;
 }
 
 std::shared_ptr<SamplingState> InferenceProblem::QOI() {
@@ -46,4 +51,8 @@ Eigen::VectorXd InferenceProblem::GradLogDensity(std::shared_ptr<SamplingState> 
 
   Eigen::VectorXd sens = Eigen::VectorXd::Ones(1);
   return inverseTemp * likely->Gradient(0, blockWrt, state->state, sens) + prior->Gradient(0, blockWrt, state->state, sens);
+}
+
+std::shared_ptr<AbstractSamplingProblem> InferenceProblem::Clone() const{
+    return std::make_shared<InferenceProblem>(likely, prior, qoi, inverseTemp);
 }

@@ -17,6 +17,8 @@ CreateTestGroup(
     CrankNicolsonTests.cpp
     InfMALATests.cpp
     InverseGammaProposalTests.cpp
+
+    ParallelTemperingTests.cpp
 )
 
 CreateTestGroup(
@@ -36,14 +38,9 @@ CreateParallelTestGroup(
     SAMPLING_ALGORITHM
 
     SamplingStateParallelTests.cpp
-
     DistributedCollectionTests.cpp
-
     GMHKernelParallelTests.cpp
-
     SingleChainMCMCParallelTests.cpp
-
     ExpensiveSamplingProblemParallelTests.cpp
-
     ImportanceSamplingParallelTests.cpp
 )
