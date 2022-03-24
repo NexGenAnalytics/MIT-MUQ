@@ -3,6 +3,12 @@
 
 namespace muq {
   namespace Modeling {
+
+    /**
+      @class HTTPModPieceWrapper
+      @brief Wrap a ModPiece in an UM-Bridge Model
+      @details This is needed in order to easily serve a MUQ ModPiece via UM-Bridge.
+      */
     class HTTPModPieceWrapper : public ShallowModPiece {
     public:
 
@@ -50,6 +56,13 @@ namespace muq {
       std::shared_ptr<muq::Modeling::ModPiece> modPiece;
     };
 
+    /**
+     * @brief Serve a ModPiece via network using UM-Bridge
+     *
+     * @param modPiece The modPiece to serve via UM-Bridge
+     * @param host Bind address, may be 0.0.0.0
+     * @param port Port at which to serve the modPiece
+     */
     void serveModPiece(std::shared_ptr<ModPiece> modPiece, std::string host, int port) {
       HTTPModPieceWrapper wrapper(modPiece);
       ::serveModPiece(wrapper, host, port);
