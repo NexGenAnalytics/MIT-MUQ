@@ -66,6 +66,17 @@ public:
   }
 };
 
+// The server itself does not do any Python calls; nevertheless, Python's global interpreter
+// lock (GIL) remains active while entering the server loop, unless explicitly instructed not to.
+// The server spawns threads for requests which may have to evaluate a Python model, in turn locking the GIL.
+// We therefore have to unlock the GIL for the server loop, else we get a deadlock once
+// a Python model is evaluated by the server.
+void serveModPieceWithoutGIL(std::shared_ptr<ModPiece> modPiece, std::string host, int port) {
+  Py_BEGIN_ALLOW_THREADS
+  muq::Modeling::serveModPiece(modPiece, host, port);
+  Py_END_ALLOW_THREADS
+}
+
 class Publicist : public PyModPiece {
 public:
     // Expose protected functions
@@ -132,7 +143,7 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
     .def(py::init( [](std::string host) {return new HTTPModPiece(host); }))
     .def(py::init( [](std::string host, py::dict config) {return new HTTPModPiece(host, config); }));
 
-  m.def("serveModPiece", &serveModPiece);
+  m.def("serveModPiece", &serveModPieceWithoutGIL);
 
   py::class_<ConstantVector, ModPiece, WorkPiece, std::shared_ptr<ConstantVector>> cv(m, "ConstantVector");
   cv
