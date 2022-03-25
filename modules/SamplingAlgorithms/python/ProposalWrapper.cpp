@@ -3,6 +3,7 @@
 #include "MUQ/SamplingAlgorithms/AMProposal.h"
 #include "MUQ/SamplingAlgorithms/MCMCProposal.h"
 #include "MUQ/SamplingAlgorithms/MALAProposal.h"
+#include "MUQ/SamplingAlgorithms/sMMALAProposal.h"
 #include "MUQ/SamplingAlgorithms/InfMALAProposal.h"
 #include "MUQ/SamplingAlgorithms/MHProposal.h"
 #include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
@@ -57,6 +58,9 @@ void PythonBindings::ProposalWrapper(py::module &m) {
   py::class_<MALAProposal, MCMCProposal, std::shared_ptr<MALAProposal>>(m,"MALAProposal")
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob) {return new MALAProposal(ConvertDictToPtree(d), prob);} ))
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<muq::Modeling::GaussianBase> const& prop) {return new MALAProposal(ConvertDictToPtree(d), prob, prop);} ));
+
+  py::class_<SMMALAProposal, MCMCProposal, std::shared_ptr<SMMALAProposal>>(m,"SMMALAProposal")
+         .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob, std::shared_ptr<muq::Modeling::ModPiece> const& mod, std::shared_ptr<muq::Modeling::Gaussian> const& prior,std::shared_ptr<muq::Modeling::Gaussian> const& likelihood) {return new SMMALAProposal(ConvertDictToPtree(d), prob, mod,prior,likelihood);} ));
 
   py::class_<InfMALAProposal, MCMCProposal, std::shared_ptr<InfMALAProposal>>(m, "InfMALAProposal")
     .def(py::init( [](py::dict d, std::shared_ptr<AbstractSamplingProblem> prob) {return new InfMALAProposal(ConvertDictToPtree(d), prob);} ))

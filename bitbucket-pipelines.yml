@@ -85,7 +85,7 @@ pipelines:
               - export DOWNLOAD_URL="https://bitbucket.org/mituq/muq2/downloads/${TARFILE}"
               - export MUQ_SHA=`curl -sL ${DOWNLOAD_URL} | openssl sha256 | cut -c10-`
               - cd ~
-              - git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/mparno/muq-feedstock
+              - git clone git@github.com:mparno/muq-feedstock.git
               - cd muq-feedstock
               - git remote add upstream https://github.com/conda-forge/muq-feedstock
               - git fetch upstream
@@ -99,7 +99,7 @@ pipelines:
               - git config --global user.email "parnomd@gmail.com"
               - git config --global user.name "Bitbucket Pipelines"
               - git commit -m "Updated recipe version."
-              - git push https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/mparno/muq-feedstock --all
+              - git push git@github.com:mparno/muq-feedstock.git --all
 
   custom:
     weekly-build:
