@@ -32,7 +32,7 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/external/hdf5/src/HDF5/hdf5-${MUQ_INTERNAL_HDF5_VERSION}/configure  CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CFLAGS=${HDF5_CFLAGS} ${HDF5_PARALLEL_FLAG} --prefix=${HDF5_INSTALL_DIR} --enable-production --disable-examples
     BUILD_COMMAND $(MAKE)
     BUILD_IN_SOURCE 1
-    INSTALL_COMMAND "make install"
+    INSTALL_COMMAND "$(MAKE) install"
 )
 
 
