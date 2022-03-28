@@ -17,7 +17,7 @@ ExternalProject_Add(
                 URL ${OTF2_EXTERNAL_SOURCE}
                 BUILD_IN_SOURCE TRUE
                 CONFIGURE_COMMAND ./configure --prefix=${OTF2_INSTALL_DIR} CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CFLAGS=${OTF2_CFLAGS} CXXFLAGS=${OTF2_CFLAGS}
-                BUILD_COMMAND make
+                BUILD_COMMAND $(MAKE)
                 INSTALL_COMMAND make install
 )
 
