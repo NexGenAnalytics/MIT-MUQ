@@ -18,10 +18,12 @@ SMMALAProposal::SMMALAProposal(pt::ptree                                       p
                                 std::shared_ptr<muq::Modeling::Gaussian> const& priorIn,
                                 std::shared_ptr<muq::Modeling::Gaussian> const& likelihoodIn) :
             MCMCProposal(pt,probIn),
-            prior(priorIn), likelihood(likelihoodIn), model(forwardModIn)
+            prior(priorIn), likelihood(likelihoodIn), model(forwardModIn), meanScaling(pt.get("MeanScaling",0.5))
 {
   stepSize = pt.get("StepSize", 1.0);
   assert(stepSize>0);
+  
+  assert(meanScaling>0);
 }
 
 std::shared_ptr<SamplingState> SMMALAProposal::Sample(std::shared_ptr<SamplingState> const& currentState) {
@@ -61,7 +63,7 @@ std::shared_ptr<SamplingState> SMMALAProposal::Sample(std::shared_ptr<SamplingSt
   Gaussian prop(Eigen::VectorXd::Zero(xc.size()).eval(), hess, Gaussian::Mode::Precision);
 
   // Draw a sample
-  props.at(blockInd) = xc + 0.5*prop.ApplyCovariance(grad) + prop.Sample();
+  props.at(blockInd) = xc + meanScaling*prop.ApplyCovariance(grad) + prop.Sample();
   
   // store the new state in the output
   return std::make_shared<SamplingState>(props, 1.0);
@@ -96,7 +98,7 @@ double SMMALAProposal::LogDensity(std::shared_ptr<SamplingState> const& currStat
   Gaussian prop(Eigen::VectorXd::Zero( propState->state.at(blockInd).size()).eval(), hess, Gaussian::Mode::Precision);
 
   // Draw a sample
-  Eigen::VectorXd delta = propState->state.at(blockInd) - currState->state.at(blockInd) - 0.5*prop.ApplyCovariance(grad);
+  Eigen::VectorXd delta = propState->state.at(blockInd) - currState->state.at(blockInd) - meanScaling*prop.ApplyCovariance(grad);
   
   return prop.LogDensity(delta);
 }
