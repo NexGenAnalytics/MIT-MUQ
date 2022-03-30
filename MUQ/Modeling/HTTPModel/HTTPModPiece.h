@@ -66,6 +66,23 @@ namespace muq {
 
       void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override;
 
+      void GradientImpl(unsigned int outWrt,
+                        unsigned int inWrt,
+                        muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+                        Eigen::VectorXd const& sens) override;
+
+      void ApplyJacobianImpl(unsigned int outWrt,
+                             unsigned int inWrt,
+                             muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+                             Eigen::VectorXd const& vec) override;
+
+      void ApplyHessianImpl(unsigned int outWrt,
+                            unsigned int inWrt1,
+                            unsigned int inWrt2,
+                            muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+                            Eigen::VectorXd const& sens,
+                            Eigen::VectorXd const& vec) override;
+
       json config;
       ShallowModPieceClient client;
     };
