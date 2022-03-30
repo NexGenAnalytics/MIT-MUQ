@@ -1,0 +1,14 @@
+- example:
+    file: HTTPModelClient.cpp
+    tag: Modeling
+    title: HTTPModel Client
+    description: Connecting to a (possibly remote and/or containerized) HTTPModel from MUQ.
+    doc_level: 4
+
+- example:
+    file: HTTPModelServer.cpp
+    tag: Modeling
+    title: HTTPModel Server
+    description: Exposing a MUQ model through the HTTPModel interface.
+    other_files: FlowEquation.h
+    doc_level: 4
