@@ -168,7 +168,7 @@ TEST(Approximation_GP, PeriodicStateSpace)
 
     // Make sure the sample is periodic
     for(int i=0; i<obsTimes.size()-periodN-1; ++i)
-        EXPECT_NEAR(realization(0,i), realization(0,i+periodN), 1e-1);
+        EXPECT_NEAR(realization(0,i), realization(0,i+int(periodN)), 1e-1);
 
 }
 
