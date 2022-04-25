@@ -1,12 +1,12 @@
-ARG tag
-FROM mparno/muq-build:$tag
+ARG DOCKER_TAG
+FROM mparno/muq-build:$DOCKER_TAG
 LABEL org.opencontainers.image.authors="M. Parno"
 
-# Run with "docker build --build-arg tag=v0.3.1 -t mparno/muq:v0.3.1 ."
-ARG tag
+# Run with "docker build --build-arg DOCKER_TAG=v0.3.1 --build-arg GIT_BRANCH=v0.3.1 -t mparno/muq:v0.3.1 ."
+ARG GIT_BRANCH
 
 # Download, compile, and install MUQ
-RUN git clone --depth=1 --branch $tag https://bitbucket.org/mituq/muq2.git && \
+RUN git clone --depth=1 --branch $GIT_BRANCH https://bitbucket.org/mituq/muq2.git && \
     cd muq2/build && \
     cmake -DMUQ_USE_GTEST=ON -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/muq-install .. && \
     make install && \
