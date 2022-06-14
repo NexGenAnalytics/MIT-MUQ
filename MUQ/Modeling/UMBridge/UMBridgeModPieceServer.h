@@ -1,19 +1,18 @@
-#include "MUQ/Modeling/HTTPModel/HTTPModPiece.h"
-#include "MUQ/Modeling/HTTPModel/HTTPComm.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPiece.h"
 
 namespace muq {
   namespace Modeling {
 
     /**
-      @class HTTPModPieceWrapper
+      @class UMBridgeModPieceWrapper
       @brief Wrap a ModPiece in an UM-Bridge Model
       @details This is needed in order to easily serve a MUQ ModPiece via UM-Bridge.
       */
-    class HTTPModPieceWrapper : public ShallowModPiece {
+    class UMBridgeModPieceWrapper : public umbridge::Model {
     public:
 
-      HTTPModPieceWrapper(std::shared_ptr<muq::Modeling::ModPiece> modPiece)
-      : ShallowModPiece(modPiece->inputSizes, modPiece->outputSizes), modPiece(modPiece)
+      UMBridgeModPieceWrapper(std::shared_ptr<muq::Modeling::ModPiece> modPiece)
+      : umbridge::Model(modPiece->inputSizes, modPiece->outputSizes), modPiece(modPiece)
       {}
 
       void Evaluate(std::vector<std::reference_wrapper<const Eigen::VectorXd>> const& inputs, json config) override {
@@ -64,8 +63,8 @@ namespace muq {
      * @param port Port at which to serve the modPiece
      */
     void serveModPiece(std::shared_ptr<ModPiece> modPiece, std::string host, int port) {
-      HTTPModPieceWrapper wrapper(modPiece);
-      ::serveModPiece(wrapper, host, port);
+      UMBridgeModPieceWrapper wrapper(modPiece);
+      umbridge::serveModel(wrapper, host, port);
     }
 
   }
