@@ -1,7 +1,7 @@
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 #include "MUQ/Modeling/Distributions/UniformBox.h"
 #include "MUQ/Modeling/Distributions/Density.h"
-#include "MUQ/Modeling/HTTPModel/HTTPModPiece.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPiece.h"
 #include "MUQ/Modeling/OneStepCachePiece.h"
 
 #include "MUQ/SamplingAlgorithms/DummyKernel.h"
@@ -26,7 +26,7 @@ void thread_draw_samples(int index, int num_samples, std::string url) {
   //config["level"] = index->GetValue(0);
   //int port = 4243 + index;
   //std::string url = "http://localhost:" + std::to_string(port);
-  auto model = std::make_shared<HTTPModPiece>(url, config);
+  auto model = std::make_shared<UMBridgeModPiece>(url, config);
   auto model_cached = std::make_shared<OneStepCachePiece>(model);
 
   /*Eigen::MatrixXd box_bounds(3,2);
