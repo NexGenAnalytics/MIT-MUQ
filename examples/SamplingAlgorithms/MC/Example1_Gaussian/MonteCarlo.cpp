@@ -56,8 +56,8 @@ void thread_draw_samples(int index, int num_samples, std::string url) {
 
   std::shared_ptr<SampleCollection> samps = mc->GetQOIs();
 
-  Eigen::VectorXd sampMean = samps->Mean();
-  std::cout << "\nSample Mean = \n" << sampMean.transpose() << std::endl;
+  //Eigen::VectorXd sampMean = samps->Mean();
+  //std::cout << "\nSample Mean = \n" << sampMean.transpose() << std::endl;
 }
 
 int main(int argc, char** argv){
@@ -68,6 +68,8 @@ int main(int argc, char** argv){
 
   std::cout << "Computing " << num_samples << " samples on " << num_threads << " threads with model " << url << std::endl;
 
+
+  auto sampling_start_time = std::chrono::system_clock::now();
   std::vector<std::shared_ptr<std::thread>> threads(0);
   for (int thread_index = 0; thread_index < num_threads; thread_index++) {
 
@@ -81,8 +83,14 @@ int main(int argc, char** argv){
   std::cout << "Samples not queued: " << num_samples << std::endl;
 
   for (auto thread : threads) {
+
     thread->join();
   }
+  auto sampling_end_time = std::chrono::system_clock::now();
+
+  auto sampling_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sampling_end_time - sampling_start_time).count();
+  std::cout << "Sampling took " << sampling_time_ms << " ms" << std::endl;
+
   /*Eigen::VectorXd sampVar = samps->Variance();
   std::cout << "\nSample Variance = \n" << sampVar.transpose() << std::endl;
 
