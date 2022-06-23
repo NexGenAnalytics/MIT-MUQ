@@ -12,38 +12,54 @@ namespace muq {
     public:
 
       UMBridgeModPieceWrapper(std::shared_ptr<muq::Modeling::ModPiece> modPiece)
-      : umbridge::Model(modPiece->inputSizes, modPiece->outputSizes), modPiece(modPiece)
+      : umbridge::Model(UMBridgeModPiece::EigenvectoriToStdVector(modPiece->inputSizes),
+                        UMBridgeModPiece::EigenvectoriToStdVector(modPiece->outputSizes)),
+        modPiece(modPiece)
       {}
 
-      void Evaluate(std::vector<std::reference_wrapper<const Eigen::VectorXd>> const& inputs, json config) override {
-        outputs = modPiece->Evaluate(inputs);
+      void Evaluate(const std::vector<std::vector<double>>& inputs, json config) override {
+        outputs = UMBridgeModPiece::EigenvectordsToStdVectors(
+                    modPiece->Evaluate(UMBridgeModPiece::StdVectorsToEigenvectords(inputs)));
       }
 
       void Gradient(unsigned int outWrt,
                     unsigned int inWrt,
-                    std::vector<std::reference_wrapper<const Eigen::VectorXd>> const& inputs,
-                    Eigen::VectorXd const& sens,
+                    const std::vector<std::vector<double>>& inputs,
+                    const std::vector<double>& sens,
                     json config = json()) override {
-        gradient = modPiece->Gradient(outWrt, inWrt, inputs, sens);
-
+        gradient = UMBridgeModPiece::EigenvectordToStdVector(
+                      modPiece->Gradient(outWrt,
+                                         inWrt,
+                                         UMBridgeModPiece::StdVectorsToEigenvectords(inputs),
+                                         UMBridgeModPiece::StdVectorToEigenvectord(sens)));
       }
 
       void ApplyJacobian(unsigned int outWrt,
-                    unsigned int inWrt,
-                    std::vector<std::reference_wrapper<const Eigen::VectorXd>> const& inputs,
-                    Eigen::VectorXd const& vec,
-                    json config = json()) override {
-        jacobianAction = modPiece->ApplyJacobian(outWrt, inWrt, inputs, vec);
+                         unsigned int inWrt,
+                         const std::vector<std::vector<double>>& inputs,
+                         const std::vector<double>& vec,
+                         json config = json()) override {
+        jacobianAction = UMBridgeModPiece::EigenvectordToStdVector(
+                            modPiece->ApplyJacobian(outWrt,
+                                                    inWrt,
+                                                    UMBridgeModPiece::StdVectorsToEigenvectords(inputs),
+                                                    UMBridgeModPiece::StdVectorToEigenvectord(vec)));
       }
 
       void ApplyHessian(unsigned int outWrt,
                         unsigned int inWrt1,
                         unsigned int inWrt2,
-                        muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
-                        Eigen::VectorXd const& sens,
-                        Eigen::VectorXd const& vec,
+                        const std::vector<std::vector<double>>& inputs,
+                        const std::vector<double>& sens,
+                        const std::vector<double>& vec,
                         json config = json()) override {
-        hessAction = modPiece->ApplyHessian(outWrt, inWrt1, inWrt2, inputs, sens, vec);
+        hessAction = UMBridgeModPiece::EigenvectordToStdVector(
+                        modPiece->ApplyHessian(outWrt,
+                                               inWrt1,
+                                               inWrt2,
+                                               UMBridgeModPiece::StdVectorsToEigenvectords(inputs),
+                                               UMBridgeModPiece::StdVectorToEigenvectord(sens),
+                                               UMBridgeModPiece::StdVectorToEigenvectord(vec)));
       }
 
       bool SupportsEvaluate() override {return true;}

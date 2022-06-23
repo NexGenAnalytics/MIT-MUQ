@@ -58,6 +58,52 @@ namespace muq {
        */
       UMBridgeModPiece(const std::string host, json config = json(), httplib::Headers headers = httplib::Headers());
 
+      static const std::vector<double> EigenvectordToStdVector(const Eigen::VectorXd& vector) {
+        const std::vector<double> vec(vector.data(), vector.data() + vector.rows());
+        return vec;
+      }
+      static Eigen::VectorXd StdVectorToEigenvectord(std::vector<double>& vector) {
+        double* ptr_data = &vector[0];
+        Eigen::VectorXd vec = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr_data, vector.size());
+        return vec;
+      }
+      static const Eigen::VectorXd StdVectorToEigenvectord(const std::vector<double>& vector) {
+        const double* ptr_data = &vector[0];
+        const Eigen::VectorXd vec = Eigen::Map<const Eigen::VectorXd, Eigen::Unaligned>(ptr_data, vector.size());
+        return vec;
+      }
+
+      static std::vector<std::vector<double>> EigenvectordsToStdVectors(std::vector<Eigen::VectorXd> const& inputs) {
+        std::vector<std::vector<double>> vecs(inputs.size());
+        for (int i = 0; i < inputs.size(); i++)
+          vecs[i] = EigenvectordToStdVector(inputs[i]);
+        return vecs;
+      }
+      static std::vector<std::vector<double>> EigenvectordsToStdVectors(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
+        std::vector<std::vector<double>> vecs(inputs.size());
+        for (int i = 0; i < inputs.size(); i++)
+          vecs[i] = EigenvectordToStdVector(inputs[i]);
+        return vecs;
+      }
+      static std::vector<Eigen::VectorXd> StdVectorsToEigenvectords(std::vector<std::vector<double>> vector) {
+        std::vector<Eigen::VectorXd> vec(vector.size());
+        for (int i = 0; i < vector.size(); i++) {
+          vec[i] = StdVectorToEigenvectord(vector[i]);
+        }
+        return vec;
+      }
+
+      static std::vector<int> EigenvectoriToStdVector(const Eigen::VectorXi& vector) {
+        std::vector<int> vec(vector.data(), vector.data() + vector.rows());
+        return vec;
+      }
+      static Eigen::VectorXi StdVectorToEigenvectori(const std::vector<int>& vector) {
+        Eigen::VectorXi vec(vector.size());
+        for (int i = 0; i < vector.size(); i++)
+          vec[i] = vector[i];
+        return vec;
+      }
+
     private:
 
       Eigen::VectorXi read_input_size(const std::string host, const httplib::Headers& headers);

@@ -14,19 +14,25 @@ UMBridgeModPiece::UMBridgeModPiece(const std::string host, json config, httplib:
 Eigen::VectorXi UMBridgeModPiece::read_input_size(const std::string host, const httplib::Headers& headers){
   // Would prefer to reuse the existing client, circular dependency in constructor though...
   umbridge::HTTPModel client(host, headers);
-  return client.inputSizes;
+  return StdVectorToEigenvectori(client.inputSizes);
 }
 
 Eigen::VectorXi UMBridgeModPiece::read_output_size(const std::string host, const httplib::Headers& headers){
   umbridge::HTTPModel client(host, headers);
-  return client.outputSizes;
+  return StdVectorToEigenvectori(client.outputSizes);
 }
 
 void UMBridgeModPiece::EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
   if (!client.SupportsEvaluate())
     throw std::runtime_error("Model does not support evaluation!");
-  client.Evaluate(inputs, config);
-  outputs = client.outputs;
+  std::vector<std::vector<double>> inputs_stdvec(this->numInputs);
+  for (int i = 0; i < this->numInputs; i++) {
+    inputs_stdvec[i] = EigenvectordToStdVector(inputs[i]);
+  }
+  client.Evaluate(inputs_stdvec, config);
+  for (int i = 0; i < this->numOutputs; i++) {
+    outputs[i] = StdVectorToEigenvectord(client.outputs[i]);
+  }
 }
 
 void UMBridgeModPiece::GradientImpl(unsigned int outWrt,
@@ -34,8 +40,8 @@ void UMBridgeModPiece::GradientImpl(unsigned int outWrt,
                                 muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
                                 Eigen::VectorXd const& sens) {
   if (client.SupportsGradient()) {
-    client.Gradient(outWrt, inWrt, inputs, sens, config);
-    gradient = client.gradient;
+    client.Gradient(outWrt, inWrt, EigenvectordsToStdVectors(inputs), EigenvectordToStdVector(sens), config);
+    gradient = StdVectorToEigenvectord(client.gradient);
   } else
     gradient = GradientByFD(outWrt, inWrt, inputs, sens);
 }
@@ -45,8 +51,8 @@ void UMBridgeModPiece::ApplyJacobianImpl(unsigned int outWrt,
                                     muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
                                     Eigen::VectorXd const& vec){
   if (client.SupportsApplyJacobian()) {
-    client.ApplyJacobian(outWrt, inWrt, inputs, vec, config);
-    jacobianAction = client.jacobianAction;
+    client.ApplyJacobian(outWrt, inWrt, EigenvectordsToStdVectors(inputs), EigenvectordToStdVector(vec), config);
+    jacobianAction = StdVectorToEigenvectord(client.jacobianAction);
   } else
     jacobianAction = ApplyJacobianByFD(outWrt, inWrt, inputs, vec);
 }
@@ -58,8 +64,8 @@ void UMBridgeModPiece::ApplyHessianImpl(unsigned int outWrt,
                                     Eigen::VectorXd const& sens,
                                     Eigen::VectorXd const& vec){
   if (client.SupportsApplyHessian()) {
-    client.ApplyHessian(outWrt, inWrt1, inWrt2, inputs, sens, vec, config);
-    hessAction = client.hessAction;
+    client.ApplyHessian(outWrt, inWrt1, inWrt2, EigenvectordsToStdVectors(inputs), EigenvectordToStdVector(sens), EigenvectordToStdVector(vec), config);
+    hessAction = StdVectorToEigenvectord(client.hessAction);
   } else
     hessAction = ApplyHessianByFD(outWrt, inWrt1, inWrt2, inputs, sens, vec);
 }
