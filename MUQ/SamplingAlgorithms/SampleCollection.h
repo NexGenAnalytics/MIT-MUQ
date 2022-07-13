@@ -99,7 +99,15 @@ namespace muq{
       */
       virtual std::shared_ptr<SampleCollection> segment(unsigned int startInd, unsigned int length, unsigned int skipBy=1) const;
 
+      /**
+       * @brief Return last state in the collection.
+       */
       virtual const std::shared_ptr<SamplingState> back() const;
+
+      /**
+       * @brief Return first state in the collection.
+       */
+      virtual const std::shared_ptr<SamplingState> front() const;
 
       ///  Computes the componentwise central moments (e.g., variance, skewness, kurtosis, etc..) of a specific order given that we already know the mean
       virtual Eigen::VectorXd CentralMoment(unsigned               order, 
