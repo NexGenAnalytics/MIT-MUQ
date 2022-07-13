@@ -63,6 +63,9 @@ CreateCompileGroup(
     DRKernel.cpp
     DILIKernel.cpp
 
+    MLDAKernel.cpp
+    MLDAProposal.cpp
+
     # MIMCMC Stack
     MIKernel.cpp
     GreedyMLMCMC.cpp
@@ -72,7 +75,7 @@ CreateCompileGroup(
     DefaultComponentFactory.cpp
     SLMCMC.cpp
     SubsamplingMIProposal.cpp
-    
+
     GMHKernel.cpp
 
     MCMCFactory.cpp

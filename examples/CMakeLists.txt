@@ -4,6 +4,8 @@ add_subdirectory(Approximation/MonotoneRegression)
 add_subdirectory(Modeling/FlowEquation/cpp)
 add_subdirectory(Modeling/UMBridge)
 
+add_subdirectory(SamplingAlgorithms/MCMC/MLDA/cpp)
+
 add_subdirectory(SamplingAlgorithms/MC/Example1_Gaussian)
 
 add_subdirectory(SamplingAlgorithms/MCMC/Example1_Gaussian/cpp)
@@ -31,6 +33,8 @@ add_custom_target(examples
                           BasicMultilevel
                           AdvancedMultilevel
                           MultiindexGaussianSampling
+
+                          MLDA
 
                           BlockOperations
                           SimpleReadWrite
