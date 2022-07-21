@@ -93,11 +93,11 @@ namespace muq {
         return vec;
       }
 
-      static std::vector<int> EigenvectoriToStdVector(const Eigen::VectorXi& vector) {
-        std::vector<int> vec(vector.data(), vector.data() + vector.rows());
+      static std::vector<std::size_t> EigenvectoriToStdVector(const Eigen::VectorXi& vector) {
+        std::vector<std::size_t> vec(vector.data(), vector.data() + vector.rows());
         return vec;
       }
-      static Eigen::VectorXi StdVectorToEigenvectori(const std::vector<int>& vector) {
+      static Eigen::VectorXi StdVectorToEigenvectori(const std::vector<std::size_t>& vector) {
         Eigen::VectorXi vec(vector.size());
         for (int i = 0; i < vector.size(); i++)
           vec[i] = vector[i];
