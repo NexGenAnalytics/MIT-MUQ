@@ -36,13 +36,3 @@ CreateCompileGroup(
     ""
     ODEWrapper.cpp
 )
-
-CreateCompileGroup(
-    MODELING_PDE_PYTHON
-    "Building PDE based models in MUQ."
-    pymuqModeling_
-    "MODELING_PDE"
-    "PYTHON"
-    ""
-    #pyPDEModPiece.py
-)
