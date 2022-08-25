@@ -55,6 +55,32 @@ TEST(Approximation_GP, ConstantStateSpace)
 
 }
 
+TEST(Approximation_GP, ConcatenateConstantStateSpace)
+{
+
+    const double sigma2 = 2.0;
+
+    ConstantKernel kernel1(1, sigma2);
+    MaternKernel kernel2(1, sigma2, 1.0, 1.0/2.0);
+
+    ConcatenateKernel kernel(kernel1.Clone(), kernel2.Clone());
+
+    ZeroMean mu(1,1);
+
+    // draw a random sample from the SDE model
+    boost::property_tree::ptree options;
+    options.put("SDE.dt",1e-2);
+
+    StateSpaceGP gp(mu, kernel, options);
+
+    EXPECT_EQ(2, gp.stateDim);
+
+
+
+    Eigen::VectorXd obsTimes = Eigen::VectorXd::LinSpaced(100, 0, 1);
+    Eigen::MatrixXd realization = gp.Sample(obsTimes);
+}
+
 TEST(Approximation_GP, ConcatenateStateSpace)
 {
 
