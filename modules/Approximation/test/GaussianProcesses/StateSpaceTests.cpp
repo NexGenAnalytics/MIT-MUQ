@@ -193,16 +193,8 @@ TEST(Approximation_GP, PeriodicStateSpace)
     Eigen::MatrixXd realization = gp.Sample(obsTimes);
 
     // Make sure the sample is periodic
-<<<<<<< HEAD
-    for(int i=0; i<obsTimes.size()-periodN-1; ++i){
-        double old = realization(0,i);
-        double next = realization(0,i+periodN);
-        EXPECT_NEAR(old,next, 1e-1);
-    }
-=======
     for(int i=0; i<obsTimes.size()-periodN-1; ++i)
         EXPECT_NEAR(realization(0,i), realization(0,i+int(periodN)), 1e-1);
->>>>>>> 2e0b5b2656fdc2dd7e5ef0269c76381db87558cb
 
 }
 
