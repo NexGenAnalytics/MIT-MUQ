@@ -112,8 +112,8 @@ CreateCompileGroup(
     MODELING_DISTRIBUTIONS
     "Implement probability distributions, which allow us to evaluate log-densities and/or sample the distirubtion."
     muqModeling
-    ""
     "MODELING_CORE;UTILITIES_CORE"
+    ""
     ""
 
     Distributions/Distribution.cpp

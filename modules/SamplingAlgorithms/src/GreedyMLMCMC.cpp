@@ -2,7 +2,6 @@
 #include "MUQ/SamplingAlgorithms/DefaultComponentFactory.h"
 
 #include "MUQ/Utilities/MultiIndices/MultiIndexFactory.h"
-#include "spdlog/spdlog.h"
 
 using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
