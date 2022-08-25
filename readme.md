@@ -52,12 +52,19 @@ Join the MUQ Slack channel via our [website](http://muq.mit.edu/) to get in touc
 
 ## Citing
 
-Parno, M., Davis, A., Seelinger, L., and Marzouk, Y. (2014). MIT Uncertainty Quantification (MUQ) library.
+When publishing work based on MUQ, please cite our publication in the Journal of Open Source Software.
 
-<div><pre><code class="language-plaintext">@misc{MUQ,
-  title={MIT uncertainty quantification (MUQ) library},
-  author={Parno, Matthew and Davis, Andrew and Seelinger, Linus and Marzouk, Youssef},
-  year={2014}
+<div><pre><code class="language-plaintext">@article{Parno2021,
+  doi = {10.21105/joss.03076},
+  url = {https://doi.org/10.21105/joss.03076},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {68},
+  pages = {3076},
+  author = {Matthew Parno and Andrew Davis and Linus Seelinger},
+  title = {MUQ: The MIT Uncertainty Quantification Library},
+  journal = {Journal of Open Source Software}
 }</code></pre></div>
 
 ## Contributing

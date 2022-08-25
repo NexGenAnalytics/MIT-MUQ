@@ -3,7 +3,7 @@
 #include "MUQ/Modeling/WorkGraph.h"
 #include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Modeling/Distributions/Density.h"
-#include "MUQ/Modeling/HTTPModel/HTTPModPiece.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPiece.h"
 #include "MUQ/Modeling/LinearAlgebra/HessianOperator.h"
 #include "MUQ/Modeling/LinearAlgebra/StochasticEigenSolver.h"
 
@@ -12,15 +12,15 @@
 /***
 ## Overview
 
-The HTTPModel interface allows coupling model and UQ codes through HTTP. A model may then
+The UM-Bridge interface allows coupling model and UQ codes through HTTP. A model may then
 be implemented in virtually any programming language or framework, run in a container
 or even on a remote machine. Likewise, the model does not make any assumptions on how the client is implemented.
 
-This example shows how to connect to a running HTTPModel server that is implemented in the HTTPModel Server example.
+This example shows how to connect to a running UM-Bridge server that is implemented in the UM-Bridge Server example.
 The server provides the physical model, while the client is responsible for the UQ side.
 
-The HTTPModel interface is fully integrated in MUQ and can be used by means of the HTTPModPiece class.
-Once such an HTTPModPiece is set up, it can be used like any other ModPiece. If the model supports the respective
+The UM-Bridge interface is fully integrated in MUQ and can be used by means of the UMBridgeModPiece class.
+Once such an UMBridgeModPiece is set up, it can be used like any other ModPiece. If the model supports the respective
 functionality, the ModPiece then provides simple model evaluations,
 gradient evaluations, applications of the Jacobian etc.
 
@@ -31,11 +31,11 @@ int main(){
 
 /***
 ## Connect to model server
-First, we set up an HTTPModPiece that connects to our model server. This assumes that, before the client is started,
-the model server from the HTTPModel Server example is already running on your machine.
+First, we set up an UMBridgeModPiece that connects to our model server. This assumes that, before the client is started,
+the model server from the UM-Bridge Server example is already running on your machine.
 */
 
-  auto mod = std::make_shared<HTTPModPiece>("http://localhost:4242");
+  auto mod = std::make_shared<UMBridgeModPiece>("http://localhost:4242");
 
 /***
 ## Set up dimensions
