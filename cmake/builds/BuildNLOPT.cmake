@@ -25,7 +25,7 @@ ExternalProject_Add(
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/nlopt
     URL ${NLOPT_EXTERNAL_SOURCE}
     CONFIGURE_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/external/nlopt/src/NLOPT/configure  CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${HDF5_PARALLEL_FLAG} CFLAGS=${NLOPT_CFLAGS} --prefix=${NLOPT_INSTALL_DIR} --enable-shared --without-octave --without-matlab --without-python --without-guile
-    BUILD_COMMAND make install
+    BUILD_COMMAND $(MAKE) install
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ""
 )
