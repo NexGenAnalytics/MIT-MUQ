@@ -17,7 +17,7 @@ option(MUQ_USE_HDF5 "Support the use of HDF5." ON)
 option(MUQ_USE_SPDLOG "Enable the use of SPDLOG." ON)
 option(MUQ_USE_OTF2 "Enable the use of OTF2." ON)
 option(MUQ_USE_STANMATH "Enable the use of stan math functionality." ON)
-option(MUQ_USE_PARCER "Use ParCer (PARallel CEReal) MPI wrapper." OFF)
+option(MUQ_USE_PARCER "Use ParCer (PARallel CEReal) MPI wrapper." ON)
 
 # Tests 
 option(MUQ_USE_GTEST "Enable unit testing using GTEST" OFF)
