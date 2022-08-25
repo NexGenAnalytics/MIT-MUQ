@@ -47,7 +47,7 @@ CreateCompileGroup(
     CombineVectors.cpp
     SumPiece.cpp
 
-    HTTPModel/HTTPModPiece.cpp
+    UMBridge/UMBridgeModPiece.cpp
 
     MultiLogisticLikelihood.cpp
 
