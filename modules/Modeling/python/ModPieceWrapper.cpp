@@ -1,6 +1,13 @@
 #include "AllClassWrappers.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+#include "pybind11_json.h"
+
 #include "MUQ/Modeling/ConstantVector.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPiece.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPieceServer.h"
 #include "MUQ/Modeling/ModPiece.h"
 #include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Modeling/MultiLogisticLikelihood.h"
@@ -10,10 +17,6 @@
 #include "MUQ/Modeling/SplitVector.h"
 #include "MUQ/Modeling/WorkGraph.h"
 #include "MUQ/Modeling/SumPiece.h"
-
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
 #include <string>
 
@@ -62,6 +65,17 @@ public:
     PYBIND11_OVERLOAD(void, PyModPiece, ApplyHessianImpl, outputDimWrt, inputDimWrt1, inputDimWrt2, input, sens, vec);
   }
 };
+
+// The server itself does not do any Python calls; nevertheless, Python's global interpreter
+// lock (GIL) remains active while entering the server loop, unless explicitly instructed not to.
+// The server spawns threads for requests which may have to evaluate a Python model, in turn locking the GIL.
+// We therefore have to unlock the GIL for the server loop, else we get a deadlock once
+// a Python model is evaluated by the server.
+void serveModPieceWithoutGIL(std::shared_ptr<ModPiece> modPiece, std::string host, int port) {
+  Py_BEGIN_ALLOW_THREADS
+  muq::Modeling::serveModPiece(modPiece, host, port);
+  Py_END_ALLOW_THREADS
+}
 
 class Publicist : public PyModPiece {
 public:
@@ -123,6 +137,13 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
   ocp
     .def(py::init<std::shared_ptr<ModPiece>>())
     .def("HitRatio", &OneStepCachePiece::HitRatio);
+
+  py::class_<UMBridgeModPiece, ModPiece, WorkPiece, std::shared_ptr<UMBridgeModPiece>> hmp(m, "UMBridgeModPiece");
+  hmp
+    .def(py::init( [](std::string host) {return new UMBridgeModPiece(host); }))
+    .def(py::init( [](std::string host, py::dict config) {return new UMBridgeModPiece(host, config); }));
+
+  m.def("serveModPiece", &serveModPieceWithoutGIL);
 
   py::class_<ConstantVector, ModPiece, WorkPiece, std::shared_ptr<ConstantVector>> cv(m, "ConstantVector");
   cv

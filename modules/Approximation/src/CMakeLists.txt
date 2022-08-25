@@ -86,6 +86,7 @@ CreateCompileGroup(
 		GaussianProcesses/ProductKernel.cpp
     GaussianProcesses/SumKernel.cpp
     GaussianProcesses/PeriodicKernel.cpp
+	GaussianProcesses/ConstantKernel.cpp
     GaussianProcesses/KarhunenLoeveExpansion.cpp
     #GaussianProcesses/SeparableKarhunenLoeve.cpp
     GaussianProcesses/ObservationInformation.cpp

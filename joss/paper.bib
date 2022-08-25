@@ -1,12 +1,13 @@
 
 @article{salvatier2016,
-  title={Probabilistic programming in Python using PyMC3},
+  title={Probabilistic programming in {P}ython using PyMC3},
   author={Salvatier, John and Wiecki, Thomas V and Fonnesbeck, Christopher},
   journal={PeerJ Computer Science},
   volume={2},
   pages={e55},
   year={2016},
-  publisher={PeerJ Inc.}
+  publisher={PeerJ Inc.},
+  doi={10.7717/peerj-cs.55},
 }
 
 @article{cui2016,
@@ -23,7 +24,8 @@
 @misc{nlopt,
 author={Steven Johnson},
 title={The NLopt nonlinear-optimization package},
-howpublished={\url{http://github.com/stevengj/nlopt}}
+howpublished={\url{http://github.com/stevengj/nlopt}},
+year={2007}
 }
 
 @MISC{eigenweb,
@@ -48,7 +50,8 @@ howpublished={\url{http://github.com/stevengj/nlopt}}
   number={3},
   pages={363--396},
   year={2005},
-  publisher={ACM}
+  publisher={ACM},
+  doi={10.1145/1089014.1089020}
 }
 
 @misc{boost,
@@ -59,28 +62,35 @@ howpublished={\url{http://github.com/stevengj/nlopt}}
 }
 
 @article{carpenter2017,
-  title={Stan: a probabilistic programming language.},
-  author={Carpenter, Bob and Gelman, Andrew and Hoffman, Matthew D and Lee, Daniel and Goodrich, Ben and Betancourt, Michael and Brubaker, Marcus A and Guo, Jiqiang and Li, Peter and Riddell, Allen},
-  journal={Grantee Submission},
+  title={Stan: A Probabilistic Programming Language},
   volume={76},
+  url={https://www.jstatsoft.org/index.php/jss/article/view/v076i01},
+  doi={10.18637/jss.v076.i01},
   number={1},
-  pages={1--32},
+  journal={Journal of Statistical Software},
+  author={Carpenter, Bob and Gelman, Andrew and Hoffman, Matthew D. and Lee, Daniel and Goodrich, Ben and Betancourt, Michael and Brubaker, Marcus and Guo, Jiqiang and Li, Peter and Riddell, Allen},
   year={2017},
-  publisher={ERIC}
+  pages={1–32}
 }
 
-@article{carpenter2015stan,
-  title={The Stan math library: Reverse-mode automatic differentiation in C++},
-  author={Carpenter, Bob and Hoffman, Matthew D and Brubaker, Marcus and Lee, Daniel and Li, Peter and Betancourt, Michael},
-  journal={arXiv preprint arXiv:1509.07164},
-  year={2015}
+@misc{carpenter2015stan,
+  title={The {S}tan {M}ath Library: Reverse-Mode Automatic Differentiation in {C}++},
+  author={Bob Carpenter and Matthew D. Hoffman and Marcus Brubaker and Daniel Lee and Peter Li and Michael Betancourt},
+  year={2015},
+  eprint={1509.07164},
+  archivePrefix={arXiv},
+  primaryClass={cs.MS},
+  url={https://arxiv.org/abs/1509.07164}
 }
 
-@article{lao2020,
-  title={tfp.mcmc: Modern Markov chain Monte Carlo tools built for modern hardware},
-  author={Lao, Junpeng and Suter, Christopher and Langmore, Ian and Chimisov, Cyril and Saxena, Ashish and Sountsov, Pavel and Moore, Dave and Saurous, Rif A and Hoffman, Matthew D and Dillon, Joshua V},
-  journal={arXiv preprint arXiv:2002.01184},
-  year={2020}
+@misc{lao2020,
+  title={tfp.mcmc: Modern {M}arkov Chain {M}onte {C}arlo Tools Built for Modern Hardware},
+  author={Junpeng Lao and Christopher Suter and Ian Langmore and Cyril Chimisov and Ashish Saxena and Pavel Sountsov and Dave Moore and Rif A. Saurous and Matthew D. Hoffman and Joshua V. Dillon},
+  year={2020},
+  eprint={2002.01184},
+  archivePrefix={arXiv},
+  primaryClass={stat.CO},
+  url={https://arxiv.org/abs/2002.01184}
 }
 
 @article{lunn2009,
@@ -91,18 +101,21 @@ howpublished={\url{http://github.com/stevengj/nlopt}}
   number={25},
   pages={3049--3067},
   year={2009},
-  publisher={Wiley Online Library}
+  publisher={Wiley Online Library},
+  doi={10.1002/sim.3680}
 }
 
 @inproceedings{plummer2003,
-  title={JAGS: A program for analysis of Bayesian graphical models using Gibbs sampling},
+  title={JAGS: A program for analysis of {B}ayesian graphical models using {G}ibbs sampling},
   author={Plummer, Martyn and others},
   booktitle={Proceedings of the 3rd international workshop on distributed statistical computing},
   volume={124},
   number={125.10},
   pages={1--10},
   year={2003},
-  organization={Vienna, Austria.}
+  organization={Vienna, Austria.},
+  pdf={https://www.r-project.org/conferences/DSC-2003/Proceedings/Plummer.pdf},
+  url={https://www.r-project.org/conferences/DSC-2003/Proceedings/}
 }
 
 
@@ -125,11 +138,12 @@ howpublished={\url{http://github.com/stevengj/nlopt}}
   number={3},
   pages={425--464},
   year={2001},
-  publisher={Wiley Online Library}
+  publisher={Wiley Online Library},
+  doi={10.1111/1467-9868.00294}
 }
 
 @article{sargsyan2019embedded,
-  title={Embedded model error representation for Bayesian model calibration},
+  title={Embedded model error representation for {B}ayesian model calibration},
   author={Sargsyan, Khachik and Huan, Xun and Najm, Habib N},
   journal={International Journal for Uncertainty Quantification},
   volume={9},
@@ -151,29 +165,41 @@ howpublished={\url{http://github.com/stevengj/nlopt}}
   doi={10.1137/140964023}
 }
 
-@article{detommaso2018stein,
-  title={A Stein variational Newton method},
-  author={Detommaso, Gianluca and Cui, Tiangang and Spantini, Alessio and Marzouk, Youssef and Scheichl, Robert},
-  journal={arXiv preprint arXiv:1806.03085},
-  year={2018}
+@misc{detommaso2018stein,
+  title={A {S}tein variational {N}ewton method},
+  author={Gianluca Detommaso and Tiangang Cui and Alessio Spantini and Youssef Marzouk and Robert Scheichl},
+  year={2018},
+  eprint={1806.03085},
+  archivePrefix={arXiv},
+  primaryClass={stat.ML},
+  url={https://arxiv.org/abs/1806.03085}
 }
 
-@inproceedings{han2018stein,
-  title={Stein variational gradient descent without gradient},
-  author={Han, Jun and Liu, Qiang},
-  booktitle={International Conference on Machine Learning},
-  pages={1900--1908},
-  year={2018},
-  organization={PMLR}
+@InProceedings{han2018stein,
+  title = 	 {Stein Variational Gradient Descent Without Gradient},
+  author =       {Han, Jun and Liu, Qiang},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {1900--1908},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/han18b/han18b.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/han18b.html},
 }
 
 @article{MLMCMC,
-author = {Dodwell, Tim and Ketelsen, Chris and Scheichl, Robert and Teckentrup, Aretha},
-year = {2015},
-month = {08},
-pages = {},
-title = {A Hierarchical Multilevel Markov Chain Monte Carlo Algorithm with Applications to Uncertainty Quantification in Subsurface Flow},
-doi = {10.1137/130915005}
+  author={Dodwell, Tim and Ketelsen, Chris and Scheichl, Robert and Teckentrup, Aretha},
+  title={A hierarchical multilevel {M}arkov chain {M}onte {C}arlo algorithm with applications to uncertainty quantification in subsurface flow},
+  year={2015},
+  pages={34 S.},
+  language={eng},
+  issn={2166-2525},
+  volume={3},
+  journal={SIAM ASA journal on uncertainty quantification},
+  doi={10.1137/130915005},
 }
 
 @article{MLMCMCRevised,
@@ -181,14 +207,14 @@ author = {Dodwell, Tim and Ketelsen, Chris and Scheichl, Robert and Teckentrup, 
 year = {2019},
 month = {01},
 pages = {509-545},
-title = {Multilevel Markov Chain Monte Carlo},
+title = {Multilevel {M}arkov Chain {M}onte {C}arlo},
 volume = {61},
 journal = {SIAM Review},
 doi = {10.1137/19M126966X}
 }
 
 @article{conrad2013adaptive,
-  title={Adaptive Smolyak pseudospectral approximations},
+  title={Adaptive {S}molyak pseudospectral approximations},
   author={Conrad, Patrick R and Marzouk, Youssef M},
   journal={SIAM Journal on Scientific Computing},
   volume={35},
@@ -213,15 +239,18 @@ doi = {10.1137/19M126966X}
 }
 
 
-@article{davis2020rate,
+@misc{davis2020rate,
   title={Rate-optimal refinement strategies for local approximation MCMC},
-  author={Davis, Andrew and Marzouk, Youssef and Smith, Aaron and Pillai, Natesh},
-  journal={arXiv preprint arXiv:2006.00032},
-  year={2020}
+  author={Andrew D. Davis and Youssef Marzouk and Aaron Smith and Natesh Pillai},
+  year={2021},
+  eprint={2006.00032},
+  archivePrefix={arXiv},
+  primaryClass={stat.CO},
+  url={https://arxiv.org/abs/2006.00032}
 }
 
 @article{parno2018transport,
-  title={Transport map accelerated Markov chain Monte Carlo},
+  title={Transport map accelerated {M}arkov chain {M}onte {C}arlo},
   author={Parno, Matthew D and Marzouk, Youssef M},
   journal={SIAM/ASA Journal on Uncertainty Quantification},
   volume={6},
@@ -234,7 +263,7 @@ doi = {10.1137/19M126966X}
 
 @article{MLMC,
 author = {Giles, Michael B.},
-title = {Multilevel Monte Carlo Path Simulation},
+title = {Multilevel {M}onte {C}arlo Path Simulation},
 year = {2008},
 issue_date = {May 2008},
 publisher = {INFORMS},
@@ -244,9 +273,8 @@ number = {3},
 issn = {0030-364X},
 url = {https://doi.org/10.1287/opre.1070.0496},
 doi = {10.1287/opre.1070.0496},
-abstract = {We show that multigrid ideas can be used to reduce the computational complexity of estimating an expected value arising from a stochastic differential equation using Monte Carlo path simulations. In the simplest case of a Lipschitz payoff and a Euler discretisation, the computational cost to achieve an accuracy of O(ε) is reduced from O(ε-3) to O(ε-2 (log ε)2). The analysis is supported by numerical results showing significant computational savings.},
-journal = {Oper. Res.},
-month = may,
+journal = {Operations Research},
+month = {may},
 pages = {607–617},
 numpages = {11},
 keywords = {finance, computational complexity, simulation, efficiency, analysis of algorithms}
@@ -255,14 +283,23 @@ keywords = {finance, computational complexity, simulation, efficiency, analysis 
 @misc{pybind11,
    author = {Wenzel Jakob and Jason Rhinelander and Dean Moldovan},
    year = {2017},
-   note = {https://github.com/pybind/pybind11},
-   title = {pybind11 -- Seamless operability between C++11 and Python}
+   howpublished={\url{https://github.com/pybind/pybind11}},
+   title = {pybind11 -- Seamless operability between {C}++11 and {P}ython}
 }
 
-@article{ParallelMLMCMC,
+@inproceedings{ParallelMLMCMC,
 author = {Seelinger, Linus and Reinarz, Anne and Rannabauer, Leonhard and Bader, Michael and Bastian, Peter and Scheichl, Robert},
-title = {High Performance Uncertainty Quantification with Parallelized Multilevel Markov Chain Monte Carlo},
+title = {High Performance Uncertainty Quantification with Parallelized Multilevel {M}arkov Chain {M}onte {C}arlo},
 year = {2021},
-number = {to appear},
-journal = {Supercomputing 21},
+isbn = {9781450384421},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3458817.3476150},
+doi = {10.1145/3458817.3476150},
+booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+articleno = {75},
+numpages = {15},
+keywords = {bayesian inverse problems, tsunami simulation, ADER-DG, multilevel methods},
+location = {St. Louis, Missouri},
+series = {SC '21}
 }
