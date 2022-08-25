@@ -20,10 +20,11 @@ macro (GetDependency name)
                     # check to make sure the library can be linked to
                     include(Check${name})
 
+                    # If the test code compiled...
                     if(NOT ${name}_TEST_FAIL)
-                            set(USE_INTERNAL_${name} 0)
+                        set(USE_INTERNAL_${name} 0)
                     else()
-                            set(USE_INTERNAL_${name} 1)
+                        set(USE_INTERNAL_${name} 1)
                     endif()
 
                 else()
@@ -52,33 +53,23 @@ macro (GetDependency name)
 
 endmacro(GetDependency)
 
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/)
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/include)
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/lib)
+
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
-########################################
-##### LOOK FOR AND/OR BUILD Eigen ######
-########################################
+########################################################
+##### LOOK FOR AND/OR BUILD REQUIRED DEPENDENCIES ######
+########################################################
 GetDependency(EIGEN3)
-
-########################################
-##### LOOK FOR AND/OR BUILD StanMath ######
-########################################
 GetDependency(STANMATH)
-
-########################################
-##### LOOK FOR AND/OR BUILD SUNDIALS ###
-########################################
 GetDependency(SUNDIALS)
-
-
-########################################
-##### LOOK FOR AND/OR BUILD NLOPT ###
-########################################
 GetDependency(NLOPT)
-
-########################################
-##### LOOK FOR AND/OR BUILD PARCER ###
-########################################
 GetDependency(PARCER)
+GetDependency(SPDLOG)
+GetDependency(OTF2)
 
 
 ########################################
@@ -144,14 +135,14 @@ if (${dindex} GREATER -1)
 
     # store include directory information
     if(NOT DEFINED Boost_INCLUDE_DIRS)
-        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS})
+        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIR})
     endif()
 
     include_directories(${Boost_INCLUDE_DIRS})
     LIST(APPEND ${CMAKE_PROJECT_NAME}_EXTERNAL_INCLUDES ${Boost_INCLUDE_DIRS})
 
     if(NOT DEFINED Boost_LIBRARIES)
-        set(Boost_LIBRARIES ${BOOST_LIBRARIES})
+        set(Boost_LIBRARIES ${BOOST_LIBRARY})
         set(Boost_LIBRARIES_STATIC ${BOOST_LIBRARIES_STATIC})
     endif()
 

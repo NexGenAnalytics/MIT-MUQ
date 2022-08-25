@@ -1,4 +1,4 @@
-import pymuqModeling as mm
+import muq.Modeling as mm
 import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla

@@ -1,5 +1,4 @@
 /***
-# MCMC Example 1: Simple Gaussian Sampling
 ## Overview
 The goal of this example is to demonstrate the use of MUQ's MCMC stack by sampling
 a simple bivariate Gaussian density.  To keep things as simple as possible, we
@@ -115,6 +114,9 @@ chain, kernel, and proposal themselves.
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
+
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -235,6 +237,60 @@ At the base level, we specify the number of steps in the chain with the entry "N
 
   Eigen::VectorXd sampMom3 = samps->CentralMoment(3);
   std::cout << "\nSample Third Moment = \n" << sampMom3 << std::endl << std::endl;
+
+  /***
+    #### Statistical Accuracy
+    In addition to looking at moments and other expectations with respect to the target distribution, we can also look at the 
+    statistical accuracy of the mean estimate.  Specifically, we can look at the Monte Carlo Standard Error (MCSE) and effective
+    sample size of the chain.   There are multiple ways of computing these quantities and MUQ provides implementations of both
+    batch and spectral methods.   Batch methods use the means of different subsets of the chain to estimate the estimator variance
+    whereas spectral methods look at the autocorrelation of the chain.   MUQ uses the spectral method described in
+    [Monte Carlo errors with less error](https://doi.org/10.1016/S0010-4655(03)00467-3).  
+  */
+
+  Eigen::VectorXd batchESS = samps->ESS("Batch");
+  Eigen::VectorXd batchMCSE = samps->StandardError("Batch");
+
+  Eigen::VectorXd spectralESS = samps->ESS("Wolff");
+  Eigen::VectorXd spectralMCSE = samps->StandardError("Wolff");
+
+  std::cout << "ESS:\n";
+  std::cout << "  Batch:    " << batchESS.transpose() << std::endl;
+  std::cout << "  Spectral: " << spectralESS.transpose() << std::endl;
+  std::cout << "MCSE:\n";
+  std::cout << "  Batch:    " << batchMCSE.transpose() << std::endl;
+  std::cout << "  Spectral: " << spectralMCSE.transpose() << std::endl;
+
+  /***
+    ### 5. Compute convergence diagnostics
+    To quantitatively assess whether the chain has converged, we need to run multiple
+    chains and then compare the results.  Below we run 3 more independent chains (for a total of 4)
+    and then analyze convergence using the commonly employed $\hat{R}$ diagnostic.  A value of $\hat{R}$ close to $1$ (e.g., $<1.01$)
+    implies that the chains have converged.  More discussion on this point, as well as a description of the split-rank approach used
+    in MUQ to estimat $\hat{R}$, can be found in [Rank-normalization, folding, and localization: An improved R for assessing convergence of MCMC](https://arxiv.org/pdf/1903.08008.pdf).
+
+    Notice that a new MCMC sampler is defined each time with a randomly selected starting point.  If we simply called `mcmc.Run()`
+    multiple times, the sampler would always pick up where it left off.  For the estimation of $\hat{R}$, it is also important that 
+    the initials states of these chains be drawn from a distribution that is more "diffuse" than the target distribution.
+  */
+  pt.put("PrintLevel",0);
+  int numChains = 4;
+  std::vector<std::shared_ptr<SampleCollection>> chains(numChains);
+  chains.at(0) = samps;
+
+  for(int i=1; i<numChains; ++i){
+    std::cout << "Running chain " << i << "..." << std::flush;
+    Eigen::VectorXd x0 = startPt + 1.5*RandomGenerator::GetNormal(mu.size()); // Start the Gaussian block at the mean
+
+    mcmc = MCMCFactory::CreateSingleChain(pt, problem);
+    chains.at(i) = mcmc->Run(x0);
+
+    std::cout << " done" << std::endl;
+  }
+
+  Eigen::VectorXd rhat = Diagnostics::Rhat(chains);
+  std::cout << "\nRhat = " << rhat.transpose() << std::endl;
+
 
   return 0;
 }

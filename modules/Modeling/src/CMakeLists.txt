@@ -47,6 +47,8 @@ CreateCompileGroup(
     CombineVectors.cpp
     SumPiece.cpp
 
+    UMBridge/UMBridgeModPiece.cpp
+
     MultiLogisticLikelihood.cpp
 
     ReplicateOperator.cpp
@@ -119,6 +121,7 @@ CreateCompileGroup(
     Distributions/UniformBox.cpp
     Distributions/Gaussian.cpp
     Distributions/GaussianBase.cpp
+    Distributions/Gamma.cpp
     Distributions/InverseGamma.cpp
     Distributions/DensityProduct.cpp
     Distributions/Density.cpp
@@ -126,14 +129,13 @@ CreateCompileGroup(
 )
 
 CreateCompileGroup(
-    MODELING_SUNDIALS_MODELS
+    MODELING_ODE
     "ODE integrators using Sundials"
     muqModeling
     "MODELING_CORE"
     "EIGEN3;BOOST;SUNDIALS"
     ""
-    ODEBase.cpp
-    ODEData.cpp
     ODE.cpp
+    ODEData.cpp
     #RootfindingIVP.cpp
 )

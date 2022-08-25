@@ -1,35 +1,5 @@
 /**
- * \page muqstyle MUQ Development Style
- *
- * \section uncrustify Uncrustify code formatting
- * MUQ uses uncrustify to ensure that all the files look good and are similar. It will also insert the license header
- * into any .h or .cpp that does not lead with a comment.
- *
- * Install uncrustify from source, it's easy. http://uncrustify.sourceforge.net/ Get 0.60.
- *
- * This style is checked on all altered files with a git hook. Create a link from repo/muq-pre-commit to
- *.git/hooks/pre-commit, which should be executable. On commit, commits will fail if all files do not pass the style
- * check. If they fail, it will show  you the diff and then provide a patch. The "git patch" command output can be
- * executed, the changes added, and then try the commit again. It also might yell at you about trailing whitespace.
- * Unfortunately, you can't fix these things transparently during the commit hook.
- *
- * If you're on kdevelop, you can get the Edit->"Reformat source" to work under Settings->Configure Kdevelop->Source
- * formatter.
- * Create a custom script, and set it to "uncrustify -l CPP -q". This will read from ~/.uncrustify.cfg, so create a sym
- * link from that to your repo, or add -c [uncrustify.cfg in your repo].
- *
- * Uncrustify oddness notes:
- * - It doesn't seem to like the new c++ {} to call a constructor - it took out the ; in one example.
- * - If you have a one line macro without a ;, it might move the following lines up. This is syntactically okay, as the
- * macro usually has the semicolon, but it looks bad. Add a ; and it'll be fine.
- * - If it reflows a comment for you, you seem to need to run it twice. It doesn't add spaces to the wrapped lines the
- * first go around.
- * - Reflowing only works for lines that are too long, it grab stuff from the next line,to fix up the whole paragraph,
- * but you can always merge the lines and force it to reflow.
- *
- *  I propose that when we're ready, I'll apply the formatter to everything at once. This will produce a horrible commit
- * that will touch tons of things. Then, if we decide to tweak the config, we'll apply it as we go, except that on named
- * releases we might make sure it's universally applied.
+ * \page muqstyle Development Style Guide
  *
  *  \section styleconventions C++ style and naming conventions
  *  I often like the google c++ style guide for such things. They have smart people who thought hard about this stuff,

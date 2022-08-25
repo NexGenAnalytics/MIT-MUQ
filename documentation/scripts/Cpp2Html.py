@@ -4,7 +4,6 @@ import markdown2
 
 import sys
 
-
 class TutorialDocument:
 
     def __init__(self, filename):
@@ -24,38 +23,11 @@ class TutorialDocument:
         return pieces
 
     def GetHeader(self):
-        header ="""
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Titillium+Web:300' type='text/css'>
-<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Arimo:400,700' type='text/css'>
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['$','$'], ['\\(','\\)']],
-    processEscapes: false
-  }
-});
-</script>
-<title>Example Code</title>
-</head>
-
-        <body>
-        """
-
+        header =''
         return header
 
     def GetFooter(self):
-        footer = """</body>"""
+        footer = ''
         return footer
 
     def FormatCode(self, string):
@@ -82,8 +54,8 @@ MathJax.Hub.Config({
         stripPieces = []
         for piece in codePieces:
             if(len(piece)>0):
-                stripPieces.append(piece.lstrip('\n').rstrip(' '))
-
+                stripPieces.append(piece.replace('<','&lt;').replace('>','&gt;').lstrip('\n').rstrip(' '))
+        
         completeCode = self.StripLines(''.join(stripPieces))
 
         output = markdown2.markdown('#Complete Code')
@@ -132,14 +104,16 @@ MathJax.Hub.Config({
             lines.pop()
         return '\n'.join(lines)
 
-if(len(sys.argv)!=3):
-    print("\nERROR: Incorrect number of command line arguments to Cpp2Html.py")
-    print("\nUSAGE:\n\tpython Cpp2Html.py <c++ inputfile> <html outputfile>\n\n")
+if __name__=='__main__':
 
-assert(len(sys.argv)==3)
-filename = sys.argv[1]
+    if(len(sys.argv)!=3):
+        print("\nERROR: Incorrect number of command line arguments to Cpp2Html.py")
+        print("\nUSAGE:\n\tpython Cpp2Html.py <c++ inputfile> <html outputfile>\n\n")
 
-htmlString = TutorialDocument(filename).ToHTML()
+    assert(len(sys.argv)==3)
+    filename = sys.argv[1]
 
-with open(sys.argv[2],'w') as fout:
-    fout.write(htmlString)
+    htmlString = TutorialDocument(filename).ToHTML()
+
+    with open(sys.argv[2],'w') as fout:
+        fout.write(htmlString)

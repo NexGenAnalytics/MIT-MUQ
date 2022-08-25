@@ -22,6 +22,6 @@ CreateCompileGroup(
     CostFunction.cpp
     ModPieceCostFunction.cpp
     Optimizer.cpp
-    Optimization.cpp
     NLoptOptimizer.cpp
+    NewtonTrust.cpp
 )

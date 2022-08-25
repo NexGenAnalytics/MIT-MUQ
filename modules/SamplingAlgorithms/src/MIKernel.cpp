@@ -54,7 +54,7 @@ std::vector<std::shared_ptr<SamplingState>> MIKernel::Step(unsigned int const t,
   double propTargetCoarse;
   double currentTargetCoarse;
 
-  if(prevState->HasMeta("LogTarget")){
+  if(prevState->HasMeta("LogTarget") && (prevState->HasMeta("QOI") || problem->numBlocksQOI == 0)){
     currentTarget = AnyCast(prevState->meta["LogTarget"]);
   }else{
     currentTarget = problem->LogDensity(prevState);
@@ -64,30 +64,28 @@ std::vector<std::shared_ptr<SamplingState>> MIKernel::Step(unsigned int const t,
     }
   }
 
-  if(coarsePrevState->HasMeta("LogTarget")){
+  if(coarsePrevState->HasMeta("LogTarget") && (coarsePrevState->HasMeta("QOI") || coarse_problem->numBlocksQOI == 0)){
     currentTargetCoarse = AnyCast(coarsePrevState->meta["LogTarget"]);
   }else{
     currentTargetCoarse = coarse_problem->LogDensity(coarsePrevState);
     coarsePrevState->meta["LogTarget"] = currentTargetCoarse;
+    if (coarse_problem->numBlocksQOI > 0) {
+      coarsePrevState->meta["QOI"] = coarse_problem->QOI();
+    }
   }
 
   propTarget = problem->LogDensity(fineProp);
-  if(coarseProp->HasMeta("LogTarget")){
-    propTargetCoarse = AnyCast(coarseProp->meta["LogTarget"]);
-  }else{
-    propTargetCoarse = coarse_problem->LogDensity(coarseProp);
-    coarseProp->meta["LogTarget"] = propTargetCoarse;
-  }
+  assert(coarseProp->HasMeta("LogTarget"));
+  propTargetCoarse = AnyCast(coarseProp->meta["LogTarget"]);
+
   fineProp->meta["LogTarget"] = propTarget;
   fineProp->meta["coarseSample"] = coarseProp; // Hook up fine sample to coarse one
 
   // Aceptance probability
   const double forwardPropDens = proposal->LogDensity(prevState, fineProp);
   const double backPropDens = proposal->LogDensity(fineProp, prevState);
-  const double forwardPropDensCoarse = coarse_proposal->LogDensity(coarsePrevState, coarseProp);
-  const double backPropDensCoarse = coarse_proposal->LogDensity(coarseProp, coarsePrevState);
-  const double alpha = std::exp(propTarget + backPropDens - forwardPropDens - currentTarget
-                              -(propTargetCoarse + backPropDensCoarse - forwardPropDensCoarse - currentTargetCoarse));
+  const double alpha = std::exp(propTarget    + currentTargetCoarse + backPropDens
+                              -(currentTarget + propTargetCoarse    + forwardPropDens));
 
   // accept/reject
   numCalls++;
@@ -113,7 +111,7 @@ void MIKernel::PrintStatus(const std::string prefix) const
 {
   std::stringstream msg;
   msg << std::setprecision(2);
-  msg << prefix << "Acceptance Rate = "  << 100.0*double(numAccepts)/double(numCalls) << "%";
+  msg << prefix << "MIKernel acceptance Rate = "  << 100.0*double(numAccepts)/double(numCalls) << "%";
 
   std::cout << msg.str() << std::endl;
 }

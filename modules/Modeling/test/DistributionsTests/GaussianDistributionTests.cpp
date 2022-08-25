@@ -186,7 +186,7 @@ TEST(GaussianDistributionTests, Hessian) {
   Eigen::VectorXd trueHess = -1.0*cov.llt().solve(testVec);
 
   for(int i=0; i<dim; ++i)
-    EXPECT_NEAR(trueHess(i), gaussHess(i), 5e-12);
+    EXPECT_NEAR(trueHess(i), gaussHess(i), 2e-11);
 }
 
 TEST(GaussianDistributionTests, DiagonalCovPrec) {

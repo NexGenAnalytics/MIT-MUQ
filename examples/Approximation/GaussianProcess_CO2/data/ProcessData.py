@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import h5py
 
@@ -13,7 +12,7 @@ df.columns = ['Date','Concentrations']
 
 # Write cleaned data to h5 file
 h5_filename = 'MaunaLoaCO2.h5'
-f = h5py.File(h5_filename)
+f = h5py.File(h5_filename,'w')
 f['/Weekly/Dates'] = df['Date']
 f['/Weekly/Concentrations'] = df['Concentrations']
 

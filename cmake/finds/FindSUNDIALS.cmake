@@ -12,8 +12,6 @@ if(NOT DEFINED MUQ_SUNDIALS_DIR)
                HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
   find_library(NVEC_LIBRARY NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}sundials_nvecserial${CMAKE_SHARED_LIBRARY_SUFFIX}
                HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
-  find_library(NVEC_PARALLEL_LIBRARY NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}sundials_nvecparallel${CMAKE_SHARED_LIBRARY_SUFFIX}
-               HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
 
   find_library(CVODES_LIBRARY_STATIC NAMES ${library_prefix}sundials_cvodes${static_library_suffix}
                HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
@@ -23,8 +21,7 @@ if(NOT DEFINED MUQ_SUNDIALS_DIR)
                HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
   find_library(NVEC_LIBRARY_STATIC NAMES ${library_prefix}sundials_nvecserial${static_library_suffix}
                HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
-  find_library(NVEC_PARALLEL_LIBRARY_STATIC NAMES ${library_prefix}sundials_nvecparallel${static_library_suffix}
-               HINTS ${SUNDIALS_LIBRARY_DIRS} /usr/local/lib/ /usr/lib/)
+
 else()
 
 	find_path(SUNDIALS_INCLUDE_DIR cvodes/cvodes.h
@@ -37,8 +34,7 @@ else()
 	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
 	find_library(NVEC_LIBRARY NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}sundials_nvecserial${CMAKE_SHARED_LIBRARY_SUFFIX}
 	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
-  find_library(NVEC_PARALLEL_LIBRARY NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}sundials_nvecparallel${CMAKE_SHARED_LIBRARY_SUFFIX}
-             	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
+
 
 	find_library(CVODES_LIBRARY_STATIC NAMES ${library_prefix}sundials_cvodes${static_library_suffix}
 	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
@@ -48,18 +44,17 @@ else()
 	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
 	find_library(NVEC_LIBRARY_STATIC NAMES ${library_prefix}sundials_nvecserial${static_library_suffix}
 	             HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
-  find_library(NVEC_PARALLEL_LIBRARY_STATIC NAMES ${library_prefix}sundials_nvecparallel${static_library_suffix}
-                            HINTS ${MUQ_SUNDIALS_DIR}/lib/ NO_DEFAULT_PATH)
+
 endif()
 
 
-# We need sundials version 2.x. Since there is no reasonable way to access the installed sundials version,
+# We need sundials version 5.x. Since there is no reasonable way to access the installed sundials version,
 # we test for a header that fails for newer versions.
 if(EXISTS "${SUNDIALS_INCLUDE_DIR}/cvodes/cvodes_spgmr.h")
-    message (STATUS "Sundials test for ${SUNDIALS_INCLUDE_DIR}/cvodes/cvodes_spgmr.h succeeded")
-else()
-    message (STATUS "Sundials test for ${SUNDIALS_INCLUDE_DIR}/cvodes/cvodes_spgmr.h failed; We require Sundials 2.x, falling back to internal build of Sundials")
+    message (STATUS "Found SUNDIALS header file ${SUNDIALS_INCLUDE_DIR}/cvodes/cvodes_spgmr.h succeeded, which indicates an old (e.g., 2.x) version of SUNDIALS.  MUQ requires version 5.4.")
     return()
+else()
+    message (STATUS "SUNDIALS seems to be the right version.")
 endif()
 
 

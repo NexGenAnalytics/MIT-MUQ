@@ -44,9 +44,8 @@ MultiIndex::MultiIndex(std::initializer_list<unsigned> const& indIn) : MultiInde
 
       maxValue = std::max<int>(maxValue, *it);
       totalOrder += *it;
-
-      i++;
     }
+    i++;
   }
 }
 
@@ -200,6 +199,14 @@ bool MultiIndex::operator<(const MultiIndex &b) const{
     return false;
   }
 
+}
+
+bool MultiIndex::operator>=(const MultiIndex &b) const{
+    return !(*this < b);
+}
+
+bool MultiIndex::operator<=(const MultiIndex &b) const{
+    return !(*this > b);
 }
 
 MultiIndex& MultiIndex::operator+=(const MultiIndex &b) {

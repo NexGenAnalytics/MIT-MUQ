@@ -1,5 +1,5 @@
-/**
-OVERVIEW:
+/***
+## Overview:
 The goal of this example is to fit a monotone function to stress-strain
 data obtained during the 2017 Sandia Fracture Challenge.  For our area of
 interest, the stress should be a monotonically increasing function of the
@@ -7,7 +7,7 @@ strain.
 
 The MonotoneExpansion class provides a way of characterizing
 monotone functions and can be fit to data in a least squares sense using
-the Gauss-Newton algorithm, which is implemented in the "FitData" function
+the Gauss-Newton algorithm, which is implemented in the `FitData` function
 below.
 */
 

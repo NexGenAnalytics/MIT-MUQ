@@ -48,19 +48,19 @@ TEST(Utilities_MultiIndices, RowConstructor)
 
 TEST(Utilities_MultiIndices, InitializerListConstructor)
 {
-  MultiIndex multi{1,5,3,0};
+  MultiIndex multi{1,0,5,0};
 
   EXPECT_EQ(4,multi.GetLength());
   EXPECT_EQ(1,multi.GetValue(0));
-  EXPECT_EQ(5,multi.GetValue(1));
-  EXPECT_EQ(3,multi.GetValue(2));
+  EXPECT_EQ(0,multi.GetValue(1));
+  EXPECT_EQ(5,multi.GetValue(2));
   EXPECT_EQ(0,multi.GetValue(3));
 
   EXPECT_EQ(5,multi.Max());
-  EXPECT_EQ(9,multi.Sum());
+  EXPECT_EQ(6,multi.Sum());
 }
 
-TEST(Utilities_MultiIndices, Equality)
+TEST(Utilities_MultiIndices, Comparison)
 {
   {
     MultiIndex a{1,5,3,0};
@@ -87,6 +87,30 @@ TEST(Utilities_MultiIndices, Equality)
     MultiIndex b{1,5,2,1};
     EXPECT_EQ(false,a == b);
     EXPECT_EQ(false,b == a);
+  }
+  {
+    MultiIndex a{1,5,3,0};
+    MultiIndex b{1,5,3,1};
+    EXPECT_EQ(true, b > a);
+    EXPECT_EQ(false,b < a);
+    EXPECT_EQ(true, a < b);
+    EXPECT_EQ(false,a > b);      
+  }
+  {
+    MultiIndex a{1,5,3,0};
+    MultiIndex b{1,5,3,0};  
+    EXPECT_EQ(true, a >= b);
+    EXPECT_EQ(true, b >= a);
+    EXPECT_EQ(true, a <= b);
+    EXPECT_EQ(true, b <= a);
+  }
+  {
+    MultiIndex a{1,5,3,0};
+    MultiIndex b{1,5,3,1};  
+    EXPECT_EQ(true, b >= a);
+    EXPECT_EQ(false,b <= a);
+    EXPECT_EQ(true, a <= b);
+    EXPECT_EQ(false,a >= b);
   }
 }
 

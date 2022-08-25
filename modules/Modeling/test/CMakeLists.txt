@@ -15,6 +15,7 @@ CreateTestGroup(
     CombineVectorsTests.cpp
     SumPieceTests.cpp
     MultiLogisticTest.cpp
+    LinearSDETests.cpp
 )
 
 CreateTestGroup(
@@ -51,13 +52,6 @@ CreateTestGroup(
     #RootfindingIVPTests.cpp
 )
 
-CreateParallelTestGroup(
-    MODELING_SUNDIALS_MODELS
-
-    ODEParallelTests.cpp
-)
-
-
 CreateTestGroup(
     MODELING_DISTRIBUTIONS
 
@@ -66,4 +60,5 @@ CreateTestGroup(
     DistributionsTests/UniformDistributionTests.cpp
     DistributionsTests/GaussianDistributionTests.cpp
     DistributionsTests/DensityProductTests.cpp
+    DistributionsTests/GammaTests.cpp
 )

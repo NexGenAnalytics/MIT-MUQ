@@ -9,9 +9,8 @@ using namespace muq::Utilities;
 namespace py = pybind11;
 
 void PythonBindings::ODEWrapper(py::module &m) {
-  py::class_<ODE, ModPiece, std::shared_ptr<ODE> > ode(m, "ODE");
-  ode.def(py::init( [] (std::shared_ptr<ModPiece> const& rhs, py::dict const& d) { return new ODE(rhs, ConvertDictToPtree(d)); }), py::keep_alive<1, 2>());
-#if MUQ_HAS_PARCER==1
-  ode.def(py::init( [] (std::shared_ptr<ModPiece> const& rhs, py::dict const& d, std::shared_ptr<parcer::Communicator> const& comm) { return new ODE(rhs, ConvertDictToPtree(d), comm); }), py::keep_alive<1, 2>());
-#endif
+  py::class_<ODE, ModPiece, std::shared_ptr<ODE> >(m, "ODE")
+    .def(py::init( [] (std::shared_ptr<ModPiece> const& rhs, Eigen::VectorXd const& times, py::dict const& d) { return new ODE(rhs, times, ConvertDictToPtree(d)); }), py::keep_alive<1, 2>())
+    .def(py::init( [] (std::shared_ptr<ModPiece> const& rhs, Eigen::VectorXd const& times, bool isAuto, py::dict const& d) { return new ODE(rhs, times, isAuto, ConvertDictToPtree(d)); }), py::keep_alive<1, 2>());
+
 }

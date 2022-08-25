@@ -32,7 +32,7 @@ int main()
     string dataFile = "data/MaunaLoaCO2.h5";
     H5Object f = OpenFile(dataFile);
 
-    Eigen::VectorXd times          = f["/Weekly/Dates" ];
+    Eigen::VectorXd times          = f["/Weekly/Dates"];
     Eigen::VectorXd concentrations = f["/Weekly/Concentrations" ];
 
     // Long term trend
@@ -87,6 +87,6 @@ int main()
     fout["/Predict/Dates"] = evalPts;
     fout["/Predict/Concentrations"] = postMean;
     fout["/Predict/ConcentrationVariance"] = postVar;
-    
+
     return 0;
 }

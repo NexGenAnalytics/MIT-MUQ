@@ -17,14 +17,22 @@ IF(MUQ_USE_GTEST)
 
   ELSE()
 
-    message(WARNING "Could not find GTEST.  No tests can be compiled!")
+    if(NOT GTEST_FOUND)
+      message(WARNING "Could not find GTEST.  No tests can be compiled.")
+    endif()
+    if(GTEST_FOUND AND GTEST_TEST_FAIL)
+      message(WARNING "GTEST failed compilation test.  No tests can be compiled.")
+    endif()
+
     set(MUQ_BUILD_TESTS OFF)
+    set(MUQ_NEEDS_GTEST OFF)
+    set(MUQ_USE_GTEST OFF)
 
   ENDIF(GTEST_FOUND AND NOT GTEST_TEST_FAIL)
 
 ELSE(MUQ_USE_GTEST)
 
-    message(WARNING “Tried to compile tests, but MUQ_USE_GTEST is OFF.  Turning off tests.”)
+    message(STATUS “MUQ_USE_GTEST is OFF.  Turning off tests.”)
     set(MUQ_BUILD_TESTS OFF)
     set(MUQ_NEEDS_GTEST OFF)
 ENDIF(MUQ_USE_GTEST)
@@ -58,13 +66,16 @@ if (${dindex} GREATER -1)
     if(MUQ_USE_PYTHON)
         set(PYBIND11_CPP_STANDARD -std=c++11)
 
-        FIND_PACKAGE(pybind11 2.3)
+        FIND_PACKAGE(pybind11)
 
         if(NOT pybind11_FOUND)
             message(STATUS "Falling back to internal pybind11 version")
             add_subdirectory(${CMAKE_SOURCE_DIR}/external/pybind11)
             include_directories(${CMAKE_SOURCE_DIR}/external/pybind11/include)
         endif()
+
+        message("PYTHON_SITE_PACKAGES = ${PYTHON_SITE_PACKAGES}")
+
     endif()
 else()
     set(MUQ_NEEDS_PYTHON OFF)
@@ -114,6 +125,8 @@ else()
     set(MUQ_NEEDS_DOLFIN OFF)
     set(MUQ_USE_DOLFIN OFF)
 endif()
+
+
 
 ########################################
 ##### REMOVE DUPLICATE INCLUDES   ######

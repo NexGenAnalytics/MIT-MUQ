@@ -1,5 +1,6 @@
 #include "MUQ/Modeling/ModPiece.h"
 #include "MUQ/Utilities/Exceptions.h"
+#include "MUQ/Utilities/Demangler.h"
 
 #include <chrono>
 
@@ -202,14 +203,10 @@ void ModPiece::EvaluateImpl(ref_vector<boost::any> const& inputs){
 //  hessTime += 1e6*static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
 // }
 
-
 void ModPiece::CheckInputs(ref_vector<Eigen::VectorXd> const& input, std::string const& funcName)
 {
   bool errorOccured = false;
-
-  std::string className = abi::__cxa_demangle(typeid(*this).name(), NULL, NULL, NULL);
-
-  std::string msg = "\nError evaluating " + className + "::" + funcName + ":\n";
+  std::string msg;
 
   if(input.size() != inputSizes.size()){
     msg += "  - Wrong number of input arguments.  Expected " + std::to_string(inputSizes.size()) + " inputs, but " + std::to_string(input.size()) + " were given.\n";
@@ -223,8 +220,12 @@ void ModPiece::CheckInputs(ref_vector<Eigen::VectorXd> const& input, std::string
     }
   }
 
-  if(errorOccured)
+  if(errorOccured){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    msg = "\nError evaluating " + className + "::" + funcName + ":\n" + msg;
+
     throw muq::WrongSizeError(msg);
+  }
 }
 
 
@@ -240,6 +241,16 @@ void ModPiece::JacobianImpl(unsigned int                const  outputDimWrt,
                             unsigned int                const  inputDimWrt,
                             ref_vector<Eigen::VectorXd> const& input)
 {
+  if(fdWarnLevel==1){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::cout << "WARNING: In " << className << ", defaulting to finite difference approximation of JacobianImpl." << std::endl;
+  }else if(fdWarnLevel==2){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "Class " << className << " attempted to use a finite difference approximation of ApplyJacobianImpl.";
+    throw std::runtime_error(msg.str());
+  }
+
   jacobian = JacobianByFD(outputDimWrt, inputDimWrt, input);
 }
 
@@ -248,6 +259,16 @@ void ModPiece::ApplyJacobianImpl(unsigned int                const  outputDimWrt
                                  ref_vector<Eigen::VectorXd> const& input,
                                  Eigen::VectorXd             const& vec)
 {
+  if(fdWarnLevel==1){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::cout << "WARNING: In " << className << ", defaulting to finite difference approximation of ApplyJacobianImpl." << std::endl;
+  }else if(fdWarnLevel==2){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "Class " << className << " attempted to use a finite difference approximation of ApplyJacobianImpl.";
+    throw std::runtime_error(msg.str());
+  }
+
   jacobianAction = ApplyJacobianByFD(outputDimWrt, inputDimWrt, input, vec);
 }
 
@@ -320,7 +341,7 @@ Eigen::VectorXd ModPiece::ApplyJacobianByFD(unsigned int                const  o
   Eigen::VectorXd newInput = input.at(inputDimWrt).get() - 0.5*eps*stepDir;
   newInputVec.at(inputDimWrt) = std::cref(newInput);
   Eigen::VectorXd f0 = Evaluate(newInputVec).at(outputDimWrt);
-  
+
   newInput = input.at(inputDimWrt).get() + 0.5*eps*stepDir;
   newInputVec.at(inputDimWrt) = std::cref(newInput);
 
@@ -329,7 +350,7 @@ Eigen::VectorXd ModPiece::ApplyJacobianByFD(unsigned int                const  o
   return vecNorm*(f-f0)/eps;
 }
 
-Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt,
+Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const  outWrt,
                                        unsigned int                const  inWrt1,
                                        unsigned int                const  inWrt2,
                                        std::vector<Eigen::VectorXd> const& input,
@@ -339,22 +360,63 @@ Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt
   return ApplyHessian(outWrt,inWrt1, inWrt2, ToRefVector(input), sens, vec);
 }
 
-Eigen::VectorXd ModPiece::ApplyHessian(unsigned int                const  outWrt,
+Eigen::VectorXd const& ModPiece::ApplyHessian(unsigned int                const  outWrt,
                                        unsigned int                const  inWrt1,
                                        unsigned int                const  inWrt2,
                                        ref_vector<Eigen::VectorXd> const& input,
                                        Eigen::VectorXd             const& sens,
                                        Eigen::VectorXd             const& vec)
 {
-  assert(inWrt2<inputSizes.size()+1);
-  assert(outWrt<sens.size());
-  assert(outputSizes(outWrt)==sens.size());
-  if(inWrt2<inputSizes.size()){
-    assert(inputSizes(inWrt2)==vec.size());
-  }else{
-    assert(vec.size()==outputSizes(outWrt));
+
+  if(inWrt2>inputSizes.size()){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
+    msg << "  inWrt2 should be less than inputSizes.size()+1, but inWrt2 is \"" << inWrt2 << "\" and inputSizes.size() is \"" << inputSizes.size() << "\"";
+   
+    throw muq::WrongSizeError(msg.str());
   }
 
+  if(outWrt>=outputSizes.size()){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
+    msg << "  outWrt should be less than outputSizes.size(), but outWrt is \"" << outWrt << "\" and outputSizes.size() is \"" << outputSizes.size() << "\"";
+   
+    throw muq::WrongSizeError(msg.str());
+  }
+
+  if(sens.size()!=outputSizes(outWrt)){
+    std::string className = muq::Utilities::demangle(typeid(*this).name());
+    std::stringstream msg;
+    msg << "\nError evaluating " << className << "::ApplyHessian(" << outWrt << "," << inWrt1 << "," << inWrt2 << ")\n";
+    msg << "  The sensitivity vector has sens.size()=" << sens.size() << " but it was expected to be outputSizes[outWrt]=" << outputSizes(outWrt);
+   
+    throw muq::WrongSizeError(msg.str());
+  }
+
+  if(inWrt2<inputSizes.size()){
+    if(inputSizes(inWrt2)!=vec.size()){
+      std::string className = muq::Utilities::demangle(typeid(*this).name());
+      std::stringstream msg;
+      msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+      msg << "  The vector has size vec.size()=\"" << vec.size() << "\" but it was expected to be inputSizes(inWrt2)=\"" << inputSizes(inWrt2) << "\"";
+    
+      throw muq::WrongSizeError(msg.str());
+    }
+  }else{
+    if(outputSizes(outWrt)!=vec.size()){
+      std::string className = muq::Utilities::demangle(typeid(*this).name());
+      std::stringstream msg;
+      msg << "\nError evaluating " << className << "::ApplyHessian:\n";
+      msg << "  The vector has size vec.size()=\"" << vec.size() << "\" but it was expected to be outputSizes(outWrt)=\"" << outputSizes(outWrt) << "\"";
+    
+      throw muq::WrongSizeError(msg.str());
+    }
+  }
+
+  // /////////////////////
+  // Done with error checking...
   numHessActCalls++;
   auto start_time = std::chrono::high_resolution_clock::now();
 
