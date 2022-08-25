@@ -2,7 +2,7 @@ add_subdirectory(Approximation/GaussianProcess_CO2)
 add_subdirectory(Approximation/MonotoneRegression)
 
 add_subdirectory(Modeling/FlowEquation/cpp)
-add_subdirectory(Modeling/HTTPModel)
+add_subdirectory(Modeling/UMBridge)
 
 add_subdirectory(SamplingAlgorithms/MC/Example1_Gaussian)
 
@@ -23,8 +23,8 @@ add_custom_target(examples
                           MonteCarlo
                           MultilevelMonteCarlo
 
-                          HTTPModelClient
-                          HTTPModelServer
+                          UMBridgeModelClient
+                          UMBridgeModelServer
 
                           GaussianSampling
                           GaussianGammaSampling

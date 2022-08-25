@@ -6,8 +6,8 @@
 #include "pybind11_json.h"
 
 #include "MUQ/Modeling/ConstantVector.h"
-#include "MUQ/Modeling/HTTPModel/HTTPModPiece.h"
-#include "MUQ/Modeling/HTTPModel/HTTPModPieceServer.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPiece.h"
+#include "MUQ/Modeling/UMBridge/UMBridgeModPieceServer.h"
 #include "MUQ/Modeling/ModPiece.h"
 #include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Modeling/MultiLogisticLikelihood.h"
@@ -138,10 +138,10 @@ void muq::Modeling::PythonBindings::ModPieceWrapper(py::module &m)
     .def(py::init<std::shared_ptr<ModPiece>>())
     .def("HitRatio", &OneStepCachePiece::HitRatio);
 
-  py::class_<HTTPModPiece, ModPiece, WorkPiece, std::shared_ptr<HTTPModPiece>> hmp(m, "HTTPModPiece");
+  py::class_<UMBridgeModPiece, ModPiece, WorkPiece, std::shared_ptr<UMBridgeModPiece>> hmp(m, "UMBridgeModPiece");
   hmp
-    .def(py::init( [](std::string host) {return new HTTPModPiece(host); }))
-    .def(py::init( [](std::string host, py::dict config) {return new HTTPModPiece(host, config); }));
+    .def(py::init( [](std::string host) {return new UMBridgeModPiece(host); }))
+    .def(py::init( [](std::string host, py::dict config) {return new UMBridgeModPiece(host, config); }));
 
   m.def("serveModPiece", &serveModPieceWithoutGIL);
 
