@@ -55,7 +55,7 @@ ConstantKernel::ConstantKernel(unsigned               dim,
 
 std::tuple<std::shared_ptr<muq::Modeling::LinearSDE>, std::shared_ptr<muq::Modeling::LinearOperator>, Eigen::MatrixXd> ConstantKernel::GetStateSpace(boost::property_tree::ptree sdeOptions) const
 {
-    auto id =  std::make_shared<muq::Modeling::IdentityOperator>(coDim);
+    std::shared_ptr<muq::Modeling::LinearOperator> id =  std::make_shared<muq::Modeling::IdentityOperator>(coDim);
 
     Eigen::MatrixXd marginalVar(coDim, coDim);
     Eigen::VectorXd x(inputDim);
@@ -64,9 +64,9 @@ std::tuple<std::shared_ptr<muq::Modeling::LinearSDE>, std::shared_ptr<muq::Model
     boost::property_tree::ptree options;
     options.put("SDE.dt", 1e6); // large step size to ensure that we only ever take one step
 
-    auto zo = std::make_shared<muq::Modeling::ZeroOperator>(coDim,coDim);
+    std::shared_ptr<muq::Modeling::LinearOperator> zo = std::make_shared<muq::Modeling::ZeroOperator>(coDim,coDim);
     auto sde = std::make_shared<muq::Modeling::LinearSDE>(zo, options);
-
+    
     return std::make_tuple(sde, id, marginalVar);
 }
     

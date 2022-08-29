@@ -2,6 +2,7 @@
 #define DEMANGLER_H
 
 #include <string>
+#include <typeinfo>
 
 namespace muq{
 namespace Utilities{

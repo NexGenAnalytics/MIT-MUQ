@@ -10,6 +10,8 @@
 #include <random>
 #include <iostream>
 
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
 
 using namespace muq::Approximation;
 

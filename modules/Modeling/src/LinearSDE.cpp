@@ -43,7 +43,7 @@ LinearSDE::LinearSDE(std::shared_ptr<LinearOperator>    Fin,
 };
 
 LinearSDE::LinearSDE(std::shared_ptr<LinearOperator>    Fin,
-                     boost::property_tree::ptree        options) : LinearSDE(Fin, nullptr, Eigen::MatrixXd(), options){};
+                     boost::property_tree::ptree        options) : LinearSDE(Fin, std::shared_ptr<LinearOperator>(nullptr), Eigen::MatrixXd(), options){};
 
 
 void LinearSDE::ExtractOptions(boost::property_tree::ptree options)

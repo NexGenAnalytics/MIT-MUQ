@@ -1,8 +1,6 @@
 #ifndef LINEARSDE_H
 #define LINEARSDE_H
 
-
-#include "MUQ/Modeling/LinearAlgebra/LinearOperator.h"
 #include "MUQ/Modeling/LinearAlgebra/EigenLinearOperator.h"
 
 #include "MUQ/Utilities/RandomGenerator.h"
@@ -32,21 +30,28 @@ namespace Modeling
     public:
 
         template<typename EigenType1, typename EigenType2>
-        LinearSDE(EigenType1           const& Fin,
-                  EigenType2           const& Lin,
-                  Eigen::MatrixXd      const& Qin,
-                  boost::property_tree::ptree options) : LinearSDE(muq::Modeling::LinearOperator::Create(Fin),
-                                                                   muq::Modeling::LinearOperator::Create(Lin),
-                                                                   Qin,
-                                                                   options)
+        LinearSDE(EigenType1                   const& Fin,
+                  EigenType2                   const& Lin,
+                  Eigen::MatrixXd              const& Qin,
+                  boost::property_tree::ptree         options) : LinearSDE(muq::Modeling::LinearOperator::Create(Fin),
+                                                                           muq::Modeling::LinearOperator::Create(Lin),
+                                                                           Qin,
+                                                                           options)
         {};
         
-        
-        LinearSDE(std::shared_ptr<muq::Modeling::LinearOperator>    Fin,
-                  std::shared_ptr<muq::Modeling::LinearOperator>    Lin,
+        template<typename Type1, typename Type2>
+        LinearSDE(std::shared_ptr<Type1>      Fin,
+                  std::shared_ptr<Type2>      Lin,
+                  Eigen::MatrixXd      const& Qin,
+                  boost::property_tree::ptree options) : LinearSDE(std::dynamic_pointer_cast<LinearOperator>(Fin),std::dynamic_pointer_cast<LinearOperator>(Lin), Qin, options){};
+
+
+        LinearSDE(std::shared_ptr<muq::Modeling::LinearOperator>     Fin,
+                  std::shared_ptr<muq::Modeling::LinearOperator>     Lin,
                   Eigen::MatrixXd                             const& Qin,
                   boost::property_tree::ptree                        options);
 
+        
         LinearSDE(std::shared_ptr<muq::Modeling::LinearOperator>    Fin,
                   boost::property_tree::ptree                        options);
 
