@@ -170,8 +170,8 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   EXPECT_NEAR(trueCov(1,1), variance(1), 5.0*mcse(1));
 
   Eigen::VectorXd skewness = params->Skewness();
-  EXPECT_NEAR(0.0, skewness(0), 0.35);
-  EXPECT_NEAR(0.0, skewness(0), 0.35);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
 
   Eigen::MatrixXd covariance = params->Covariance();
   EXPECT_NEAR(trueCov(0,0), covariance(0,0), 0.2);
