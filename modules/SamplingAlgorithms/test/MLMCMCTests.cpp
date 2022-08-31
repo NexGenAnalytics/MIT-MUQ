@@ -190,6 +190,6 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   EXPECT_NEAR(trueCov(1,1), variance(1), 0.3);
 
   skewness = qois->Skewness();
-  EXPECT_NEAR(0.0, skewness(0), 0.35);
-  EXPECT_NEAR(0.0, skewness(0), 0.35);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
 }
