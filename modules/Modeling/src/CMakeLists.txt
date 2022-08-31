@@ -47,8 +47,6 @@ CreateCompileGroup(
     CombineVectors.cpp
     SumPiece.cpp
 
-    HTTPModel/HTTPModPiece.cpp
-
     MultiLogisticLikelihood.cpp
 
     ReplicateOperator.cpp
@@ -56,6 +54,17 @@ CreateCompileGroup(
 
     LinearSDE.cpp
 
+)
+
+CreateCompileGroup(
+    MODELING_UMBRIDGE
+    "Umbridge ModPiece support."
+    muqModeling 
+    "MODELING_CORE"
+    ""
+    ""
+
+    UMBridge/UMBridgeModPiece.cpp
 )
 
 CreateCompileGroup(
@@ -112,8 +121,8 @@ CreateCompileGroup(
     MODELING_DISTRIBUTIONS
     "Implement probability distributions, which allow us to evaluate log-densities and/or sample the distirubtion."
     muqModeling
-    ""
     "MODELING_CORE;UTILITIES_CORE"
+    ""
     ""
 
     Distributions/Distribution.cpp

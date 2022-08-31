@@ -16,7 +16,7 @@ CreateCompileGroup(
     SAMPLING_PROBLEMS
     "Implement sampling sampling problems for MCMC."
     muqSamplingAlgorithms
-    "MODELING_CORE;APPROXIMATION_REGRESSION"
+    "MODELING_CORE"
     ""
     ""
 
@@ -40,12 +40,12 @@ CreateCompileGroup(
     SAMPLING_ALGORITHM
     "Implement sampling algorithms such as Monte Carlo, importance sampling, and Markov chain Monte Carlo"
     muqSamplingAlgorithms
-    "UTILITIES_CORE;UTILITIES_MULTIINDEX;MODELING_CORE;MODELING_DISTRIBUTIONS;UTILITIES_CORE;UTILITIES_HDF5;SAMPLING_PROBLEMS"
-    "SPDLOG"
+    "UTILITIES_CORE;UTILITIES_HDF5;UTILITIES_MULTIINDEX;MODELING_CORE;MODELING_DISTRIBUTIONS;SAMPLING_PROBLEMS"
     ""
+    ""
+    
     AbstractSamplingProblem.cpp
     SamplingAlgorithm.cpp
-    #MonteCarlo.cpp
     ImportanceSampling.cpp
     SingleChainMCMC.cpp
     ParallelTempering.cpp
@@ -53,14 +53,11 @@ CreateCompileGroup(
     SamplingState.cpp
     SampleCollection.cpp
     SampleEstimator.cpp
-    #DistributedCollection.cpp
     MarkovChain.cpp
 
     TransitionKernel.cpp
     DummyKernel.cpp
     MIDummyKernel.cpp
-    #MCKernel.cpp
-    #ISKernel.cpp
     MHKernel.cpp
     DRKernel.cpp
     DILIKernel.cpp

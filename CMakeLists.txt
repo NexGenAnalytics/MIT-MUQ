@@ -1,5 +1,10 @@
 cmake_minimum_required (VERSION 3.10)
 
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
+
 # Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
 # Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
 IF(APPLE)
@@ -36,8 +41,8 @@ INCLUDE(CheckFunctionExists)
 # define the project name
 project(MUQ)
 set(${CMAKE_PROJECT_NAME}_MAJOR_VERSION 0)
-set(${CMAKE_PROJECT_NAME}_MINOR_VERSION 3)
-set(${CMAKE_PROJECT_NAME}_PATCH_VERSION 4)
+set(${CMAKE_PROJECT_NAME}_MINOR_VERSION 4)
+set(${CMAKE_PROJECT_NAME}_PATCH_VERSION 3)
 set(${CMAKE_PROJECT_NAME}_VERSION ${${CMAKE_PROJECT_NAME}_MAJOR_VERSION}.${${CMAKE_PROJECT_NAME}_MINOR_VERSION}.${${CMAKE_PROJECT_NAME}_PATCH_VERSION})
 
 message(STATUS "\n\nThis is MUQ, the MIT UQ Library!\n\n")
