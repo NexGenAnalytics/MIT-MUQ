@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <stdexcept>
+#include <iomanip>
+#include <ios>
 
 #include "MUQ/Utilities/AnyHelpers.h"
 #include "MUQ/Utilities/StringUtilities.h"
@@ -30,7 +32,7 @@ ParallelTempering::ParallelTempering(boost::property_tree::ptree                
                                      std::vector<std::vector<std::shared_ptr<TransitionKernel>>> kernelsIn) : numTemps(inverseTemps.size()), 
                                                                                                                      scheduler(std::make_shared<ThinScheduler>(opts)),
                                                                                                                      kernels(kernelsIn),
-                                                                                                                     numSamps(opts.get<unsigned int>("NumSamples")),
+                                                                                                                     numSamps(opts.get<double>("NumSamples")),
                                                                                                                      burnIn(opts.get("BurnIn",0)),
                                                                                                                      printLevel(opts.get("PrintLevel",3)),
                                                                                                                      swapIncr(opts.get("Swap Increment", 2)),
@@ -65,7 +67,6 @@ ParallelTempering::ParallelTempering(boost::property_tree::ptree                
         throw std::invalid_argument(msg.str());
     }
 
-
     problems.resize(kernels.size());
     for(unsigned int i=0; i<kernels.size(); ++i){
         problems.at(i) = std::dynamic_pointer_cast<InferenceProblem>( kernels.at(i).at(0)->Problem() );
@@ -87,7 +88,7 @@ ParallelTempering::ParallelTempering(boost::property_tree::ptree                
             }
         }
     }
-
+    
     // Set the temperatures 
     chains.resize(kernels.size());
     sampNums.resize(kernels.size(), 0);
@@ -95,7 +96,6 @@ ParallelTempering::ParallelTempering(boost::property_tree::ptree                
         problems.at(i)->SetInverseTemp(inverseTemps(i));
         chains.at(i) = std::make_shared<MarkovChain>();
     }
-
 }
 
 
@@ -181,10 +181,10 @@ std::shared_ptr<MarkovChain> ParallelTempering::Run(std::vector<std::vector<Eige
         SwapStates();
         nextSwapInd += swapIncr;
     }
-    
+
     // Exploratory steps (independent MCMC kernels for each MCMC chain)
     Sample();
-
+    
     // Adapt the temperatures 
     if(sampNums.at(numTemps-1) > nextAdaptInd){
         AdaptTemperatures();
@@ -265,8 +265,11 @@ void ParallelTempering::PrintStatus(std::string prefix, unsigned int currInd) co
   std::cout << prefix << int(std::floor(double((currInd - 1) * 100) / double(numSamps))) << "% Complete" << std::endl;
   
   if(printLevel>1){
+      std::streamsize ss = std::cout.precision();
+      std::cout.precision(2);
       std::cout << prefix << "  Avg. Swap Probs: " << (cumulativeSwapProb.array() / attemptedSwaps.array()).matrix().transpose() << std::endl;
       std::cout << prefix << "  Inverse Temps:   " << CollectInverseTemps().transpose() << std::endl;
+      std::cout.precision(ss);
   }
 
   if(printLevel==2){
@@ -329,12 +332,12 @@ void ParallelTempering::SwapStates() {
         logLikely1 = AnyCast( prevStates.at(i)->meta["LogLikelihood"] );
         logLikely2 = AnyCast( prevStates.at(i+1)->meta["LogLikelihood"] );
         
-        alpha = std::exp( (beta2 - beta1)*(logLikely2 - logLikely1));
-
+        alpha = std::exp( (beta1 - beta2)*(logLikely2 - logLikely1));
+        
         attemptedSwaps(i)++;
         cumulativeSwapProb(i) += std::min(alpha, 1.0);
 
-        if(RandomGenerator::GetUniform() < alpha){            
+        if(RandomGenerator::GetUniform() < alpha){ 
             std::swap(prevStates[i], prevStates[i+1]);
             prevStates.at(i)->meta["InverseTemp"] = problems.at(i)->GetInverseTemp();
             prevStates.at(i+1)->meta["InverseTemp"] = problems.at(i+1)->GetInverseTemp();
@@ -386,12 +389,11 @@ void ParallelTempering::Sample() {
   
         // use the kernel to get the next state(s)
         newStates.at(chainInd) = kernels.at(chainInd).at(kernInd)->Step(sampNums.at(chainInd), prevStates.at(chainInd));
-  
         // save when these samples where created
         double now = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-startTime).count();
         for(auto& state : newStates.at(chainInd))
             state->meta["time"] = now;
-  
+       
         // kernel post-processing
         kernels.at(chainInd).at(kernInd)->PostStep(sampNums.at(chainInd), newStates.at(chainInd));
     }
@@ -432,8 +434,9 @@ void ParallelTempering::SaveSamples(std::vector<std::vector<std::shared_ptr<Samp
         }
     }
 
-    for(unsigned int chainInd=0; chainInd<numTemps; ++chainInd)   
+    for(unsigned int chainInd=0; chainInd<numTemps; ++chainInd){  
         prevStates.at(chainInd) = newStates.at(chainInd).back();
+    }
 }
 
 

@@ -25,9 +25,10 @@ IndependenceProposal::IndependenceProposal(pt::ptree            const& pt,
 std::shared_ptr<Distribution> IndependenceProposal::ExtractDistribution(pt::ptree const& opts,
                                                   std::shared_ptr<AbstractSamplingProblem> const& prob)
 {
-  double var = opts.get("ProposalVariance", 1.0);
-  Eigen::VectorXd mu = Eigen::VectorXd::Zero(prob->blockSizes(opts.get("BlockIndex",0)));
 
+  Eigen::VectorXd mu = Eigen::VectorXd::Zero(prob->blockSizes(opts.get("BlockIndex",0)));
+  Eigen::VectorXd var = opts.get("ProposalVariance", 1.0)*Eigen::VectorXd::Ones(mu.size());
+  
   return std::make_shared<Gaussian>(mu,var);
 }
 
@@ -47,6 +48,7 @@ std::shared_ptr<SamplingState> IndependenceProposal::Sample(std::shared_ptr<Samp
 
 double IndependenceProposal::LogDensity(std::shared_ptr<SamplingState> const& currState,
                               std::shared_ptr<SamplingState> const& propState) 
-{
+{   
+   proposal->LogDensity(propState->state.at(blockInd));
    return proposal->LogDensity(propState->state.at(blockInd));
 }

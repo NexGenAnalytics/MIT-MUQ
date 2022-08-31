@@ -126,6 +126,7 @@ CreateCompileGroup(
     Distributions/DensityProduct.cpp
     Distributions/Density.cpp
     Distributions/RandomVariable.cpp
+    Distributions/MixtureDistribution.cpp
 )
 
 CreateCompileGroup(
