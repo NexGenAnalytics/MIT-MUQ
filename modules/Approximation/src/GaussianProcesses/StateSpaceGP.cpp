@@ -8,6 +8,7 @@
 #include "MUQ/Utilities/Exceptions.h"
 
 #include <Eigen/Dense>
+#include <Eigen/SparseCore>
 
 using namespace muq::Approximation;
 using namespace muq::Modeling;
@@ -135,7 +136,7 @@ std::pair<Eigen::MatrixXd, Eigen::MatrixXd> StateSpaceGP::Predict(Eigen::MatrixX
         obsDists.at(0).second = L.triangularView<Eigen::Lower>()*L.transpose();
         obsDists.at(0).first = Eigen::VectorXd::Zero(stateDim);
 
-        auto H = std::make_shared<ProductOperator>(observations.at(0)->H, obsOp);
+        std::shared_ptr<LinearOperator> H = std::make_shared<ProductOperator>(observations.at(0)->H, obsOp);
         obsFilterDists.at(0) = KalmanFilter::Analyze(obsDists.at(0),
                                                      H,
                                                      observations.at(0)->obs - mean->Evaluate(observations.at(0)->loc),
@@ -175,7 +176,7 @@ std::pair<Eigen::MatrixXd, Eigen::MatrixXd> StateSpaceGP::Predict(Eigen::MatrixX
 
             currTime = observations.at(obsInd)->loc(0);
 
-            auto H = std::make_shared<ProductOperator>(observations.at(obsInd)->H, obsOp);
+            std::shared_ptr<LinearOperator> H = std::make_shared<ProductOperator>(observations.at(obsInd)->H, obsOp);
             
             obsFilterDists.at(obsInd) = KalmanFilter::Analyze(obsDists.at(obsInd),
                                                               H,

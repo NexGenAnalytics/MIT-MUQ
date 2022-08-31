@@ -25,6 +25,7 @@ CreateCompileGroup(
     DistributionWrapper.cpp
     CwiseUnaryOperatorsWrapper.cpp
     LinearOperatorWrapper.cpp
+    SDEWrapper.cpp
 )
 
 CreateCompileGroup(

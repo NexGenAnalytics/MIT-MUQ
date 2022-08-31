@@ -10,6 +10,8 @@
 #include <random>
 #include <iostream>
 
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
 
 using namespace muq::Approximation;
 
@@ -176,7 +178,7 @@ TEST(Approximation_GP, PeriodicStateSpace)
     const double sigma2 = 1.0;
     const double length = 0.6;
     const double period = 0.25;
-    const double periodN = 50; // how many steps per period
+    const unsigned int periodN = 50; // how many steps per period
 
     PeriodicKernel kernel(1, sigma2, length, period);
 
