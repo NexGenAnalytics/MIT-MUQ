@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.10)
 
-cmake_policy(SET CMP0135 NEW)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 
 # Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
 # Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
