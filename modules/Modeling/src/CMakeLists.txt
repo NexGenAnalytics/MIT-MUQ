@@ -47,8 +47,6 @@ CreateCompileGroup(
     CombineVectors.cpp
     SumPiece.cpp
 
-    UMBridge/UMBridgeModPiece.cpp
-
     MultiLogisticLikelihood.cpp
 
     ReplicateOperator.cpp
@@ -56,6 +54,17 @@ CreateCompileGroup(
 
     LinearSDE.cpp
 
+)
+
+CreateCompileGroup(
+    MODELING_UMBRIDGE
+    "Umbridge ModPiece support."
+    muqModeling 
+    "MODELING_CORE"
+    ""
+    ""
+
+    UMBridge/UMBridgeModPiece.cpp
 )
 
 CreateCompileGroup(
