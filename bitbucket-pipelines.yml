@@ -53,7 +53,7 @@ pipelines:
               - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
               - make doc
               - cd ~
-              - git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git
+              - git clone https://$BITBUCKET_USER:$BITBUCKET_APP_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git
               - cd mituq.bitbucket.io
               - if [ -d "source/${BITBUCKET_TAG}" ]; then rm -rf source/${BITBUCKET_TAG}; fi
               - rm -rf source/latest
@@ -65,7 +65,7 @@ pipelines:
               - git config --global user.email "parnomd@gmail.com"
               - git config --global user.name "Bitbucket Pipelines"
               - git commit -m "Added documentation for $BITBUCKET_TAG"
-              - git push https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git --all
+              - git push https://$BITBUCKET_USER:$BITBUCKET_APP_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git --all
       - step:
             name: archive
             script:
