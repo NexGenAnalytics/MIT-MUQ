@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.10)
 
+cmake_policy(SET CMP0135 NEW)
+
 # Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
 # Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
 IF(APPLE)

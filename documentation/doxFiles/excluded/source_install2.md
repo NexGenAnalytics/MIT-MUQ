@@ -110,6 +110,25 @@ cmake                                                  \
 ../
 ```
 
+__Example 3:__ Use all compile groups that do not depend on the Stan Math dependency.
+```
+cmake                                                \
+  -DCMAKE_INSTALL_PREFIX=~/Installations/MUQ_INSTALL \
+  -DMUQ_USE_STANMATH=OFF                             \
+../
+```
+
+__Example 4:__ Only include the `SamplingAlgorithms` compile group and anything it requires.  Also specify specific install paths for the HDF5 dependency required by the `SamplingAlgorithms` group.  Note that the install path is given as a hint to the CMake `find_library` function and will typically be a foldering containing both the `lib` and `include` directories for the dependency.
+```
+cmake                                                \
+  -DCMAKE_INSTALL_PREFIX=~/Installations/MUQ_INSTALL \
+  -DMUQ_ENABLEGROUP_DEFAULT=OFF                      \ 
+  -DMUQ_ENABLEGROUP_SAMPLING_ALGORITHM=ON            \
+  -DMUQ_HDF5_DIR=~/Installations/HDF5                \
+../
+```
+
+
 ## Compiling
 CMake will generate a makefile that can then be used to compile MUQ in the usual fashion:
 ```
