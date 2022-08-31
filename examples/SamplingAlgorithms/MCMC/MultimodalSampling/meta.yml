@@ -1,0 +1,6 @@
+- example:
+    file: MultiModalSampling.ipynb
+    tag: MCMC
+    title: Multimodal Sampling using Parallel Tempering MCMC
+    description: Uses parallel tempering MCMC to characterize a simple multimodal Bayesian posterior distribution stemming from a sinusoidal forward model.
+    doc_level: 3
