@@ -39,6 +39,8 @@ namespace muq{
 
       virtual double LogDensity(std::shared_ptr<SamplingState> const& state) = 0;
 
+      virtual std::shared_ptr<AbstractSamplingProblem> Clone() const{assert(false); return nullptr;};
+
       /** Default finite difference gradient implementation. */
       virtual Eigen::VectorXd GradLogDensity(std::shared_ptr<SamplingState> const& state,
                                              unsigned                       const  blockWrt);

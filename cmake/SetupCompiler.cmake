@@ -21,7 +21,7 @@ endif(MUQ_USE_MPI)
 # The -DH5_USE_110_API flag is needed for HDF5 version 1.12 and later
 # See https://hdf5.wiki/index.php/Migrating_from_HDF5_1.10_to_HDF5_1.12
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DH5_USE_110_API")
-set(CMAKE_CXX_FLAGS_DEBUG  "-O0")
+set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3")
 
 # default to a release build

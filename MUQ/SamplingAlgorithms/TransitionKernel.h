@@ -84,6 +84,9 @@ namespace muq {
       virtual void SetBlockInd(int newBlockInd){blockInd = newBlockInd;};
       virtual int GetBlockInd() const{return blockInd;};
 
+      /** Get access to the problem that this kernel is defined by. */
+      virtual std::shared_ptr<AbstractSamplingProblem>  const& Problem() const{return problem;};
+
     protected:
 
       int blockInd = 0;

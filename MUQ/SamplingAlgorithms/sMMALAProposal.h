@@ -23,7 +23,8 @@ namespace muq {
 
     protected:
 
-    
+      const double meanScaling = 0.5;
+
       double stepSize;
 
       /// The proposal distribution

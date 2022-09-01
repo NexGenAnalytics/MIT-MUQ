@@ -21,6 +21,7 @@ CreateCompileGroup(
     ""
 
     SamplingProblem.cpp
+    InferenceProblem.cpp
 )
 
 CreateCompileGroup(
@@ -47,6 +48,7 @@ CreateCompileGroup(
     SamplingAlgorithm.cpp
     ImportanceSampling.cpp
     SingleChainMCMC.cpp
+    ParallelTempering.cpp
 
     SamplingState.cpp
     SampleCollection.cpp
@@ -83,6 +85,7 @@ CreateCompileGroup(
     SMMALAProposal.cpp
     InfMALAProposal.cpp
     MixtureProposal.cpp
+    IndependenceProposal.cpp
 
     InverseGammaProposal.cpp
     CrankNicolsonProposal.cpp
