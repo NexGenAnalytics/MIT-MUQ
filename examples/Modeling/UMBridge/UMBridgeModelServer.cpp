@@ -44,6 +44,6 @@ the server will run indefinitely, waiting for requests for model evaluations com
 Instructions for how to build a compatible client in MUQ can be found in the UM-Bridge Client example.
 */
 
-  muq::Modeling::serveModPiece(model, "0.0.0.0", 4242);
+  muq::Modeling::serveModPiece(model, "forward", "0.0.0.0", 4242);
 
 }

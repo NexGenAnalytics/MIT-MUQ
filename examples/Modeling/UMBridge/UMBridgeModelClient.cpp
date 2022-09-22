@@ -31,11 +31,15 @@ int main(){
 
 /***
 ## Connect to model server
-First, we set up an UMBridgeModPiece that connects to our model server. This assumes that, before the client is started,
+First, we set up an UMBridgeModPiece that connects to our model server, giving the server's address
+and the model name we'd like to use. This assumes that, before the client is started,
 the model server from the UM-Bridge Server example is already running on your machine.
 */
 
-  auto mod = std::make_shared<UMBridgeModPiece>("http://localhost:4242");
+  auto mod = std::make_shared<UMBridgeModPiece>("http://localhost:4242", "forward");
+
+  std::cout << mod->inputSizes << std::endl;
+  std::cout << mod->outputSizes << std::endl;
 
 /***
 ## Set up dimensions
@@ -159,58 +163,8 @@ conductivity $k$ on the sensitivity $s$.   The `WorkGraph` however, captures all
   hessActFD = fullMod->ApplyHessianByFD(0,0,0,std::vector<Eigen::VectorXd>{cond},objSens,hessDir);
 
   std::cout << "Hessian Action: \n" << hessAct.transpose() << std::endl << std::endl;
+
   std::cout << "Finite Difference Hessian Action \n" << hessActFD.transpose() << std::endl << std::endl;
 
-
-/***
-## Compute the Hessian Spectrum
-In many applications, the eigen decomposition of a Hessian matrix can contain valuable information.   For example,
-let $\pi(y|k)$ denote the likelihood function in a Bayesian inverse problem.   The spectrum of $-\nabla_{kk}\log\pi(y|k)$
-(the Hessian of the negative log likelihood) describes which directions in the parameter space are informed by the data.
-
-Below we show how the spectrum of the Hessian can be computed with MUQ's stochastic eigenvalue solver.   MUQ's
-implementation is based on the generalized eigenvalue solver described in
-[Saibaba et al., 2015](https://doi.org/10.1002/nla.2026) and [Villa et al., 2021](https://dl.acm.org/doi/abs/10.1145/3428447?casa_token=2mk_QQqHe0kAAAAA%3AT5lr3QwgwbKNB4WgxUf7oPgCmqzir2b5O61fZHPEzv3AcU5eKHAxT1f7Ot_wZOL_SGqxe8g5ANAEtw).
-*/
-
-/***
-#### Define the linear operator
-The first step is to define a `LinearOperator` that evaluates the Hessian actions at a point.   Here, we create an
-instance of MUQ's `HessianOperator` class, which will internally call the `ApplyHessian` function of the `fullMod` `ModPiece`.   The inputs to the `HessianOperator` constructor are essentially the same as the `ApplyHessian` function, but with an additional scaling term.   Here, `scaling=-1` is used to account for the fact that we want to use the Hessian of the *negative* log density, which will have a positive semi-definite Hessian.
-*/
-  unsigned int outWrt = 0; // There's only one output of "fullMod", so this is the only possibility
-  unsigned int inWrt1 = 0; // There's also only one input of "fullMod"
-  unsigned int inWrt2 = 0;
-
-  double scaling = -1.0;
-  std::vector<Eigen::VectorXd> inputs(1);
-  inputs.at(0) = cond;
-  auto hessOp = std::make_shared<HessianOperator>(fullMod, inputs, outWrt, inWrt1, inWrt2, objSens, scaling);
-
-/***
-#### Set up the eigenvalue solver
-We can now set up the eigen solver, compute the decomposition, and extract the eigenvalues and eigenvectors.  For more
-information, see documentation for the [StochasticEigenSolver](https://mituq.bitbucket.io/source/_site/latest/classmuq_1_1Modeling_1_1StochasticEigenSolver.html) class.
-*/
-  boost::property_tree::ptree opts;
-  opts.put("NumEigs", numCells); // Maximum number of eigenvalues to compute
-  opts.put("Verbosity", 3); // Controls how much information is printed to std::cout by the solver
-
-  StochasticEigenSolver solver(opts);
-  solver.compute(hessOp);
-
-  Eigen::VectorXd vals = solver.eigenvalues();
-  Eigen::MatrixXd vecs = solver.eigenvectors();
-
-/***
-#### Investigate the Spectrum
-Below we plot the eigenvalues, which are sorted largest to smallest.  There are `numCells` parameters in this model
-and `numCells+1` outputs.   The objective function in this example is similar to what we would see if all outputs
-were observed.   The sharp decrease in the eigenvalues shown here is an indication that observing the `numCells+1`
-outputs of this model is not sufficient to completely constrain all of the `numCells` inputs.  Without additional
-regularization, an inverse problem using this model would therefore be ill-posed.  This is a common feature of
-diffusive models.
-*/
-  std::cout << "Eigenvalues:\n" << vals.transpose() << std::endl << std::endl;
   return 0;
 }
