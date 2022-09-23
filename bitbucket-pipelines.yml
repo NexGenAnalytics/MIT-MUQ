@@ -87,6 +87,8 @@ pipelines:
               - cd ~
               - git clone git@github.com:mparno/muq-feedstock.git
               - cd muq-feedstock
+              - git config --global user.email "parnomd@gmail.com"
+              - git config --global user.name "Bitbucket Pipelines"
               - git remote add upstream https://github.com/conda-forge/muq-feedstock
               - git fetch upstream
               - git rebase upstream/main
@@ -96,8 +98,6 @@ pipelines:
               - 'sed -i "s/.*sha256.*/  sha256: $MUQ_SHA/" recipe/meta.yaml'
               - 'sed -i "s/  number: .*/  number: 0/" recipe/meta.yaml'
               - git add recipe/meta.yaml
-              - git config --global user.email "parnomd@gmail.com"
-              - git config --global user.name "Bitbucket Pipelines"
               - git commit -m "Updated recipe version."
               - git push git@github.com:mparno/muq-feedstock.git --all
 
