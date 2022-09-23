@@ -89,7 +89,7 @@ pipelines:
               - cd muq-feedstock
               - git remote add upstream https://github.com/conda-forge/muq-feedstock
               - git fetch upstream
-              - git rebase upstream/master
+              - git rebase upstream/main
               - git checkout -b $BITBUCKET_TAG
               - temp=`echo $BITBUCKET_TAG | cut -c2-`; export NEW_VERSION="{% set version = \"${temp}\" %}"
               - 'sed -i "s/.*set version.*/$NEW_VERSION/" recipe/meta.yaml'
