@@ -41,7 +41,7 @@ INCLUDE(AnyCastCheck)
 IF(MUQ_USE_OPENMP)
   find_package(OpenMP)
   if (OpenMP_CXX_FOUND)
-    list(APPEND MUQ_LINK_LIBS ${MPI_CXX_LIBRARIES} OpenMP::OpenMP_CXX)
+    list(APPEND MUQ_LINK_LIBS OpenMP::OpenMP_CXX)
 
     CHECK_CXX_COMPILER_FLAG("-pthread" HAS_PTHREAD)
     if(HAS_PTHREAD)
