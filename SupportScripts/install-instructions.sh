@@ -16,15 +16,25 @@ cd muq2/build
 # Here you can choose your install directory by setting CMAKE_INSTALL_PREFIX
 cmake -DCMAKE_INSTALL_PREFIX=$PWD/install ..
 
+muq_install_dir=$PWD/install # Remember MUQ install directory for later
+
 make -j4
 
 make install
 
 
-# Now let's try out our shiny new muq install with an example!
+# Now let's try out our shiny new MUQ install with an example!
 
-make -j4 examples
+cd ../examples/SamplingAlgorithms/MCMC/Example1_Gaussian/cpp
 
-cd examples/SamplingAlgorithms/MCMC/Example1_Gaussian/cpp
+# Create a build directory
+mkdir -p build
+
+cd build
+
+# Configure the example with cmake, pointing to our MUQ install
+cmake -DMUQ_DIR=${muq_install_dir}/lib/cmake/MUQ ..
+
+make
 
 ./GaussianSampling

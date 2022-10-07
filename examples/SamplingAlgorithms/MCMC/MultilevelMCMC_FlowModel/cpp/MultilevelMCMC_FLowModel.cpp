@@ -2,7 +2,7 @@
 
 #include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
 
-#include "FlowModelMIComponents.h"
+#include "FlowModelComponents.h"
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;

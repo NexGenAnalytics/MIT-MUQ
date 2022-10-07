@@ -11,10 +11,10 @@ pipelines:
             # Build muq
             - cd $BITBUCKET_CLONE_DIR
             - cd build
-            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
             - make
-            - make examples
             - make install
+            - ./BuildAllExamples.sh
             - ./RunAllTests
             - mpirun -np 2 ./RunAllParallelTests
 
@@ -50,7 +50,7 @@ pipelines:
             script:
               - pip3 install jinja2
               - cd $BITBUCKET_CLONE_DIR/build
-              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
               - make doc
               - cd ~
               - git clone https://$BITBUCKET_USER:$BITBUCKET_APP_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git
@@ -113,10 +113,10 @@ pipelines:
                 # Build muq
                 - cd $BITBUCKET_CLONE_DIR
                 - cd build
-                - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+                - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
                 - make
-                - make examples
                 - make install
+                - ./BuildAllExamples.sh
                 - ./RunAllTests
 
         - step:
@@ -139,8 +139,8 @@ pipelines:
               - cd build
               - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON ..
               - make
-              - make examples
               - make install
+              - ./BuildAllExamples.sh
               - ./RunAllTests
               - mpirun --allow-run-as-root -np 2 ./RunAllParallelTests
 
@@ -152,10 +152,10 @@ pipelines:
               # Build muq
               - cd $BITBUCKET_CLONE_DIR
               - cd build
-              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
               - make
-              - make examples
               - make install
+              - ./BuildAllExamples.sh
               - ./RunAllTests
               - mpirun -np 2 ./RunAllParallelTests
 
@@ -179,8 +179,8 @@ pipelines:
                 - cd build
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
-                - make examples
                 - make install
+                - ./BuildAllExamples.sh
                 - ./RunAllTests
 
         - step:
@@ -203,8 +203,8 @@ pipelines:
                 - cd build
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
-                - make examples
                 - make install
+                - ./BuildAllExamples.sh
                 - ./RunAllTests
 
         - step:
