@@ -14,9 +14,10 @@ pipelines:
             - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
             - make
             - make install
-            - ./BuildAllExamples.sh
             - ./RunAllTests
             - mpirun -np 2 ./RunAllParallelTests
+            - cd $BITBUCKET_CLONE_DIR
+            - ./BuildAllExamples.sh
 
       - step:
           name: python-notebooks
@@ -116,8 +117,9 @@ pipelines:
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
                 - make
                 - make install
-                - ./BuildAllExamples.sh
                 - ./RunAllTests
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
 
         - step:
             name: clang-internal-dep-mpi
@@ -140,9 +142,10 @@ pipelines:
               - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON ..
               - make
               - make install
-              - ./BuildAllExamples.sh
               - ./RunAllTests
               - mpirun --allow-run-as-root -np 2 ./RunAllParallelTests
+              - cd $BITBUCKET_CLONE_DIR
+              - ./BuildAllExamples.sh
 
         - step:
             name: gcc-external-dep-mpi
@@ -155,9 +158,10 @@ pipelines:
               - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
               - make
               - make install
-              - ./BuildAllExamples.sh
               - ./RunAllTests
               - mpirun -np 2 ./RunAllParallelTests
+              - cd $BITBUCKET_CLONE_DIR
+              - ./BuildAllExamples.sh
 
         - step:
               name: ubuntu-LTS
@@ -180,8 +184,9 @@ pipelines:
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
                 - make install
-                - ./BuildAllExamples.sh
                 - ./RunAllTests
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
 
         - step:
               name: ubuntu-latest-release
@@ -204,8 +209,9 @@ pipelines:
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
                 - make install
-                - ./BuildAllExamples.sh
                 - ./RunAllTests
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
 
         - step:
               name: install-instructions
