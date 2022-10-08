@@ -127,7 +127,7 @@ pipelines:
             name: clang-internal-dep-mpi
             script:
               - apt-get update
-              - apt-get install -y cmake openmpi-bin libopenmpi-dev libgtest-dev clang python3
+              - apt-get install -y cmake openmpi-bin libopenmpi-dev libgtest-dev clang python3 python3-distutils
 
 
               # Build gtest (have to, since libgtest-dev only includes sources, no binaries available currently...)
