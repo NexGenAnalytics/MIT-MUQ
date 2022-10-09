@@ -66,6 +66,9 @@ int main(){
   pt.put("MLMCMC.Subsampling_2_1", 5);
   pt.put("MLMCMC.Subsampling_2_2", 5);
   
+  pt.put("Proposal.Method", "MHProposal");
+  pt.put("Proposal.ProposalVariance", 16.0);
+
   unsigned int numChains = 5;
   std::vector<std::shared_ptr<MultiIndexEstimator>> estimators(numChains);
 

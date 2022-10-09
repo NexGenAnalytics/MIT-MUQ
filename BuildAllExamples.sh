@@ -30,6 +30,30 @@ directories=(
 "Utilities/HDF5/SimpleReadWrite"
 )
 
+binaries=(
+    "Modeling/FlowEquation/cpp/build/FlowEquation"
+    "Modeling/CustomModPiece/cpp/build/BasicModPiece"
+    "Modeling/MemoryTest/cpp/build/MemoryUsage"
+    "Modeling/WorkGraphs/cpp/build/SimpleWorkGraph"
+    "Modeling/WorkGraphs/cpp/build/SplitSum"
+
+    "SamplingAlgorithms/MC/Example1_Gaussian/build/MonteCarlo"
+    "SamplingAlgorithms/MC/Example1_Gaussian/build/MultilevelMonteCarlo"
+
+    "SamplingAlgorithms/MCMC/BasicMetropolisInGibbs/cpp/build/MetropolisInGibbs"
+    "SamplingAlgorithms/MCMC/CustomGaussianProposal/cpp/build/CustomProposal"
+    "SamplingAlgorithms/MCMC/EllipticInference/cpp/build/InvariantSampling"
+    "SamplingAlgorithms/MCMC/Example1_Gaussian/cpp/build/GaussianSampling"
+    "SamplingAlgorithms/MCMC/Example2_GaussianInverseGamma/cpp/build/GaussianGammaSampling"
+    "SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp/build/BasicMultilevel"
+    "SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp/build/AdvancedMultilevel"
+    "SamplingAlgorithms/MCMC/Example4_MultiindexGaussian/cpp/build/MultiindexGaussianSampling"
+    "./SamplingAlgorithms/MCMC/Example5_MALASampling/build/malaSampling"
+
+    "Utilities/HDF5/BlockOperations/build/BlockOperations"
+    "Utilities/HDF5/SimpleReadWrite/build/SimpleReadWrite"
+)
+
 for dir in "${directories[@]}"
 do
     echo "======================"
@@ -61,6 +85,26 @@ do
     exit_code=$(($exit_code + $make_exit)) # Simply add exit codes; will be zero if all tests successful
 done
 
+echo "======================"
+
+for bin in "${binaries[@]}"
+do
+    echo "======================"
+    echo "Running example $bin"
+    echo ""
+
+    examples/$bin
+    run_exit=$?
+    if [ $run_exit -eq 0 ]
+    then
+        echo "Run successful for example $bin"
+        summary="$summary\nRun successful for example $bin"
+    else
+        echo "Run failed for example $bin"
+        summary="$summary\nRun FAILED for example $bin"
+    fi
+    exit_code=$(($exit_code + $run_exit)) # Simply add exit codes; will be zero if all tests successful
+done
 
 echo "======================"
 

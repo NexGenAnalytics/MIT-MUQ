@@ -29,6 +29,10 @@ int main(){
 
   pt.put("NumSamples", 1e6); // number of samples for single level
   pt.put("verbosity", 1); // show some output
+  pt.put("NumSamples_0", 1e5);
+  pt.put("NumSamples_1", 1e4);
+  pt.put("NumSamples_2", 1e3);
+  pt.put("NumSamples_3", 1e2);
 
   auto componentFactory = std::make_shared<MyMIComponentFactory>(pt);
 
