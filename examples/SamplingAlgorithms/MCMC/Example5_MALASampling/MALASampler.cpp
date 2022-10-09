@@ -17,7 +17,7 @@ using namespace muq::Utilities;
 
 class Model : public ModPiece {
 public:
-  static const unsigned int dim = 2;
+  inline static const unsigned int dim = 2;
 
   inline Model() : ModPiece(Eigen::VectorXi::Constant(1, dim), Eigen::VectorXi::Constant(1, dim)) {}
 

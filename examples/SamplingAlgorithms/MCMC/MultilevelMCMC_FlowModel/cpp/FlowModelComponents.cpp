@@ -1,4 +1,4 @@
-#include "FlowModelMIComponents.h"
+#include "FlowModelComponents.h"
 
 #include "MUQ/Utilities/HDF5/HDF5File.h"
 

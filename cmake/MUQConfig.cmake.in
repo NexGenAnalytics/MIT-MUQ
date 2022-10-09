@@ -7,7 +7,7 @@
 #  MUQ_COMPILE_DEFINITIONS -Definitions used during compilation (i.e. variables added with add_definitions)
 
 include(CMakeFindDependencyMacro)
-if (@MUQ_USE_OPENMP@)
+if (@OpenMP_CXX_FOUND@)
   find_dependency(OpenMP)
 endif()
 if (@Boost_FOUND@)
