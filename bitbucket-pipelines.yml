@@ -11,10 +11,12 @@ pipelines:
             # Build muq
             - cd $BITBUCKET_CLONE_DIR
             - cd build
-            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
             - make
-            - make examples
             - make install
+            - cd $BITBUCKET_CLONE_DIR
+            - ./BuildAllExamples.sh
+            - cd build
             - ./RunAllTests
             - mpirun -np 2 ./RunAllParallelTests
 
@@ -23,7 +25,7 @@ pipelines:
           image: ubuntu:latest
           script:
             - apt-get update
-            - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python-dev pybind11-dev graphviz
+            - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python3 pybind11-dev graphviz
 
             # Python deps
             - DEBIAN_FRONTEND="noninteractive" apt-get install -y python3-pip
@@ -50,10 +52,10 @@ pipelines:
             script:
               - pip3 install jinja2
               - cd $BITBUCKET_CLONE_DIR/build
-              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
               - make doc
               - cd ~
-              - git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git
+              - git clone https://$BITBUCKET_USER:$BITBUCKET_APP_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git
               - cd mituq.bitbucket.io
               - if [ -d "source/${BITBUCKET_TAG}" ]; then rm -rf source/${BITBUCKET_TAG}; fi
               - rm -rf source/latest
@@ -65,7 +67,7 @@ pipelines:
               - git config --global user.email "parnomd@gmail.com"
               - git config --global user.name "Bitbucket Pipelines"
               - git commit -m "Added documentation for $BITBUCKET_TAG"
-              - git push https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git --all
+              - git push https://$BITBUCKET_USER:$BITBUCKET_APP_PASSWORD@bitbucket.org/mituq/mituq.bitbucket.io.git --all
       - step:
             name: archive
             script:
@@ -85,21 +87,21 @@ pipelines:
               - export DOWNLOAD_URL="https://bitbucket.org/mituq/muq2/downloads/${TARFILE}"
               - export MUQ_SHA=`curl -sL ${DOWNLOAD_URL} | openssl sha256 | cut -c10-`
               - cd ~
-              - git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/mparno/muq-feedstock
+              - git clone git@github.com:mparno/muq-feedstock.git
               - cd muq-feedstock
+              - git config --global user.email "parnomd@gmail.com"
+              - git config --global user.name "Bitbucket Pipelines"
               - git remote add upstream https://github.com/conda-forge/muq-feedstock
               - git fetch upstream
-              - git rebase upstream/master
+              - git rebase upstream/main
               - git checkout -b $BITBUCKET_TAG
               - temp=`echo $BITBUCKET_TAG | cut -c2-`; export NEW_VERSION="{% set version = \"${temp}\" %}"
               - 'sed -i "s/.*set version.*/$NEW_VERSION/" recipe/meta.yaml'
               - 'sed -i "s/.*sha256.*/  sha256: $MUQ_SHA/" recipe/meta.yaml'
               - 'sed -i "s/  number: .*/  number: 0/" recipe/meta.yaml'
               - git add recipe/meta.yaml
-              - git config --global user.email "parnomd@gmail.com"
-              - git config --global user.name "Bitbucket Pipelines"
               - git commit -m "Updated recipe version."
-              - git push https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/mparno/muq-feedstock --all
+              - git push git@github.com:mparno/muq-feedstock.git --all
 
   custom:
     weekly-build:
@@ -113,10 +115,12 @@ pipelines:
                 # Build muq
                 - cd $BITBUCKET_CLONE_DIR
                 - cd build
-                - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+                - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
                 - make
-                - make examples
                 - make install
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
+                - cd build
                 - ./RunAllTests
 
         - step:
@@ -139,8 +143,10 @@ pipelines:
               - cd build
               - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON ..
               - make
-              - make examples
               - make install
+              - cd $BITBUCKET_CLONE_DIR
+              - ./BuildAllExamples.sh
+              - cd build
               - ./RunAllTests
               - mpirun --allow-run-as-root -np 2 ./RunAllParallelTests
 
@@ -152,10 +158,12 @@ pipelines:
               # Build muq
               - cd $BITBUCKET_CLONE_DIR
               - cd build
-              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=/home/muq-user/install ..
+              - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
               - make
-              - make examples
               - make install
+              - cd $BITBUCKET_CLONE_DIR
+              - ./BuildAllExamples.sh
+              - cd build
               - ./RunAllTests
               - mpirun -np 2 ./RunAllParallelTests
 
@@ -164,7 +172,7 @@ pipelines:
               image: ubuntu:latest
               script:
                 - apt-get update
-                - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python-dev pybind11-dev
+                - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python3 pybind11-dev
 
 
                 # Build gtest (have to, since libgtest-dev only includes sources, no binaries available currently...)
@@ -179,16 +187,19 @@ pipelines:
                 - cd build
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
-                - make examples
                 - make install
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
+                - cd build
                 - ./RunAllTests
+
 
         - step:
               name: ubuntu-latest-release
               image: ubuntu:rolling
               script:
                 - apt-get update
-                - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python-dev pybind11-dev libomp-dev
+                - DEBIAN_FRONTEND="noninteractive" apt-get install -y cmake libgtest-dev clang libhdf5-dev libeigen3-dev libboost-all-dev libnlopt-dev libsundials-dev python3 pybind11-dev libomp-dev
 
 
                 # Build gtest (have to, since libgtest-dev only includes sources, no binaries available currently...)
@@ -203,8 +214,10 @@ pipelines:
                 - cd build
                 - cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMUQ_USE_GTEST=ON -DMUQ_USE_PYTHON=ON ..
                 - make
-                - make examples
                 - make install
+                - cd $BITBUCKET_CLONE_DIR
+                - ./BuildAllExamples.sh
+                - cd build
                 - ./RunAllTests
 
         - step:

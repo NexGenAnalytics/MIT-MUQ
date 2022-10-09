@@ -25,13 +25,13 @@
 - Built via CI when release tag is defined on master repo, pushed as commit to website repo
 
 ### Docker (in progress)
-- The docker images are built on knudsen.mit.edu.
-- The build is started via a webhook when a new tag is created on the MUQ2 repository.
-- Images are pushed to dockerhub https://hub.docker.com/r/mparno/muq
+- The docker images are built on dockerhub using their [automated builds](https://docs.docker.com/docker-hub/builds/) functionality.
+- Dockerfiles for the images can be found in muq/SupportScripts/docker
+- Built images can be found in https://hub.docker.com/r/mparno .
 
 ### Conda
 - The MUQ2 conda image lives on conda-forge.
 - The recipe for the MUQ2 conda image lives in the [muq-feedstock repository](https://github.com/conda-forge/muq-feedstock) on github.   
 - Directions for updating the recipe manually can be found [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html).
-- Currently Matt is the only maintainer, but we should change that.
+- Linus and Matt are currently recipe maintainers.
 - In our bitbucket-pipelines.yml file, a fork of conda-forge's muq-feedstock repository is updated every time a new tag is created on the MUQ2 repository.   To update the image on conda-forge, we then need to go into github and create a pull request to merge our fork into conda-forge's repo.

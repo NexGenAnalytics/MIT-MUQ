@@ -170,8 +170,8 @@ TEST(MLMCMCTest, GreedyMLMCMC)
   EXPECT_NEAR(trueCov(1,1), variance(1), 5.0*mcse(1));
 
   Eigen::VectorXd skewness = params->Skewness();
-  EXPECT_NEAR(0.0, skewness(0), 0.2);
-  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
 
   Eigen::MatrixXd covariance = params->Covariance();
   EXPECT_NEAR(trueCov(0,0), covariance(0,0), 0.2);
@@ -182,14 +182,14 @@ TEST(MLMCMCTest, GreedyMLMCMC)
 
   auto qois = greedymlmcmc.GetQOIs();
   mean = qois->Mean();
-  EXPECT_NEAR(trueMu(0), mean(0), 0.2);
-  EXPECT_NEAR(trueMu(1), mean(1), 0.2);
+  EXPECT_NEAR(trueMu(0), mean(0), 0.3);
+  EXPECT_NEAR(trueMu(1), mean(1), 0.3);
 
   variance = qois->Variance();
-  EXPECT_NEAR(trueCov(0,0), variance(0), 0.2);
-  EXPECT_NEAR(trueCov(1,1), variance(1), 0.2);
+  EXPECT_NEAR(trueCov(0,0), variance(0), 0.3);
+  EXPECT_NEAR(trueCov(1,1), variance(1), 0.3);
 
   skewness = qois->Skewness();
-  EXPECT_NEAR(0.0, skewness(0), 0.2);
-  EXPECT_NEAR(0.0, skewness(0), 0.2);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
+  EXPECT_NEAR(0.0, skewness(0), 0.5);
 }
