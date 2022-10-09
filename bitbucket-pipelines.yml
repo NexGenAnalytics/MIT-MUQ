@@ -11,7 +11,7 @@ pipelines:
             # Build muq
             - cd $BITBUCKET_CLONE_DIR
             - cd build
-            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
+            - cmake -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON -DMUQ_USE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PWD/install ..
             - make
             - make install
             - cd $BITBUCKET_CLONE_DIR
