@@ -51,18 +51,12 @@ std::vector<std::shared_ptr<SamplingState>> MIKernel::Step(unsigned int const t,
   // The following metadata is needed by the expensive sampling problem
   if(prevState->HasMeta("iteration")) {
     fineProp->meta["iteration"] = prevState->meta["iteration"];
-    std::cout << "Got an iteration" << std::endl;
-  } else {
-    std::cout << "Got NO iteration" << std::endl;
   }
   if(coarsePrevState->HasMeta("iteration")) {
     coarseProp->meta["iteration"] = coarsePrevState->meta["iteration"];
-    std::cout << "Got a coarse iteration" << std::endl;
   } else {
-    std::cout << "Got NO coarse iteration. Happily faking it..." << std::endl;
     coarseProp->meta["iteration"] = (unsigned int)0;
     coarsePrevState->meta["iteration"] = (unsigned int)0;
-    // FIXME: Why does the coarse chain not get initialized with an iteration?
   }
   coarsePrevState->meta["IsProposal"] = false;
   fineProp->meta["IsProposal"] = true;
