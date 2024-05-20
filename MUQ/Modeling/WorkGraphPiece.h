@@ -8,6 +8,8 @@
 #include "MUQ/Modeling/ConstantPiece.h"
 #include "MUQ/Modeling/NodeNameFinder.h"
 
+#include <deque>
+
 namespace muq {
   namespace Modeling {
 
