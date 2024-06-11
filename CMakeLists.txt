@@ -47,7 +47,6 @@ set(${CMAKE_PROJECT_NAME}_VERSION ${${CMAKE_PROJECT_NAME}_MAJOR_VERSION}.${${CMA
 
 message(STATUS "\n\nThis is MUQ, the MIT UQ Library!\n\n")
 
-
 ###############################################
 # User options
 ###############################################

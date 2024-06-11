@@ -1,7 +1,7 @@
 include(ExternalProject)
 
 if(NOT DEFINED BOOST_EXTERNAL_SOURCE)
-  set(BOOST_EXTERNAL_SOURCE http://downloads.sourceforge.net/project/boost/boost/1.78.0/boost_1_78_0.tar.gz)
+  set(BOOST_EXTERNAL_SOURCE https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.gz)
 endif()
 
 
