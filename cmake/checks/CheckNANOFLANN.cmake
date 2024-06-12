@@ -39,8 +39,27 @@ int main(int argc, char **argv) {
   NANOFLANN_COMPILES)
 
 
-	if(NOT NANOFLANN_COMPILES)
-		set(NANOFLANN_TEST_FAIL 1)
-	else()
-		set(NANOFLANN_TEST_FAIL 0)
-	endif()
+if(NOT NANOFLANN_COMPILES)
+    set(NANOFLANN_TEST_FAIL 1)
+else()
+    set(NANOFLANN_TEST_FAIL 0)
+endif()
+
+
+# try to compile a simple program to make sure the c++11 auto feature works
+CHECK_CXX_SOURCE_COMPILES(
+"
+#include <nanoflann.hpp>
+
+int main(){
+nanoflann::SearchParams();
+return 0;
+}
+"
+NANOFLAN_PARAMS_COMPILES)
+
+if(NANOFLAN_PARAMS_COMPILES)
+set(MUQ_NANOFLAN_PARAMS_COMPILES 1  CACHE STRING "Result of NANOFLAN_PARAMS_COMPILES test.")
+else()
+set(MUQ_NANOFLAN_PARAMS_COMPILES 0  CACHE STRING "Result of NANOFLAN_PARAMS_COMPILES test.")  
+endif()

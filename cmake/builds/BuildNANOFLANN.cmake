@@ -2,7 +2,7 @@ set(EIGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/external/nanoflann/src")
 
 include(ExternalProject)
 if( NOT NANOFLANN_EXTERNAL_SOURCE )
-    set(NANOFLANN_EXTERNAL_SOURCE https://github.com/jlblancoc/nanoflann/archive/master.zip)
+    set(NANOFLANN_EXTERNAL_SOURCE https://github.com/jlblancoc/nanoflann/archive/refs/tags/v1.5.5.zip)
 endif()
 
 set(NANOFLANN_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/muq_external/)
