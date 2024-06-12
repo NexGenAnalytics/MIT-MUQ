@@ -95,7 +95,9 @@ endif()
 ############################################
 
 GetDependency(NANOFLANN)
-
+if(USE_INTERNAL_NANOFLANN)
+    set(MUQ_NANOFLAN_PARAMS_COMPILES 0)
+endif()
 ###############################################
 ##### LOOK FOR BOOST                     ######
 ###############################################
