@@ -35,7 +35,23 @@ IF(MUQ_USE_GTEST)
     endforeach()
 
     message("MUQ_LINK_LIBS = ${MUQ_LINK_LIBS}")
-    TARGET_LINK_LIBRARIES(RunAllTests ${MUQ_LIBRARIES} ${MUQ_LINK_LIBS} ${GTEST_LIBRARY})
+    TARGET_LINK_LIBRARIES(
+        RunAllTests
+        ${MUQ_LIBRARIES}
+        OpenMP::OpenMP_CXX
+        SUNDIALS::cvodes
+        SUNDIALS::idas
+        SUNDIALS::kinsol
+        SUNDIALS::nvecserial
+        NLopt::nlopt
+        hdf5::hdf5
+        hdf5::hdf5_cpp
+        hdf5::hdf5_hl
+        Boost::system
+        Boost::filesystem
+        Boost::graph
+        GTest::gtest_main
+    )
 
     if( MUQ_HAS_MPI )
         foreach(group ${MUQ_PARALLEL_TEST_GROUPS})
@@ -58,6 +74,22 @@ IF(MUQ_USE_GTEST)
 		add_dependencies(RunAllParallelTests ${target})
 	endforeach()
 
-	TARGET_LINK_LIBRARIES(RunAllParallelTests ${MUQ_LIBRARIES} ${MUQ_LINK_LIBS} ${GTEST_LIBRARY})
+    TARGET_LINK_LIBRARIES(
+        RunAllParallelTests
+        ${MUQ_LIBRARIES}
+        OpenMP::OpenMP_CXX
+        SUNDIALS::cvodes
+        SUNDIALS::idas
+        SUNDIALS::kinsol
+        SUNDIALS::nvecserial
+        NLopt::nlopt
+        hdf5::hdf5
+        hdf5::hdf5_cpp
+        hdf5::hdf5_hl
+        Boost::system
+        Boost::filesystem
+        Boost::graph
+        GTest::gtest_main
+    )
     endif()
 ENDIF()

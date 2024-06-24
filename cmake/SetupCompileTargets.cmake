@@ -25,7 +25,16 @@ foreach(libName ${MUQ_TARGETS})
             list(APPEND MUQ_LIBRARIES ${libName})
         endif()
 
-        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+#        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+        # include the file named "Setup{libName}.cmake" if it exists
+        message(STATUS "Checking for cmake/Setup${libName}.cmake")
+        if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/Setup${libName}.cmake)
+            message(STATUS "Including cmake/Setup${libName}.cmake")
+            include(cmake/Setup${libName}.cmake)
+        else()
+            TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+        endif()
+
 
         # Add dependencies for any required dependencies that MUQ is going to build internally
         foreach(depend ${MUQ_REQUIRES})
@@ -92,3 +101,31 @@ foreach(group ${MUQ_GROUPS})
     endif()
 
 endforeach()
+
+
+message(STATUS "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+foreach(libName ${MUQ_TARGETS})
+    message(STATUS "Configuring target: ${libName}")
+    message(STATUS "Linking with: ${MUQ_LINK_LIBS}")
+    foreach(depend ${MUQ_REQUIRES})
+        if(USE_INTERNAL_${depend})
+            message(STATUS "Internal dependency for ${libName}: ${depend}")
+        endif()
+    endforeach()
+endforeach()
+message(STATUS "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+
+message(STATUS "###################################################################")
+foreach(group ${MUQ_GROUPS})
+    if(MUQ_ENABLEGROUP_${group})
+        message(STATUS "Group Enabled: ${group}")
+        message(STATUS "Requires Groups: ${${group}_REQUIRES_GROUPS}")
+        message(STATUS "Requires Libraries: ${${group}_REQUIRES}")
+        message(STATUS "Optional Libraries: ${${group}_DESIRES}")
+    else()
+        message(STATUS "Group Disabled: ${group}")
+    endif()
+endforeach()
+message(STATUS "###################################################################")
+

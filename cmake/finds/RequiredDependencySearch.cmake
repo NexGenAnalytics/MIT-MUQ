@@ -1,5 +1,6 @@
 # define a macro to look for a package and install a local copy if we can't find it
 macro (GetDependency name)
+        message(STATUS "===== GetDependency for ${name} =====")
         # check to see if this dependency is required by any group
         list (FIND MUQ_REQUIRES ${name} dindex)
         if (${dindex} GREATER -1)
@@ -17,6 +18,7 @@ macro (GetDependency name)
 
                 find_package(${name})
                 if(${name}_FOUND)
+                    message(STATUS "===== Found ${name} =====")
                     # check to make sure the library can be linked to
                     include(Check${name})
 
@@ -24,10 +26,12 @@ macro (GetDependency name)
                     if(NOT ${name}_TEST_FAIL)
                         set(USE_INTERNAL_${name} 0)
                     else()
+                        message(STATUS "===== ${name} test failed, using internal version =====")
                         set(USE_INTERNAL_${name} 1)
                     endif()
 
                 else()
+                    message(STATUS "===== ${name} not found, using internal version =====")
                     set(USE_INTERNAL_${name} 1)
                 endif()
 
@@ -43,7 +47,10 @@ macro (GetDependency name)
 
       	    # store library information
       	    LIST(APPEND MUQ_LINK_LIBS ${${name}_LIBRARIES})
+            message(STATUS "MUQ_LINK_LIBS: ${MUQ_LINK_LIBS}")
       	    LIST(APPEND MUQ_LINK_LIBS_STATIC ${${name}_LIBRARIES_STATIC})
+            message(STATUS "MUQ_LINK_LIBS_STATIC: ${MUQ_LINK_LIBS_STATIC}")
+
 
             set(MUQ_HAS_${name} 1)
         else()
@@ -65,12 +72,29 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 GetDependency(EIGEN3)
 GetDependency(STANMATH)
-GetDependency(SUNDIALS)
-GetDependency(NLOPT)
+#GetDependency(SUNDIALS)
+#GetDependency(NLOPT)
 GetDependency(PARCER)
 GetDependency(SPDLOG)
 GetDependency(OTF2)
 
+###############################
+##### LOOK FOR SUNDIALS  ######
+###############################
+
+find_package(SUNDIALS REQUIRED)
+if (SUNDIALS_FOUND)
+    set(MUQ_HAS_SUNDIALS 1)
+endif ()
+
+############################
+##### LOOK FOR NLopt  ######
+############################
+
+find_package(NLopt REQUIRED)
+if (NLOPT_FOUND)
+    set(MUQ_HAS_NLOPT 1)
+endif ()
 
 ########################################
 ##### LOOK FOR AND/OR BUILD HDF5  ######
@@ -78,7 +102,12 @@ GetDependency(OTF2)
 
 set(HAVE_HDF5 1)
 
-GetDependency(HDF5)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+if (HDF5_FOUND)
+    set(MUQ_HAS_HDF5 1)
+endif ()
+
+#GetDependency(HDF5)
 
 if(MUQ_USE_OPENMPI)
 	find_package(ZLIB)
@@ -102,60 +131,65 @@ endif()
 ##### LOOK FOR BOOST                     ######
 ###############################################
 
-list (FIND MUQ_REQUIRES BOOST dindex)
-if (${dindex} GREATER -1)
-    set(MUQ_NEEDS_BOOST ON)
+find_package(Boost REQUIRED COMPONENTS system filesystem graph)
+if (Boost_FOUND)
+    set(MUQ_HAS_BOOST 1)
+endif ()
 
-    find_package(BOOSTMUQ)
-    if(NOT DEFINED Boost_FOUND)
-	set(Boost_FOUND ${BOOST_FOUND})
-    endif()
-
-    if(Boost_FOUND)
-	# check to make sure the library can be linked to
-	include(CheckBoost)
-
-	if(NOT BOOST_TEST_FAIL)
-		set(USE_INTERNAL_BOOST 0)
-	else()
-		set(USE_INTERNAL_BOOST 1)
-	endif()
-
-    else()
-	set(USE_INTERNAL_BOOST 1)
-    endif()
-
-    if(USE_INTERNAL_BOOST)
-	include(BuildBoost)
-    endif()
-
-    # do we want to compile the python interface?
-    set(MUQ_PYTHON 0)
-    if(MUQ_USE_PYTHON)
-        set(MUQ_PYTHON 1)
-    endif()
-
-    # store include directory information
-    if(NOT DEFINED Boost_INCLUDE_DIRS)
-        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIR})
-    endif()
-
-    include_directories(${Boost_INCLUDE_DIRS})
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_EXTERNAL_INCLUDES ${Boost_INCLUDE_DIRS})
-
-    if(NOT DEFINED Boost_LIBRARIES)
-        set(Boost_LIBRARIES ${BOOST_LIBRARY})
-        set(Boost_LIBRARIES_STATIC ${BOOST_LIBRARIES_STATIC})
-    endif()
-
-    # store library information
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS ${Boost_LIBRARIES})
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS_STATIC ${Boost_LIBRARIES_STATIC})
-
-else()
-    set(MUQ_NEEDS_BOOST OFF)
-
-endif()
+#list (FIND MUQ_REQUIRES BOOST dindex)
+#if (${dindex} GREATER -1)
+#    set(MUQ_NEEDS_BOOST ON)
+#
+#    find_package(BOOSTMUQ)
+#    if(NOT DEFINED Boost_FOUND)
+#	set(Boost_FOUND ${BOOST_FOUND})
+#    endif()
+#
+#    if(Boost_FOUND)
+#	# check to make sure the library can be linked to
+#	include(CheckBoost)
+#
+#	if(NOT BOOST_TEST_FAIL)
+#		set(USE_INTERNAL_BOOST 0)
+#	else()
+#		set(USE_INTERNAL_BOOST 1)
+#	endif()
+#
+#    else()
+#	set(USE_INTERNAL_BOOST 1)
+#    endif()
+#
+#    if(USE_INTERNAL_BOOST)
+#	include(BuildBoost)
+#    endif()
+#
+#    # do we want to compile the python interface?
+#    set(MUQ_PYTHON 0)
+#    if(MUQ_USE_PYTHON)
+#        set(MUQ_PYTHON 1)
+#    endif()
+#
+#    # store include directory information
+#    if(NOT DEFINED Boost_INCLUDE_DIRS)
+#        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIR})
+#    endif()
+#
+#    include_directories(${Boost_INCLUDE_DIRS})
+#    LIST(APPEND ${CMAKE_PROJECT_NAME}_EXTERNAL_INCLUDES ${Boost_INCLUDE_DIRS})
+#
+#    if(NOT DEFINED Boost_LIBRARIES)
+#        set(Boost_LIBRARIES ${BOOST_LIBRARY})
+#        set(Boost_LIBRARIES_STATIC ${BOOST_LIBRARIES_STATIC})
+#    endif()
+#
+#    # store library information
+#    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS ${Boost_LIBRARIES})
+#    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS_STATIC ${Boost_LIBRARIES_STATIC})
+#
+#else()
+#    set(MUQ_NEEDS_BOOST OFF)
+#
+#endif()
 
 ########################################
 ##### REMOVE DUPLICATE INCLUDES   ######

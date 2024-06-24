@@ -125,3 +125,11 @@ foreach(target ${MUQ_TARGETS})
     endif()
 
 endforeach()
+
+message(STATUS "============================================================")
+foreach(target ${MUQ_TARGETS})
+    message(STATUS "Target: ${target}")
+    message(STATUS "Sources: ${${target}_SOURCES}")
+endforeach()
+message(STATUS "============================================================")
+
