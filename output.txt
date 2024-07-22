@@ -1,0 +1,135 @@
+Constructing empty MyMLComponentFactory  // auto componentFactory = std::make_shared<MyMLComponentFactory>(pt); l:180
+Creating greedymlmcmc // std::cout << "Creating greedymlmcmc" <<  std::endl; l:182
+// GreedyMLMCMC greedymlmcmc (pt, componentFactory); -> initialization list -> levels(componentFactory->FinestIndex()->GetValue(0)) GreedyMLMCMC.cpp l:29
+    - MyMLComponentFactory: FinestIndex() - // MyMLComponentFactory->FinestIndex()
+    ---------------------------------------
+// GreedyMLMCMC greedymlmcmc (pt, componentFactory); -> initialization list -> useQOIs(componentFactory->SamplingProblem(componentFactory->FinestIndex())->numBlocksQOI>0) GreedyMLMCMC.cpp l:31
+    - MyMLComponentFactory: FinestIndex() - // MyMLComponentFactory->FinestIndex()
+    ---------------------------------------
+    - MyMLComponentFactory: SamplingProblem(): - // MyMLComponentFactory->SamplingProblem()
+       index->GetValue(0) == 3
+      @ Constructing MySamplingProblem with ModPiece Density_1 // MySamplingProblem constructor
+    --------------------------------------------
+// GreedyMLMCMC initialization list is done, going in the the constructor code block
+** GreedyMLMCMC: constructor:
+   ---- Setting up level 0
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 0
+      @ Constructing MySamplingProblem with ModPiece Density_2
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -0
+    -----------------------------------------------
+MyMLComponentFactory: StartingPoint(): index: 0
+   ----------------------
+   ---- Setting up level 1
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 0
+      @ Constructing MySamplingProblem with ModPiece Density_3
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -0
+    -----------------------------------------------
+MyMLComponentFactory: StartingPoint(): index: 0
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 1
+      @ Constructing MySamplingProblem with ModPiece Density_4
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -1
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 1
+coarseIndex: 0
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 1
+MyMLComponentFactory: StartingPoint(): index: 1
+   ----------------------
+   ---- Setting up level 2
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 0
+      @ Constructing MySamplingProblem with ModPiece Density_5
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -0
+    -----------------------------------------------
+MyMLComponentFactory: StartingPoint(): index: 0
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 1
+      @ Constructing MySamplingProblem with ModPiece Density_6
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -1
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 1
+coarseIndex: 0
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 1
+MyMLComponentFactory: StartingPoint(): index: 1
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 2
+      @ Constructing MySamplingProblem with ModPiece Density_7
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -2
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 2
+coarseIndex: 1
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 2
+MyMLComponentFactory: StartingPoint(): index: 2
+   ----------------------
+   ---- Setting up level 3
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 0
+      @ Constructing MySamplingProblem with ModPiece Density_8
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -0
+    -----------------------------------------------
+MyMLComponentFactory: StartingPoint(): index: 0
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 1
+      @ Constructing MySamplingProblem with ModPiece Density_9
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -1
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 1
+coarseIndex: 0
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 1
+MyMLComponentFactory: StartingPoint(): index: 1
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 2
+      @ Constructing MySamplingProblem with ModPiece Density_10
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -2
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 2
+coarseIndex: 1
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 2
+MyMLComponentFactory: StartingPoint(): index: 2
+    - MyMLComponentFactory: SamplingProblem(): -
+       index->GetValue(0) == 3
+      @ Constructing MySamplingProblem with ModPiece Density_11
+    --------------------------------------------
+    - MyMLComponentFactory: Proposal(): index: -3
+    -----------------------------------------------
+    - MyMLComponentFactory: CoarseProposal(): -
+fineIndex: 3
+coarseIndex: 2
+coarseChain status: 
+-2147483648% Complete
+    --------------------------------------------
+MyMLComponentFactory: Interpolation(): index: 3
+MyMLComponentFactory: StartingPoint(): index: 3
+   ----------------------
+****************************

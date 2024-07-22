@@ -30,15 +30,18 @@ GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree opts, std::shared_ptr<MI
   verbosity(opts.get("verbosity",0)),
   useQOIs(componentFactory->SamplingProblem(componentFactory->FinestIndex())->numBlocksQOI>0)
 {
-
+  std::cout << "** GreedyMLMCMC: constructor:" << std::endl;
   for (int level = 0; level <= levels; level++) {
+    std::cout << "   ---- Setting up level " << level << std::endl;
     if (verbosity > 0)
       std::cout << "Setting up level " << level << std::endl;
 
     auto boxHighestIndex = std::make_shared<MultiIndex>(1,level);
     auto box = std::make_shared<MIMCMCBox>(componentFactory, boxHighestIndex);
     boxes.push_back(box);
+    std::cout << "   ----------------------" << std::endl;
   }
+  std::cout << "****************************" << std::endl;
 }
 
 std::vector<std::shared_ptr<AbstractSamplingProblem>> GreedyMLMCMC::CreateProblems(std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models)
