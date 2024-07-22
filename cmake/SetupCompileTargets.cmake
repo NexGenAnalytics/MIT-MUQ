@@ -25,15 +25,32 @@ foreach(libName ${MUQ_TARGETS})
             list(APPEND MUQ_LIBRARIES ${libName})
         endif()
 
+        target_link_libraries(
+                ${libName} PUBLIC
+                OpenMP::OpenMP_CXX
+#                SUNDIALS::cvodes
+#                SUNDIALS::idas
+#                SUNDIALS::kinsol
+#                SUNDIALS::nvecserial
+                ${SUNDIALS_LIBRARIES}
+                NLopt::nlopt
+                hdf5::hdf5
+                hdf5::hdf5_cpp
+                hdf5::hdf5_hl
+                Boost::system
+                Boost::filesystem
+                Boost::graph
+        )
+
 #        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
         # include the file named "Setup{libName}.cmake" if it exists
-        message(STATUS "Checking for cmake/Setup${libName}.cmake")
-        if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/Setup${libName}.cmake)
-            message(STATUS "Including cmake/Setup${libName}.cmake")
-            include(cmake/Setup${libName}.cmake)
-        else()
-            TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
-        endif()
+#        message(STATUS "Checking for cmake/Setup${libName}.cmake")
+#        if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/Setup${libName}.cmake)
+#            message(STATUS "Using target_link_libraries with namespace for ${libName} ")
+##            include(cmake/Setup${libName}.cmake)
+#        else()
+#            TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+#        endif()
 
 
         # Add dependencies for any required dependencies that MUQ is going to build internally

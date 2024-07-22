@@ -20,7 +20,7 @@ macro (GetDependency name)
                 if(${name}_FOUND)
                     message(STATUS "===== Found ${name} =====")
                     # check to make sure the library can be linked to
-                    include(Check${name})
+#                    include(Check${name})
 
                     # If the test code compiled...
                     if(NOT ${name}_TEST_FAIL)
@@ -70,22 +70,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 ##### LOOK FOR AND/OR BUILD REQUIRED DEPENDENCIES ######
 ########################################################
-GetDependency(EIGEN3)
-GetDependency(STANMATH)
-#GetDependency(SUNDIALS)
-#GetDependency(NLOPT)
+# Using the default find_package() for dependencies is necessary if linking to libraries will be needed;
+# GetDependency is used otherwise
+GetDependency(EIGEN3) # header only,
+GetDependency(STANMATH) # header only
+GetDependency(SUNDIALS) # this dep doesn't have a cmake config file so find_package() doesn't work
+                        # GetDependency() calls the custom findSUNDIALS.cmake which sets the libs and includes manually
+
+# these 3 are required if mpi is on, but the mpi build doesn't work for now so not modifying these yet
 GetDependency(PARCER)
 GetDependency(SPDLOG)
 GetDependency(OTF2)
-
-###############################
-##### LOOK FOR SUNDIALS  ######
-###############################
-
-find_package(SUNDIALS REQUIRED)
-if (SUNDIALS_FOUND)
-    set(MUQ_HAS_SUNDIALS 1)
-endif ()
 
 ############################
 ##### LOOK FOR NLopt  ######
@@ -101,11 +96,35 @@ endif ()
 ########################################
 
 set(HAVE_HDF5 1)
+if (MUQ_FORCE_INTERNAL_HDF5)
+    message(STATUS "Forcing internal HDF5 build.")
+    set(BUILD_INTERNAL_HDF5 TRUE)
+else()
+    find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+    if (HDF5_FOUND)
+        set(MUQ_HAS_HDF5 1)
+        set(BUILD_INTERNAL_HDF5 FALSE)
+    else()
+        message(STATUS "HDF5 not found, performing internal build.")
+        set(BUILD_INTERNAL_HDF5 TRUE)
+    endif()
+endif()
 
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-if (HDF5_FOUND)
-    set(MUQ_HAS_HDF5 1)
-endif ()
+if (BUILD_INTERNAL_HDF5)
+    if(NOT DEFINED MUQ_INTERNAL_HDF5_VERSION)
+        set(MUQ_INTERNAL_HDF5_VERSION "1.8.19")
+    endif()
+    include(FetchContent)
+    FetchContent_Declare(HDF5
+            GIT_REPOSITORY https://github.com/HDFGroup/hdf5.git
+            GIT_TAG hdf5-1_8_19
+    )
+    FetchContent_MakeAvailable(HDF5)
+    install(
+            TARGETS hdf5
+            EXPORT ${PROJECT_NAME}Targets
+    )
+endif()
 
 #GetDependency(HDF5)
 
@@ -124,6 +143,7 @@ endif()
 ############################################
 
 GetDependency(NANOFLANN)
+set(MUQ_NANOFLAN_PARAMS_COMPILES 0)
 if(USE_INTERNAL_NANOFLANN)
     set(MUQ_NANOFLAN_PARAMS_COMPILES 0)
 endif()

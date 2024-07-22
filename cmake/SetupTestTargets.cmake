@@ -39,10 +39,11 @@ IF(MUQ_USE_GTEST)
         RunAllTests
         ${MUQ_LIBRARIES}
         OpenMP::OpenMP_CXX
-        SUNDIALS::cvodes
-        SUNDIALS::idas
-        SUNDIALS::kinsol
-        SUNDIALS::nvecserial
+#        SUNDIALS::cvodes
+#        SUNDIALS::idas
+#        SUNDIALS::kinsol
+#        SUNDIALS::nvecserial
+        ${SUNDIALS_LIBRARIES}
         NLopt::nlopt
         hdf5::hdf5
         hdf5::hdf5_cpp
@@ -78,10 +79,11 @@ IF(MUQ_USE_GTEST)
         RunAllParallelTests
         ${MUQ_LIBRARIES}
         OpenMP::OpenMP_CXX
-        SUNDIALS::cvodes
-        SUNDIALS::idas
-        SUNDIALS::kinsol
-        SUNDIALS::nvecserial
+#        SUNDIALS::cvodes
+#        SUNDIALS::idas
+#        SUNDIALS::kinsol
+#        SUNDIALS::nvecserial
+        ${SUNDIALS_LIBRARIES}
         NLopt::nlopt
         hdf5::hdf5
         hdf5::hdf5_cpp
