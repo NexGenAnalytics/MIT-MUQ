@@ -80,7 +80,7 @@ public:
     // proposal for any given level
     // in this case we have the same problem for every level because the same uncertain param dim
     // if index is 0, then i need to provide proposal for that level
-    std::cout << "    - MyMLComponentFactory: Proposal(): index: -" << index->ToString() << std::endl;
+    std::cout << "    - MyMLComponentFactory: Proposal(): index:" << index->ToString() << std::endl;
     pt::ptree pt;
     pt.put("BlockIndex",0);
 
@@ -181,16 +181,13 @@ TEST(MLMCMCTest, GreedyMLMCMC)
 
   pt::ptree pt;
 
-  pt.put("NumSamples", 1e4); // number of samples for single level
+  // pt.put("NumSamples", 1e4); // number of samples for single level // apparently this isn't used from what I see
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
   pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
-  // take 5 steps on the coarse before using for level 1
-  pt.put("MLMCMC.Subsampling_0", 5); // estimator variance to be achieved by greedy algorithm
-  // take 5 steps on the coarse before using for level 2
-  pt.put("MLMCMC.Subsampling_1", 3); // estimator variance to be achieved by greedy algorithm
-  // take 5 steps on the coarse before using for level 3
-  pt.put("MLMCMC.Subsampling_2", 1); // estimator variance to be achieved by greedy algorithm
-  pt.put("MLMCMC.Subsampling_3", 0); // estimator variance to be achieved by greedy algorithm
+  pt.put("MLMCMC.Subsampling_0", 5);
+  pt.put("MLMCMC.Subsampling_1", 3);
+  pt.put("MLMCMC.Subsampling_2", 1);
+  pt.put("MLMCMC.Subsampling_3", 0);
 
   auto componentFactory = std::make_shared<MyMLComponentFactory>(pt);
 

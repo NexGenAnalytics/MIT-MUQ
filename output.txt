@@ -12,6 +12,7 @@ Creating greedymlmcmc // std::cout << "Creating greedymlmcmc" <<  std::endl; l:1
     --------------------------------------------
 // GreedyMLMCMC initialization list is done, going in the the constructor code block
 ** GreedyMLMCMC: constructor:
+// for (int level = 0; level <= levels; level++) // makes a shared MultiIndex for this level (boxHighestIndex) and a MIMCMCBOX with the componentFacory and the boxHighestIndex
    ---- Setting up level 0
     - MyMLComponentFactory: SamplingProblem(): -
        index->GetValue(0) == 0
