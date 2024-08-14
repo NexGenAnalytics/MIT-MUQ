@@ -25,7 +25,14 @@ foreach(libName ${MUQ_TARGETS})
             list(APPEND MUQ_LIBRARIES ${libName})
         endif()
 
-        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+        TARGET_LINK_LIBRARIES(
+            ${libName}
+            PUBLIC
+            hdf5::hdf5
+            hdf5::hdf5_cpp
+            hdf5::hdf5_hl
+            ${MUQ_LINK_LIBS}
+        )
 
         # Add dependencies for any required dependencies that MUQ is going to build internally
         foreach(depend ${MUQ_REQUIRES})

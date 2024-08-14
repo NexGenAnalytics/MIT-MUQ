@@ -74,11 +74,15 @@ GetDependency(OTF2)
 
 ########################################
 ##### LOOK FOR AND/OR BUILD HDF5  ######
-########################################
 
 set(HAVE_HDF5 1)
 
-GetDependency(HDF5)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+if (HDF5_FOUND)
+    set(MUQ_HAS_HDF5 1)
+endif ()
+
+########################################
 
 if(MUQ_USE_OPENMPI)
 	find_package(ZLIB)
