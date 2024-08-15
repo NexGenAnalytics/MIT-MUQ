@@ -7,28 +7,18 @@ IF(MUQ_USE_GTEST)
   set(MUQ_NEEDS_GTEST ON)
 
   IF(GTEST_FOUND)
-    include(CheckGTEST)
-  ENDIF()
-
-  IF(GTEST_FOUND AND NOT GTEST_TEST_FAIL)
     set(MUQ_BUILD_TESTS ON)
     include_directories(${GTEST_INCLUDE_DIRS})
     LIST(APPEND test_link_libs ${GTEST_LIBRARIES})
 
-  ELSE()
-
-    if(NOT GTEST_FOUND)
-      message(WARNING "Could not find GTEST.  No tests can be compiled.")
-    endif()
-    if(GTEST_FOUND AND GTEST_TEST_FAIL)
-      message(WARNING "GTEST failed compilation test.  No tests can be compiled.")
-    endif()
+  ELSE(GTEST_FOUND)
+    message(WARNING "Could not find GTEST.  No tests can be compiled.")
 
     set(MUQ_BUILD_TESTS OFF)
     set(MUQ_NEEDS_GTEST OFF)
     set(MUQ_USE_GTEST OFF)
 
-  ENDIF(GTEST_FOUND AND NOT GTEST_TEST_FAIL)
+  ENDIF(GTEST_FOUND)
 
 ELSE(MUQ_USE_GTEST)
 
