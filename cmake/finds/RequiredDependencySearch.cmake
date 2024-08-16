@@ -16,18 +16,7 @@ macro (GetDependency name)
             else()
 
                 find_package(${name})
-                if(${name}_FOUND)
-                    # check to make sure the library can be linked to
-                    include(Check${name})
-
-                    # If the test code compiled...
-                    if(NOT ${name}_TEST_FAIL)
-                        set(USE_INTERNAL_${name} 0)
-                    else()
-                        set(USE_INTERNAL_${name} 1)
-                    endif()
-
-                else()
+                if(NOT ${name}_FOUND)
                     set(USE_INTERNAL_${name} 1)
                 endif()
 
@@ -108,25 +97,15 @@ if (${dindex} GREATER -1)
 
     find_package(BOOSTMUQ)
     if(NOT DEFINED Boost_FOUND)
-	set(Boost_FOUND ${BOOST_FOUND})
+	    set(Boost_FOUND ${BOOST_FOUND})
     endif()
 
-    if(Boost_FOUND)
-	# check to make sure the library can be linked to
-	include(CheckBoost)
-
-	if(NOT BOOST_TEST_FAIL)
-		set(USE_INTERNAL_BOOST 0)
-	else()
-		set(USE_INTERNAL_BOOST 1)
-	endif()
-
-    else()
-	set(USE_INTERNAL_BOOST 1)
+    if(NOT Boost_FOUND)
+        set(USE_INTERNAL_BOOST 1)
     endif()
 
     if(USE_INTERNAL_BOOST)
-	include(BuildBoost)
+	    include(BuildBoost)
     endif()
 
     # do we want to compile the python interface?
