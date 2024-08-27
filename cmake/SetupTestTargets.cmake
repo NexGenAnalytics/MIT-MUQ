@@ -1,7 +1,7 @@
 # only build the tests if some of them should be built
 IF(MUQ_USE_GTEST)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGTEST_USE_OWN_TR1_TUPLE=1")
-
+  
     CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_PTHREAD)
     if(HAS_PTHREAD)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread")
@@ -11,7 +11,7 @@ IF(MUQ_USE_GTEST)
     set(all_gtest_sources modules/RunTests.cpp)
     set(all_gtest_sources_parallel modules/RunParallelTests.cpp)
     set(all_compiled_libraries )
-
+    
     foreach(group ${MUQ_TEST_GROUPS})
         message("${group}_TEST_SOURCES = ${${group}_TEST_SOURCES}")
 	if(${group}_IS_COMPILED)
@@ -57,7 +57,7 @@ IF(MUQ_USE_GTEST)
 	endforeach()
 
         list(REMOVE_DUPLICATES all_gtest_sources_parallel)
-
+	
         message("ALL PARALLEL TEST SOURCES = ${all_gtest_sources_parallel}")
         ADD_EXECUTABLE(RunAllParallelTests ${all_gtest_sources_parallel})
 
