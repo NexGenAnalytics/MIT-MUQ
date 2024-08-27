@@ -72,8 +72,9 @@ GetDependency(SPDLOG)
 GetDependency(OTF2)
 
 
-########################################
-##### LOOK FOR AND/OR BUILD HDF5  ######
+###########################
+##### LOOK FOR HDF5  ######
+###########################
 
 set(HAVE_HDF5 1)
 
@@ -82,7 +83,9 @@ if (HDF5_FOUND)
     set(MUQ_HAS_HDF5 1)
 endif ()
 
-########################################
+###########################
+##### LOOK FOR ZLIB  ######
+###########################
 
 if(MUQ_USE_OPENMPI)
 	find_package(ZLIB)
