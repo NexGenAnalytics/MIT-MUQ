@@ -55,7 +55,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 GetDependency(EIGEN3)
 GetDependency(STANMATH)
 GetDependency(SUNDIALS)
-GetDependency(NLOPT)
 GetDependency(PARCER)
 GetDependency(SPDLOG)
 GetDependency(OTF2)
@@ -83,6 +82,17 @@ if(MUQ_USE_OPENMPI)
 	message("ZLIB_LIBRARIES" ${ZLIB_LIBRARIES})
 
 endif()
+
+############################
+##### LOOK FOR NLOPT  ######
+############################
+
+set(HAVE_NLopt 1)
+
+find_package(NLopt REQUIRED)
+if (NLopt_FOUND)
+    set(MUQ_HAS_NLopt 1)
+endif ()
 
 ############################################
 ##### LOOK FOR AND/OR BUILD NANOFLANN ######
