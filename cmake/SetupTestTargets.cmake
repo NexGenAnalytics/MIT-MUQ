@@ -41,6 +41,10 @@ IF(MUQ_USE_GTEST)
         hdf5::hdf5_cpp
         hdf5::hdf5_hl
         NLopt::nlopt
+        Boost::system
+        Boost::filesystem
+        Boost::graph
+        Boost::regex
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
@@ -73,6 +77,10 @@ IF(MUQ_USE_GTEST)
         hdf5::hdf5_cpp
         hdf5::hdf5_hl
         NLopt::nlopt
+        Boost::system
+        Boost::filesystem
+        Boost::graph
+        Boost::regex
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}

@@ -32,6 +32,10 @@ foreach(libName ${MUQ_TARGETS})
             hdf5::hdf5_cpp
             hdf5::hdf5_hl
             NLopt::nlopt
+            Boost::system
+            Boost::filesystem
+            Boost::graph
+            Boost::regex
             ${MUQ_LINK_LIBS}
         )
 
