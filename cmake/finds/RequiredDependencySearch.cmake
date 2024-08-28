@@ -97,14 +97,12 @@ set(MUQ_HAS_SUNDIALS 1) # this is needed for preprocessor directives in the MUQ 
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-############################################
-##### LOOK FOR AND/OR BUILD NANOFLANN ######
-############################################
+###############################
+##### LOOK FOR NANOFLANN ######
+###############################
 
-GetDependency(NANOFLANN)
-if(USE_INTERNAL_NANOFLANN)
-    set(MUQ_NANOFLAN_PARAMS_COMPILES 0)
-endif()
+find_package(nanoflann)
+
 ###############################################
 ##### LOOK FOR BOOST                     ######
 ###############################################

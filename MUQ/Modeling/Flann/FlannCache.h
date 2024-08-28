@@ -57,11 +57,11 @@ namespace muq {
 
         nanoflann::KNNResultSet<double,IndexType> resultSet(num_closest);
         resultSet.init(&out_indices[0], &out_distances_sq[0]);
-    #if MUQ_NANOFLAN_PARAMS_COMPILES
-        index->findNeighbors(resultSet, query_point.data(), nanoflann::SearchParams());
-    #else 
+    // #if MUQ_NANOFLAN_PARAMS_COMPILES
+    //     index->findNeighbors(resultSet, query_point.data(), nanoflann::SearchParams());
+    // #else
         index->findNeighbors(resultSet, query_point.data(), nanoflann::SearchParameters());
-    #endif 
+    // #endif
         return std::make_pair(out_indices, out_distances_sq);
       }
 

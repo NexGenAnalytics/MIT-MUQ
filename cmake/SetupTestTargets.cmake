@@ -50,6 +50,7 @@ IF(MUQ_USE_GTEST)
         SUNDIALS::kinsol
         SUNDIALS::nvecserial
         Eigen3::Eigen
+        nanoflann::nanoflann
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
@@ -91,6 +92,7 @@ IF(MUQ_USE_GTEST)
         SUNDIALS::kinsol
         SUNDIALS::nvecserial
         Eigen3::Eigen
+        nanoflann::nanoflann
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
