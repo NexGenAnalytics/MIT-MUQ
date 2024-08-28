@@ -45,6 +45,10 @@ IF(MUQ_USE_GTEST)
         Boost::filesystem
         Boost::graph
         Boost::regex
+        SUNDIALS::cvodes
+        SUNDIALS::idas
+        SUNDIALS::kinsol
+        SUNDIALS::nvecserial
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
@@ -81,6 +85,10 @@ IF(MUQ_USE_GTEST)
         Boost::filesystem
         Boost::graph
         Boost::regex
+        SUNDIALS::cvodes
+        SUNDIALS::idas
+        SUNDIALS::kinsol
+        SUNDIALS::nvecserial
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
