@@ -87,12 +87,7 @@ endif()
 ##### LOOK FOR NLOPT  ######
 ############################
 
-set(HAVE_NLopt 1)
-
 find_package(NLopt REQUIRED)
-if (NLopt_FOUND)
-    set(MUQ_HAS_NLopt 1)
-endif ()
 
 ############################################
 ##### LOOK FOR AND/OR BUILD NANOFLANN ######
