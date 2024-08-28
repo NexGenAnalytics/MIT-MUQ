@@ -52,7 +52,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 ##### LOOK FOR AND/OR BUILD REQUIRED DEPENDENCIES ######
 ########################################################
-GetDependency(EIGEN3)
 GetDependency(STANMATH)
 GetDependency(PARCER)
 GetDependency(SPDLOG)
@@ -91,6 +90,12 @@ find_package(NLopt REQUIRED)
 
 find_package(SUNDIALS 5.5.0...<6.0.0 REQUIRED)
 set(MUQ_HAS_SUNDIALS 1) # this is needed for preprocessor directives in the MUQ source code
+
+#############################
+##### LOOK FOR EIGEN3  ######
+#############################
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 ############################################
 ##### LOOK FOR AND/OR BUILD NANOFLANN ######

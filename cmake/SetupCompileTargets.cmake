@@ -40,6 +40,7 @@ foreach(libName ${MUQ_TARGETS})
             SUNDIALS::idas
             SUNDIALS::kinsol
             SUNDIALS::nvecserial
+            Eigen3::Eigen
             ${MUQ_LINK_LIBS}
         )
 
