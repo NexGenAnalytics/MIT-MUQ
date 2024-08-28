@@ -98,50 +98,8 @@ endif()
 ##### LOOK FOR BOOST                     ######
 ###############################################
 
-list (FIND MUQ_REQUIRES BOOST dindex)
-if (${dindex} GREATER -1)
-    set(MUQ_NEEDS_BOOST ON)
-
-    find_package(BOOSTMUQ)
-    if(NOT DEFINED Boost_FOUND)
-	    set(Boost_FOUND ${BOOST_FOUND})
-    endif()
-
-    if(NOT Boost_FOUND)
-        set(USE_INTERNAL_BOOST 1)
-    endif()
-
-    if(USE_INTERNAL_BOOST)
-	    include(BuildBoost)
-    endif()
-
-    # do we want to compile the python interface?
-    set(MUQ_PYTHON 0)
-    if(MUQ_USE_PYTHON)
-        set(MUQ_PYTHON 1)
-    endif()
-
-    # store include directory information
-    if(NOT DEFINED Boost_INCLUDE_DIRS)
-        set(Boost_INCLUDE_DIRS ${BOOST_INCLUDE_DIR})
-    endif()
-
-    include_directories(${Boost_INCLUDE_DIRS})
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_EXTERNAL_INCLUDES ${Boost_INCLUDE_DIRS})
-
-    if(NOT DEFINED Boost_LIBRARIES)
-        set(Boost_LIBRARIES ${BOOST_LIBRARY})
-        set(Boost_LIBRARIES_STATIC ${BOOST_LIBRARIES_STATIC})
-    endif()
-
-    # store library information
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS ${Boost_LIBRARIES})
-    LIST(APPEND ${CMAKE_PROJECT_NAME}_LINK_LIBS_STATIC ${Boost_LIBRARIES_STATIC})
-
-else()
-    set(MUQ_NEEDS_BOOST OFF)
-
-endif()
+set(BOOST_MIN_VERSION "1.56.0")
+find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS system filesystem graph regex)
 
 ########################################
 ##### REMOVE DUPLICATE INCLUDES   ######
