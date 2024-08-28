@@ -65,8 +65,6 @@ GetDependency(OTF2)
 ##### LOOK FOR HDF5  ######
 ###########################
 
-set(HAVE_HDF5 1)
-
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 
 ###########################
