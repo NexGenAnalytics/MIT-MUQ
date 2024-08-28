@@ -31,6 +31,7 @@ foreach(libName ${MUQ_TARGETS})
             hdf5::hdf5
             hdf5::hdf5_cpp
             hdf5::hdf5_hl
+            NLopt::nlopt
             ${MUQ_LINK_LIBS}
         )
 
