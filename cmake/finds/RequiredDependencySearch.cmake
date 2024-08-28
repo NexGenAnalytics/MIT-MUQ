@@ -90,7 +90,7 @@ find_package(NLopt REQUIRED)
 ###############################
 
 find_package(SUNDIALS 5.5.0...<6.0.0 REQUIRED)
-set(MUQ_HAS_SUNDIALS 1)
+set(MUQ_HAS_SUNDIALS 1) # this is needed for preprocessor directives in the MUQ source code
 
 ############################################
 ##### LOOK FOR AND/OR BUILD NANOFLANN ######
