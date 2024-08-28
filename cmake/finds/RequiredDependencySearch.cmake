@@ -79,9 +79,7 @@ GetDependency(OTF2)
 set(HAVE_HDF5 1)
 
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-if (HDF5_FOUND)
-    set(MUQ_HAS_HDF5 1)
-endif ()
+set(MUQ_HAS_HDF5 1)
 
 ###########################
 ##### LOOK FOR ZLIB  ######
