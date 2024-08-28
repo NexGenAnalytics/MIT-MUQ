@@ -49,6 +49,7 @@ IF(MUQ_USE_GTEST)
         SUNDIALS::idas
         SUNDIALS::kinsol
         SUNDIALS::nvecserial
+        Eigen3::Eigen
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
@@ -89,6 +90,7 @@ IF(MUQ_USE_GTEST)
         SUNDIALS::idas
         SUNDIALS::kinsol
         SUNDIALS::nvecserial
+        Eigen3::Eigen
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
         ${GTEST_LIBRARY}
