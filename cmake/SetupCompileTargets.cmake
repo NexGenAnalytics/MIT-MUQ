@@ -36,6 +36,10 @@ foreach(libName ${MUQ_TARGETS})
             Boost::filesystem
             Boost::graph
             Boost::regex
+            SUNDIALS::cvodes
+            SUNDIALS::idas
+            SUNDIALS::kinsol
+            SUNDIALS::nvecserial
             ${MUQ_LINK_LIBS}
         )
 
