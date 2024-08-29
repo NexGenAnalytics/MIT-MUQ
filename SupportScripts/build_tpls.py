@@ -263,7 +263,7 @@ def add_arguments(parser):
         "--with-eigen", dest="with_eigen", required=False,action="store_true"
     )
     
-    
+
 ##########################################################
 if __name__ == "__main__":
 ##########################################################
@@ -295,6 +295,3 @@ if __name__ == "__main__":
 
     if (args.with_eigen):
         build_install_eigen(args.workdir, args.force_rebuild)                
-        
-
-        
