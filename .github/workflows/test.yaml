@@ -47,22 +47,4 @@ jobs:
           rm $CMAKE_KEYRING
           sudo apt-get install -y kitware-archive-keyring cmake
 
-      - name: Check environment
-        run: |
-          echo ======================================================
-          echo $(which $CXX) --version
-          $CXX --version
-          echo ======================================================
-          echo $(which python) --version
-          python --version
-          echo ======================================================
-          echo $(which cmake) --version
-          cmake --version
-          echo ======================================================
-          echo Source directory: $MIT-MUQ
-          echo TPLs workdir: $TPL_WORK_DIR
-          echo ======================================================
-          git --version
-          cd $MUQ_HOME
-          git status
 	  
