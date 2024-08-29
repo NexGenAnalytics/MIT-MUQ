@@ -81,6 +81,7 @@ def build_install_hdf5(workdir: str, force_rebuild: bool):
     custom_cmake_args = (f'-DHDF5_BUILD_CPP_LIB=ON',)
     
     build_install_impl(
+        myname,
         force_rebuild,
         parent_path,
         url,
