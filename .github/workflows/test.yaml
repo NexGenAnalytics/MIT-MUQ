@@ -3,6 +3,7 @@ name: Build deps and MUQ
 on:
   push:
     branches: [master, testci]
+    
   pull_request:
     branches: [master, testci]
 
@@ -25,7 +26,8 @@ jobs:
     env: # environment variables available to all steps
       CXX: ${{ matrix.config.cxx }}
       APT_PACKAGES: python3 pip python-is-python3 g++ 
-      TPL_WORK_DIR: /home/runner/work/build/pressio-demoapps
+      TPL_WORK_DIR: /home/runner/work/build/tpls_workdir
+      MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
 
     steps:
       - name: Install packages
@@ -44,3 +46,23 @@ jobs:
           sudo apt-get update
           rm $CMAKE_KEYRING
           sudo apt-get install -y kitware-archive-keyring cmake
+
+      - name: Check environment
+        run: |
+          echo ======================================================
+          echo $(which $CXX) --version
+          $CXX --version
+          echo ======================================================
+          echo $(which python) --version
+          python --version
+          echo ======================================================
+          echo $(which cmake) --version
+          cmake --version
+          echo ======================================================
+          echo Source directory: $MIT-MUQ
+          echo TPLs workdir: $TPL_WORK_DIR
+          echo ======================================================
+          git --version
+          cd $MUQ_HOME
+          git status
+	  
