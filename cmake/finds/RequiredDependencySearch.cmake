@@ -52,7 +52,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 ##### LOOK FOR AND/OR BUILD REQUIRED DEPENDENCIES ######
 ########################################################
-GetDependency(STANMATH)
 GetDependency(PARCER)
 GetDependency(SPDLOG)
 GetDependency(OTF2)
@@ -102,6 +101,17 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 ###############################
 
 find_package(nanoflann REQUIRED)
+
+###############################
+##### LOOK FOR STANMATH  ######
+###############################
+
+if(EXISTS "${stanmath_DIR}/stan/math.hpp")
+   include_directories(${stanmath_DIR})
+   LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_DIR})
+else()
+   message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
+endif()
 
 ###############################################
 ##### LOOK FOR BOOST                     ######
