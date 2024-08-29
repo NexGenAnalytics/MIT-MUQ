@@ -3,7 +3,6 @@ name: Build deps and MUQ
 on:
   push:
     branches: [master, testci]
-    
   pull_request:
     branches: [master, testci]
 
@@ -16,7 +15,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       fail-fast: true # true -> cancel all jobs if any fails
 
@@ -26,7 +25,7 @@ jobs:
 
     env: # environment variables available to all steps
       CXX: ${{ matrix.config.cxx }}
-      APT_PACKAGES: python3 pip python-is-python3 g++ 
+      APT_PACKAGES: python3 pip python-is-python3 g++
       TPL_WORK_DIR: /home/runner/work/build/tpls_workdir
       MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
 
@@ -51,4 +50,21 @@ jobs:
           rm $CMAKE_KEYRING
           sudo apt-get install -y kitware-archive-keyring cmake
 
-	  
+      - name: Check environment
+        run: |
+          echo ======================================================
+          echo $(which $CXX) --version
+          $CXX --version
+          echo ======================================================
+          echo $(which cmake) --version
+          cmake --version
+          echo ======================================================
+          echo $(which python) --version
+          python --version
+          echo ======================================================
+          echo Source directory: $MUQ_HOME
+          echo TPLs workdir: $TPL_WORK_DIR
+          echo ======================================================
+          git --version
+          cd $MUQ_HOME
+          git status
