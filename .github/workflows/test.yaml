@@ -27,6 +27,8 @@ jobs:
     env: # environment variables available to all steps
       CXX: ${{ matrix.config.cxx }}
       APT_PACKAGES: python3 pip python-is-python3 g++ 
+      TPL_WORK_DIR: /home/runner/work/build/tpls_workdir
+      MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
 
     steps:
       - name: Check out code
@@ -39,7 +41,7 @@ jobs:
 
       - name: Install CMake
         run: |
-          export CMAKE_KEYRING=/usr/share/keyrings/kitware-archive-keyring.gpg
+	  export CMAKE_KEYRING=/usr/share/keyrings/kitware-archive-keyring.gpg
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
             | gpg --dearmor - \
             | sudo tee $CMAKE_KEYRING >/dev/null
