@@ -71,5 +71,5 @@ jobs:
 
       - name: Build TPLs
         run: |
-	  cd $MUQ_HOME
-	  python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with-hdf5
+          cd $MUQ_HOME
+          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with-hdf5
