@@ -26,7 +26,7 @@ jobs:
     env: # environment variables available to all steps
       CXX: ${{ matrix.config.cxx }}
       APT_PACKAGES: python3 pip python-is-python3 g++
-      TPL_WORK_DIR: /home/runner/work/build/tpls_workdir
+      TPL_WORK_DIR: /home/runner/work/tpls_workdir
       MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
 
     steps:
