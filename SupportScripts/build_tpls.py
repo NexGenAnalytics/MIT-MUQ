@@ -32,21 +32,21 @@ def rmeverything_if_needed(pathdir, force_rebuild: bool):
     if os.path.exists(pathdir) and force_rebuild:
         print(f'removing all content in {pathdir} becuase -f was passed')
         shutil.rmtree(pathdir)
-        
+
 def build_install_hdf5(workdir: str, force_rebuild: bool):
     hdf5_parentdir = os.path.join(workdir, "hdf5")
     zipname = "hdf5-1_8_19.zip"
     hdf5_zippath = hdf5_parentdir + "/" + zipname
-    hdf5_unpacked = os.path.join(hdf5_parentdir,  "hdf5-hdf5-1_8_19")    
+    hdf5_unpacked = os.path.join(hdf5_parentdir,  "hdf5-hdf5-1_8_19")
     hdf5_builddir = os.path.join(hdf5_parentdir, "build")
     hdf5_installdir = os.path.join(hdf5_parentdir, "install")
-    
+
     # prepare
     rmeverything_if_needed(hdf5_parentdir, force_rebuild)
 
     if os.path.exists(hdf5_parentdir):
         print(f'skipping hdf5, because found already. Use -f to rebuid.')
-        
+
     os.mkdir(hdf5_parentdir)
 
     # fetch
@@ -54,10 +54,10 @@ def build_install_hdf5(workdir: str, force_rebuild: bool):
     urllib.request.urlretrieve(url, hdf5_zippath)
     shutil.unpack_archive(hdf5_zippath, hdf5_parentdir)
 
-    # configure 
+    # configure
     exeargs = (
         "cmake",
-        "-S", hdf5_unpacked, 
+        "-S", hdf5_unpacked,
         "-B", hdf5_builddir,
         f'-DCMAKE_INSTALL_PREFIX={hdf5_installdir}',
         f'-DHDF5_BUILD_CPP_LIB=ON')
@@ -78,8 +78,8 @@ def build_install_hdf5(workdir: str, force_rebuild: bool):
     assert p.returncode == 0
 
     print("hdf5 success")
-    
-    
+
+
 ##########################################################
 if __name__ == "__main__":
 ##########################################################
@@ -99,4 +99,3 @@ if __name__ == "__main__":
     print(args.workdir)
     if (args.with_hdf5):
         build_install_hdf5(args.workdir, args.force_rebuild)
-    

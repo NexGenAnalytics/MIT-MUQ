@@ -68,3 +68,8 @@ jobs:
           git --version
           cd $MUQ_HOME
           git status
+
+      - name: Build TPLs
+        run: |
+          cd $MUQ_HOME
+	  python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with-hdf5
