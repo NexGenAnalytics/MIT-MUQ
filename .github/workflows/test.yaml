@@ -2,9 +2,9 @@ name: Build deps and MUQ
 
 on:
   push:
-    branches: [master, testci]
+    branches: [master]
   pull_request:
-    branches: [master, testci]
+    branches: [master]
 
 
 # Concurrency group: which jobs run together and which cancel each other
