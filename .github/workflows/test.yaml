@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [master, testci]
 
+
 # Concurrency group: which jobs run together and which cancel each other
 concurrency:
   group: ${{ github.event.repository.name }}-${{ github.ref }}-${{ github.workflow }}
@@ -21,7 +22,7 @@ jobs:
 
       matrix:
         config:
-          - { cxx: g++,     python-version: "3.10" }
+          - { cxx: g++, python-version: "3.10" }
 
     env: # environment variables available to all steps
       CXX: ${{ matrix.config.cxx }}
@@ -30,6 +31,9 @@ jobs:
       MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
       - name: Install packages
         run: |
           sudo apt-get update
