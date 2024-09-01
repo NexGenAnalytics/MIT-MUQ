@@ -2,7 +2,7 @@ name: Build deps and MUQ
 
 on:
   push:
-    branches: [master]
+    branches: [master, try_build_test_in_ci]
   pull_request:
     branches: [master]
 
@@ -28,6 +28,8 @@ jobs:
       APT_PACKAGES: python3 pip python-is-python3 g++
       TPL_WORK_DIR: /home/runner/work/tpls_workdir
       MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
+      MUQ_BUILD_DIR: /home/runner/work/muq_build
+      MUQ_INSTALL_DIR: /home/runner/work/muq_install
 
     steps:
       - name: Check out code
@@ -72,4 +74,12 @@ jobs:
       - name: Build TPLs
         run: |
           cd $MUQ_HOME
-          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with-hdf5 --with-nlopt --with-boost --with-sundials --with-eigen
+          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
+
+      - name: Build MUQ
+        run: |
+          cd $MUQ_HOME
+	  cmake -DCMAKE_CXX_COMPILER=$CXX \
+	  	-S $MUQ_HOME -B $MUQ_BUILD_DIR \
+		-DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+		-C $TPL_WORK_DIR/tpls_cache.txt
