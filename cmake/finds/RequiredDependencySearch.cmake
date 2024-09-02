@@ -106,9 +106,9 @@ find_package(nanoflann REQUIRED)
 ##### LOOK FOR STANMATH  ######
 ###############################
 
-if(EXISTS "${stanmath_DIR}/stan/math.hpp")
-   include_directories(${stanmath_DIR})
-   LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_DIR})
+if(EXISTS "${stanmath_SRC_DIR}/stan/math.hpp")
+   include_directories(${stanmath_SRC_DIR})
+   LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_SRC_DIR})
 else()
    message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
 endif()
