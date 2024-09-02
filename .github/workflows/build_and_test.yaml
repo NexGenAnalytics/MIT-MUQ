@@ -87,7 +87,7 @@ jobs:
           cd $MUQ_BUILD_DIR
           make -j4
 
-      - name: Runs Tests
+      - name: Run Tests
         run: |
           cd $MUQ_BUILD_DIR
           ./RunAllTests
