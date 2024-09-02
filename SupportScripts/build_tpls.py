@@ -60,7 +60,7 @@ def build_install_boost(
     exeargs = (
         "./bootstrap.sh",
         f'--prefix={install_path}',
-        "--with-libraries=filesystem, system, graph")
+        "--with-libraries=filesystem,system,graph")
     print(exeargs)
 
     logfile = open(parent_path + "/logfile_config", "w")
