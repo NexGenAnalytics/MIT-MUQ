@@ -151,10 +151,10 @@ def build_install_hdf5(
     myname = "hdf5"
     parent_path = os.path.join(workdir, myname)
 
-    zip_name = "hdf5-1_8_19.zip"
-    url = f'https://github.com/HDFGroup/hdf5/archive/refs/tags/{zip_name}'
+    zip_name = "hdf5-1_14_1-2.zip"
+    url = f'https://github.com/HDFGroup/hdf5/releases/download/hdf5-1_14_1-2/{zip_name}'
     zip_path = os.path.join(parent_path, zip_name)
-    unpack_path = os.path.join(parent_path,  "hdf5-hdf5-1_8_19")
+    unpack_path = os.path.join(parent_path,  "hdfsrc")
     build_path = os.path.join(parent_path, "build")
     install_path = os.path.join(parent_path, "install")
     custom_cmake_args = (f'-DHDF5_BUILD_CPP_LIB=ON',)
