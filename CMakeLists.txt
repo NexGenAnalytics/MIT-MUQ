@@ -50,7 +50,7 @@ message(STATUS "\n\nThis is MUQ, the MIT UQ Library!\n\n")
 ###############################################
 # User options
 ###############################################
-INCLUDE(OptionsSetup)
+INCLUDE(SetupOptions)
 INCLUDE(SetInstallPaths)
 
 ###############################################
