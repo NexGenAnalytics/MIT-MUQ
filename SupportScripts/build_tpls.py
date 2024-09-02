@@ -360,7 +360,12 @@ def check_compilers(compiler_type: str):
         print(f'*** FATAL ERROR ***')
         print(f'-'*50)
         print(f'{compiler_type} not found in environment, I cannot proceed!')
-        print(f'please set {compiler_type} to a valid C++ compiler')
+        if compiler_type == 'CC':
+            print(f'please set {compiler_type} to a valid C compiler')
+        elif compiler_type == 'CXX':
+            print(f'please set {compiler_type} to a valid C++ compiler')
+        else:
+            print(f'Specified compiler type "{compiler_type}" is invalid. Use "CC" or "CXX".')
         print(f'-'*50)
         exit(11)
 
