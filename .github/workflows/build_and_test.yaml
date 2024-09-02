@@ -44,6 +44,7 @@ jobs:
           sudo apt-get install -y --install-suggests $APT_PACKAGES
 
       - name: Install CMake
+        if: matrix.os == 'ubuntu-latest'
         run: |
           export CMAKE_KEYRING=/usr/share/keyrings/kitware-archive-keyring.gpg
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
