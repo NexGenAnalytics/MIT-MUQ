@@ -120,7 +120,7 @@ find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS system filesystem graph regex
 ##### LOOK FOR Parallel Sampling Algorithm dependencies  ######
 ###############################################################
 
-if(MUQ_ENABLEGROUP_PARALLEL_SAMPLING_ALGORITHM)
+if(MUQ_USE_MPI)
     # PARCER
     find_package(PARCER REQUIRED)
     include_directories(${PARCER_INCLUDE_DIRS})
