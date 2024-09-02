@@ -29,7 +29,7 @@ jobs:
       CXX: ${{ matrix.config.cxx }}
       APT_PACKAGES: python3 pip python-is-python3 g++
       TPL_WORK_DIR: /home/runner/work/tpls_workdir
-      MUQ_HOME: /home/runner/work/MIT-MUQ
+      MUQ_HOME: $GITHUB_WORKSPACE
       MUQ_BUILD_DIR: /home/runner/work/muq_build
       MUQ_INSTALL_DIR: /home/runner/work/muq_install
 
@@ -73,7 +73,7 @@ jobs:
           echo ======================================================
           git --version
           echo $GITHUB_WORKSPACE
-          ll $GITHUB_WORKSPACE
+          ls -l $GITHUB_WORKSPACE
           cd $MUQ_HOME
           git status
 
