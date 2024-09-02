@@ -72,6 +72,8 @@ jobs:
           echo TPLs workdir: $TPL_WORK_DIR
           echo ======================================================
           git --version
+	  echo $GITHUB_WORKSPACE
+	  ll $GITHUB_WORKSPACE
           cd $MUQ_HOME
           git status
 
