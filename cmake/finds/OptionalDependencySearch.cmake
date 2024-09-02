@@ -3,22 +3,21 @@
 ########################################
 IF(MUQ_USE_GTEST)
 
-  find_package(GTEST)
-  set(MUQ_NEEDS_GTEST ON)
+  set(GTEST_VERSION "v1.14.0")
+  set(BUILD_GMOCK   OFF)
+  set(INSTALL_GTEST OFF)
+  message(STATUS "GTest not found, fetching version ${GTEST_VERSION}")
 
-  IF(GTEST_FOUND)
-    set(MUQ_BUILD_TESTS ON)
-    include_directories(${GTEST_INCLUDE_DIRS})
-    LIST(APPEND test_link_libs ${GTEST_LIBRARIES})
-
-  ELSE(GTEST_FOUND)
-    message(WARNING "Could not find GTEST.  No tests can be compiled.")
-
-    set(MUQ_BUILD_TESTS OFF)
-    set(MUQ_NEEDS_GTEST OFF)
-    set(MUQ_USE_GTEST OFF)
-
-  ENDIF(GTEST_FOUND)
+  list(APPEND CMAKE_MESSAGE_INDENT "[GTest] ")
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    DOWNLOAD_EXTRACT_TIMESTAMP FALSE
+    URL https://github.com/google/googletest/archive/refs/tags/${GTEST_VERSION}.tar.gz
+    URL_HASH MD5=c8340a482851ef6a3fe618a082304cfc
+  )
+  FetchContent_MakeAvailable(googletest)
+  list(POP_BACK CMAKE_MESSAGE_INDENT)
 
 ELSE(MUQ_USE_GTEST)
 
