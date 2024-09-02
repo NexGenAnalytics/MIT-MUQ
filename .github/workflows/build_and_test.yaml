@@ -2,7 +2,7 @@ name: Build deps and MUQ
 
 on:
   push:
-    branches: [master, try_build_test_in_ci]
+    branches: [master]
   pull_request:
     branches: [master]
 
