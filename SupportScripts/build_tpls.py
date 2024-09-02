@@ -117,6 +117,7 @@ def build_install_impl(
     print("2. configuring")
     exeargs = (
         "cmake",
+        "-DCMAKE_C_COMPILER=", os.environ['CC'],
         "-DCMAKE_CXX_COMPILER=", os.environ['CXX'],
         "-S", unpacked,
         "-B", builddir,
@@ -310,25 +311,67 @@ def build_install_nanoflann(
     target = 'nanoflannConfig.cmake'
     return get_full_path_to_cmake_config_dir(install_path, target)
 
+def build_install_stanmath(
+        workdir: str,
+        force_rebuild: bool
+):
+    myname = "stanmath"
+    parent_path = os.path.join(workdir, myname)
 
-def check_compilers():
-    cxx_alias_found = environ.get('CXX')
-    if cxx_alias_found is not None:
-        print(f'found {cxx_alias_found}')
+    zip_name = "v2.18.0.zip"
+    url = f'https://github.com/stan-dev/math/archive/refs/tags/{zip_name}'
+    zip_path = os.path.join(parent_path, zip_name)
+    unpack_path = os.path.join(parent_path,  "math-2.18.0")
+
+    # prepare
+    remove_everything_if_needed_from(parent_path, force_rebuild)
+
+    if os.path.exists(parent_path):
+        print(f'skipping {parent_path}, because found already. Use -f to rebuid.')
+
+    print("-"*50)
+    print(f'WORKING ON: {myname}')
+    print("-"*50)
+
+    os.mkdir(parent_path)
+
+    # fetch
+    print("1. fetching")
+    urllib.request.urlretrieve(url, zip_path)
+
+    # unpacking
+    print("2. unpacking")
+    shutil.unpack_archive(zip_path, parent_path)
+
+    print(f'success getting: {myname}\n')
+
+    print(unpack_path)
+    return os.path.abspath(unpack_path)
+
+
+def check_compilers(compiler_type: str):
+    compiler_alias_found = environ.get(compiler_type)
+    if compiler_alias_found is not None:
+        print(f'found {compiler_alias_found}')
         return
 
-    if not cxx_alias_found:
+    if not compiler_alias_found:
         print(f'-'*50)
         print(f'*** FATAL ERROR ***')
         print(f'-'*50)
-        print(f'CXX not found in environment, I cannot proceed!')
-        print(f'please set CXX to a valid C++ compiler')
+        print(f'{compiler_type} not found in environment, I cannot proceed!')
+        if compiler_type == 'CC':
+            print(f'please set {compiler_type} to a valid C compiler')
+        elif compiler_type == 'CXX':
+            print(f'please set {compiler_type} to a valid C++ compiler')
+        else:
+            print(f'Specified compiler type "{compiler_type}" is invalid. Use "CC" or "CXX".')
         print(f'-'*50)
         exit(11)
 
 
 currently_supported_tpls = [
-    "hdf5", "nlopt", "boost", "sundials", "eigen", "nanoflann"
+    "hdf5", "nlopt", "boost", "sundials", "eigen", "nanoflann", "stanmath"
 ]
 
 def add_arguments(parser):
@@ -377,7 +420,8 @@ if __name__ == "__main__":
     assert os.path.isabs(args.workdir)
     if not os.path.exists(args.workdir):
         os.mkdir(args.workdir)
-    check_compilers()
+    check_compilers('CC')
+    check_compilers('CXX')
 
     #
     # summary
@@ -411,6 +455,10 @@ if __name__ == "__main__":
         if tpl == 'nanoflann':
             p = build_install_nanoflann(args.workdir, args.force_rebuild)
             paths_for_config['nanoflann_DIR'] = [tpl + ' path', p]
+
+        if tpl == 'stanmath':
+            p = build_install_stanmath(args.workdir, args.force_rebuild)
+            paths_for_config['stanmath_SRC_DIR'] = [tpl + ' path', p]
 
     print(f'-'*50)
     print(f'writing cmake cache file for selected tpls')
