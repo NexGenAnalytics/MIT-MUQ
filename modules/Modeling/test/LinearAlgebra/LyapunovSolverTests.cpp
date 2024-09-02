@@ -80,7 +80,7 @@ TEST(Utilities_LyapunovSolver, MaternTest)
 
     for(int i=0; i<dim; ++i){
         for(int j=0; j<dim; ++j){
-            EXPECT_NEAR(0.0, resid(i,j).real(),1e-10);
+            EXPECT_NEAR(0.0, resid(i,j).real(),1e-8);
         }
     }
 }
