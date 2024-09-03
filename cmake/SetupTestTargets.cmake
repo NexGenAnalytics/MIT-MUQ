@@ -45,6 +45,7 @@ IF(MUQ_USE_GTEST)
         Eigen3::Eigen
         nanoflann::nanoflann
         gtest_main
+        spdlog::spdlog
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
     )
@@ -87,6 +88,7 @@ IF(MUQ_USE_GTEST)
         Eigen3::Eigen
         nanoflann::nanoflann
         gtest_main
+        spdlog::spdlog
         ${MUQ_LIBRARIES}
         ${MUQ_LINK_LIBS}
     )
