@@ -57,7 +57,7 @@ jobs:
       - name: Setup MPI
         uses: mpi4py/setup-mpi@v1
         with:
-	  mpi: ${{ matrix.mpi }}
+          mpi: ${{ matrix.mpi }}
 	  
       - name: Check environment
         run: |
