@@ -3,7 +3,6 @@ option(MUQ_ENABLEGROUP_DEFAULT "Whether compile groups should be enabled or disa
 # Compile flags options
 option(MUQ_USE_MPI "Use OpenMPI" OFF)
 option(MUQ_USE_OPENMP "Use OpenMP (non OS X)" ON)
-option(MUQ_USE_MKL "Use the Eigen wrapper around the Intel MKL" OFF)
 
 # Bindings 
 option(MUQ_USE_PYTHON "Compile Python bindings using pybind11" ON)

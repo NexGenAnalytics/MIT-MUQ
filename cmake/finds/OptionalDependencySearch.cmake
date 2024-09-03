@@ -28,24 +28,6 @@ ENDIF(MUQ_USE_GTEST)
 
 
 ########################################
-##### LOOK FOR MKL                ######
-########################################
-if(MUQ_USE_MKL)
-
-    # include the mkl library for linking
-    if(MUQ_USE_OPENMP)
-	  LIST(APPEND MUQ_LINK_LIBS ${MUQ_MKL_DIR}/lib/intel64/libmkl_intel_lp64${CMAKE_SHARED_LIBRARY_SUFFIX} ${MUQ_MKL_DIR}/lib/intel64/libmkl_core${CMAKE_SHARED_LIBRARY_SUFFIX} ${MUQ_MKL_DIR}/lib/intel64/libmkl_gnu_thread${CMAKE_SHARED_LIBRARY_SUFFIX})
-    else()
-	  LIST(APPEND MUQ_LINK_LIBS ${MUQ_MKL_DIR}/lib/intel64/libmkl_intel_lp64${CMAKE_SHARED_LIBRARY_SUFFIX} ${MUQ_MKL_DIR}/lib/intel64/libmkl_core${CMAKE_SHARED_LIBRARY_SUFFIX} ${MUQ_MKL_DIR}/lib/intel64/libmkl_sequential${CMAKE_SHARED_LIBRARY_SUFFIX})
-    endif()
-
-    include_directories(${MUQ_MKL_DIR}/include)
-    LIST(APPEND MUQ_EXTERNAL_INCLUDES ${MUQ_MKL_DIR}/include)
-    add_definitions(-DEIGEN_USE_MKL_ALL)
-
-endif()
-
-########################################
 ##### LOOK FOR PYTHON             ######
 ########################################
 list (FIND MUQ_REQUIRES PYTHON dindex)
