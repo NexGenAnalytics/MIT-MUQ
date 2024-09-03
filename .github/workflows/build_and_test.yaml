@@ -58,7 +58,7 @@ jobs:
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
-	  
+
       - name: Check environment
         run: |
           echo ======================================================
@@ -110,7 +110,7 @@ jobs:
                 -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON
           cd $MUQ_BUILD_DIR
           make -j4
-	  
+
       - name: Run Tests (mpi)
         run: |
           cd $MUQ_HOME
