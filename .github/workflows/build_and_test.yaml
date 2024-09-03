@@ -86,7 +86,8 @@ jobs:
       - name: Build MUQ (serial)
         run: |
           cd $MUQ_HOME
-          cmake -DCMAKE_CXX_COMPILER=$CXX \
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
                 -S $MUQ_HOME -B $MUQ_BUILD_DIR \
                 -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
                 -C $TPL_WORK_DIR/tpls_cache.txt \
@@ -103,7 +104,8 @@ jobs:
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR
-          cmake -DCMAKE_CXX_COMPILER=$CXX \
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
                 -S $MUQ_HOME -B $MUQ_BUILD_DIR \
                 -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
                 -C $TPL_WORK_DIR/tpls_cache.txt \
@@ -115,10 +117,11 @@ jobs:
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR
-          cmake -DCMAKE_CXX_COMPILER=$CXX \
-               -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-               -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-               -C $TPL_WORK_DIR/tpls_cache.txt \
-               -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON
+          cmake -DCMAKE_C_COMPILER=mpicc \
+                -DCMAKE_CXX_COMPILER=mpic++
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON
           cd $MUQ_BUILD_DIR
           make -j4
