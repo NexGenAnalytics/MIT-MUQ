@@ -113,7 +113,7 @@ jobs:
           cd $MUQ_BUILD_DIR
           make -j4
 
-      - name: Run Tests (mpi)
+      - name: Run Tests (serial)
         run: |
           cd $MUQ_BUILD_DIR
           ./RunAllTests
