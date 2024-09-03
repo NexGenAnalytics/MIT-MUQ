@@ -116,4 +116,9 @@ jobs:
       - name: Run Tests (mpi)
         run: |
           cd $MUQ_BUILD_DIR
+          ./RunAllTests
+
+      - name: Run Tests (mpi)
+        run: |
+          cd $MUQ_BUILD_DIR
           mpirun -n 2 ./RunAllParallelTests
