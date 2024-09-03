@@ -311,6 +311,137 @@ def build_install_nanoflann(
     target = 'nanoflannConfig.cmake'
     return get_full_path_to_cmake_config_dir(install_path, target)
 
+
+def build_install_parcer(
+    workdir: str,
+    force_rebuild: bool
+):
+    myname = "parcer"
+    parent_path = os.path.join(workdir, myname)
+
+    commit = "3b1ee6dc3d73"
+    zip_name = f'{commit}.zip'
+    url = f'https://bitbucket.org/mituq/parcer/get/{zip_name}'
+    zip_path = os.path.join(parent_path, zip_name)
+    unpack_path = os.path.join(parent_path,  f'mituq-parcer-{commit}')
+    build_path = os.path.join(parent_path, "build")
+    install_path = os.path.join(parent_path, "install")
+    custom_cmake_args = ()
+
+    build_install_impl(
+        myname,
+        force_rebuild,
+        parent_path,
+        url,
+        zip_name,
+        zip_path,
+        unpack_path,
+        build_path,
+        install_path,
+        custom_cmake_args
+    )
+
+    target = 'PARCERConfig.cmake'
+    return get_full_path_to_cmake_config_dir(install_path, target)
+
+
+
+def build_install_spdlog(
+    workdir: str,
+    force_rebuild: bool
+):
+    myname = "spdlog"
+    parent_path = os.path.join(workdir, myname)
+
+    zip_name = f'v1.10.0.zip'
+    url = f'https://github.com/gabime/spdlog/archive/refs/tags/{zip_name}'
+    zip_path = os.path.join(parent_path, zip_name)
+    unpack_path = os.path.join(parent_path,  f'spdlog-1.10.0')
+    build_path = os.path.join(parent_path, "build")
+    install_path = os.path.join(parent_path, "install")
+    custom_cmake_args = (
+        '-DCMAKE_POSITION_INDEPENDENT_CODE=ON',
+    )
+
+    build_install_impl(
+        myname,
+        force_rebuild,
+        parent_path,
+        url,
+        zip_name,
+        zip_path,
+        unpack_path,
+        build_path,
+        install_path,
+        custom_cmake_args
+    )
+
+    target = 'spdlogConfig.cmake'
+    return get_full_path_to_cmake_config_dir(install_path, target)
+
+
+
+
+def build_install_otf2(
+    workdir: str,
+    force_rebuild: bool
+):
+    myname = "otf2"
+    parent_path = os.path.join(workdir, myname)
+
+    zip_name = f'otf2-3.0.3.tar.gz'
+    url = f'https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/otf2-3.0.3/{zip_name}'
+    zip_path = os.path.join(parent_path, zip_name)
+    unpack_path = os.path.join(parent_path,  f'otf2-3.0.3')
+    build_path = os.path.join(parent_path, "build")
+    install_path = os.path.join(parent_path, "install")
+    custom_cmake_args = ()
+
+    # prepare
+    remove_everything_if_needed_from(parent_path, force_rebuild)
+
+    if os.path.exists(parent_path):
+        print(f'skipping {parent_path}, because found already. Use -f to rebuid.')
+
+    print("-"*50)
+    print(f'WORKING ON: {myname}')
+    print("-"*50)
+
+    os.mkdir(parent_path)
+
+    # fetch
+    print("1. fetching")
+    urllib.request.urlretrieve(url, zip_path)
+    shutil.unpack_archive(zip_path, parent_path)
+
+    os.chdir(unpack_path)
+
+    # configure
+    print("2. configuring")
+    exeargs = ("./configure", f'--prefix={install_path}')
+    print(exeargs)
+
+    logfile = open(parent_path + "/logfile_config", "w")
+    p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
+    p.wait()
+    logfile.close()
+    assert p.returncode == 0
+
+    # make and install
+    print("3. make and install")
+    exeargs = ("make", "-j4", "install")
+    logfile = open(parent_path + "/logfile_makeinstall", "w")
+    p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
+    p.wait()
+    logfile.close()
+    assert p.returncode == 0
+
+    print(f'success installing: {myname}\n')
+    
+    return install_path
+
+
+
 def build_install_stanmath(
         workdir: str,
         force_rebuild: bool
@@ -371,7 +502,8 @@ def check_compilers(compiler_type: str):
 
 
 currently_supported_tpls = [
-    "hdf5", "nlopt", "boost", "sundials", "eigen", "nanoflann", "stanmath"
+    "hdf5", "nlopt", "boost", "sundials", "eigen",
+    "nanoflann", "stanmath", "parcer", "spdlog", "otf2"
 ]
 
 def add_arguments(parser):
@@ -428,7 +560,7 @@ if __name__ == "__main__":
     final_tpls = currently_supported_tpls if 'all' in args.target_list \
         else args.target_list
     print(f'workdir set to {args.workdir}')
-    print(f'final set of TPLs to build {final_tpls}')
+    print(f'TPLs to build {final_tpls}')
 
     paths_for_config = {}
     for tpl in final_tpls:
@@ -460,6 +592,19 @@ if __name__ == "__main__":
             p = build_install_stanmath(args.workdir, args.force_rebuild)
             paths_for_config['stanmath_SRC_DIR'] = [tpl + ' path', p]
 
+        if tpl == 'parcer':
+            p = build_install_parcer(args.workdir, args.force_rebuild)
+            paths_for_config['PARCER_DIR'] = [tpl + ' path', p]
+            
+        if tpl == 'spdlog':
+            p = build_install_spdlog(args.workdir, args.force_rebuild)
+            paths_for_config['spdlog_DIR'] = [tpl + ' path', p]
+            
+        if tpl == 'otf2':
+            p = build_install_otf2(args.workdir, args.force_rebuild)
+            paths_for_config['otf2_DIR'] = [tpl + ' path', p]
+            
+            
     print(f'-'*50)
     print(f'writing cmake cache file for selected tpls')
     cache_file_out = os.path.join(args.workdir, 'tpls_cache.txt')
