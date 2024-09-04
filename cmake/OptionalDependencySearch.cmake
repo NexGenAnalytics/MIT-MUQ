@@ -1,19 +1,34 @@
 
+########################################
+##### LOOK FOR OPENMP             ######
+########################################
+IF(MUQ_USE_OPENMP)
+  find_package(OpenMP)
+  if (OpenMP_CXX_FOUND)
+    list(APPEND MUQ_LINK_LIBS OpenMP::OpenMP_CXX)
+
+    CHECK_CXX_COMPILER_FLAG("-pthread" HAS_PTHREAD)
+    if(HAS_PTHREAD)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ldl")
+  else()
+    message(WARNING "The flag MUQ_USE_OPENMP is ON, but cmake cannot find OpenMP for c++. OpenMP will not be used.")
+  endif()
+ENDIF(MUQ_USE_OPENMP)
+
 
 ########################################
 ##### LOOK FOR MPI                ######
 ########################################
 if(MUQ_USE_MPI)
   find_package(MPI REQUIRED)
-
   list(APPEND MUQ_LINK_LIBS ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
   list(APPEND MUQ_EXTERNAL_INCLUDES ${MPI_CXX_INCLUDE_DIRS})
-
   include_directories(${MPI_CXX_INCLUDE_DIRS})
   link_directories(${MPI_CXX_LIBRARIES})
-
   set(MUQ_HAS_MPI 1)
-
 else(MUQ_USE_MPI)
   set(MUQ_HAS_MPI 0)
 endif(MUQ_USE_MPI)
@@ -23,7 +38,6 @@ endif(MUQ_USE_MPI)
 ##### LOOK FOR GTEST              ######
 ########################################
 IF(MUQ_USE_GTEST)
-
   set(GTEST_VERSION "v1.14.0")
   set(BUILD_GMOCK   OFF)
   set(INSTALL_GTEST OFF)
@@ -41,7 +55,6 @@ IF(MUQ_USE_GTEST)
   list(POP_BACK CMAKE_MESSAGE_INDENT)
 
 ELSE(MUQ_USE_GTEST)
-
     message(STATUS “MUQ_USE_GTEST is OFF.  Turning off tests.”)
     set(MUQ_BUILD_TESTS OFF)
     set(MUQ_NEEDS_GTEST OFF)
@@ -57,9 +70,7 @@ if (${dindex} GREATER -1)
 
     if(MUQ_USE_PYTHON)
         set(PYBIND11_CPP_STANDARD -std=c++11)
-
         FIND_PACKAGE(pybind11)
-
         if(NOT pybind11_FOUND)
             message(STATUS "Falling back to internal pybind11 version")
             add_subdirectory(${CMAKE_SOURCE_DIR}/external/pybind11)
@@ -88,9 +99,7 @@ if (${dindex} GREATER -1)
     endif()
 
     if(MUQ_USE_DOLFIN)
-
         find_package(DOLFIN)
-
         if(DOLFIN_FOUND)
             if (EXISTS ${DOLFIN_USE_FILE})
                 include(${DOLFIN_USE_FILE})
@@ -117,7 +126,6 @@ else()
     set(MUQ_NEEDS_DOLFIN OFF)
     set(MUQ_USE_DOLFIN OFF)
 endif()
-
 
 
 ########################################
