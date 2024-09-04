@@ -125,12 +125,13 @@ def build_install_impl(
     exeargs += cmake_extra_args
     print(exeargs)
 
-    logfile = open(parentdir + "/logfile_build", "w")
+    logfile_path = parentdir + "/logfile_build"
+    logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
     if p.returncode != 0:
-        with open(logfile, 'r') as f:
+        with open(logfile_path, 'r') as f:
             print(f.read())
     assert p.returncode == 0
 
@@ -138,12 +139,13 @@ def build_install_impl(
     print("3. make and install")
     os.chdir(builddir)
     exeargs = ("make", "-j4", "install")
-    logfile = open(parentdir + "/logfile_makeinstall", "w")
+    logfile_path = parentdir + "/logfile_makeinstall"
+    logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
     if p.returncode != 0:
-        with open(logfile, 'r') as f:
+        with open(logfile_path, 'r') as f:
             print(f.read())
     assert p.returncode == 0
 
