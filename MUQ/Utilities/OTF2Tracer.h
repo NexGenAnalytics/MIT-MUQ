@@ -186,7 +186,8 @@ namespace muq {
           OTF2_GlobalDefWriter_WriteClockProperties( global_def_writer,
                                                     1000000000,
                                                     global_epoch_start,
-                                                    global_epoch_end - global_epoch_start + 1 );
+                                                    global_epoch_end - global_epoch_start + 1,
+                                                    OTF2_UNDEFINED_TIMESTAMP);
           OTF2_GlobalDefWriter_WriteString( global_def_writer, 0, "" );
           OTF2_GlobalDefWriter_WriteString( global_def_writer, 1, "Master Thread" );
           OTF2_GlobalDefWriter_WriteString( global_def_writer, 2, "MPI_Barrier" );
@@ -231,7 +232,8 @@ namespace muq {
                                                     r /* id */,
                                                     num_strings + r /* name */,
                                                     OTF2_LOCATION_GROUP_TYPE_PROCESS,
-                                                    0 /* system tree */ );
+                                                    0 /* system tree */,
+                                                    OTF2_UNDEFINED_LOCATION_GROUP);
             OTF2_GlobalDefWriter_WriteLocation( global_def_writer,
                                                 r /* id */,
                                                 1 /* name */,
@@ -264,7 +266,8 @@ namespace muq {
                                           0 /* id */,
                                           8 /* name */,
                                           1 /* group */,
-                                          OTF2_UNDEFINED_COMM /* parent */ );
+                                          OTF2_UNDEFINED_COMM /* parent */,
+                                          OTF2_COMM_FLAG_NONE );
           OTF2_Archive_CloseGlobalDefWriter( archive,
                                             global_def_writer );
         }

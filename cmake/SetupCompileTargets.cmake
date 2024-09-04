@@ -42,6 +42,7 @@ foreach(libName ${MUQ_TARGETS})
             SUNDIALS::nvecserial
             Eigen3::Eigen
             nanoflann::nanoflann
+            spdlog::spdlog
             ${MUQ_LINK_LIBS}
         )
 

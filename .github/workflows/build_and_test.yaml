@@ -21,6 +21,7 @@ jobs:
 
       matrix:
         os: [ubuntu-latest, macos-14]
+        mpi: ['openmpi']
         config:
           - { cc: gcc, cxx: g++, python-version: "3.10" }
 
@@ -56,6 +57,11 @@ jobs:
           rm $CMAKE_KEYRING
           sudo apt-get install -y kitware-archive-keyring cmake
 
+      - name: Setup MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: ${{ matrix.mpi }}
+
       - name: Check environment
         run: |
           echo ======================================================
@@ -82,18 +88,44 @@ jobs:
           cd $MUQ_HOME
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
 
-      - name: Build MUQ
+      - name: Build MUQ (serial)
+        if: matrix.os == 'macos-14'
         run: |
           cd $MUQ_HOME
-          cmake -DCMAKE_CXX_COMPILER=$CXX \
-          -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-          -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-          -C $TPL_WORK_DIR/tpls_cache.txt \
-          -DMUQ_USE_GTEST=ON
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON
           cd $MUQ_BUILD_DIR
           make -j4
 
-      - name: Run Tests
+      - name: Run Tests (serial)
         run: |
           cd $MUQ_BUILD_DIR
           ./RunAllTests
+
+      - name: Build MUQ (mpi)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd $MUQ_HOME
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=mpicc \
+                -DCMAKE_CXX_COMPILER=mpic++ \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON
+          cd $MUQ_BUILD_DIR
+          make -j4
+
+      - name: Run Tests (serial)
+        run: |
+          cd $MUQ_BUILD_DIR
+          ./RunAllTests
+
+      - name: Run Tests (mpi)
+        run: |
+          cd $MUQ_BUILD_DIR
+          mpirun -n 2 ./RunAllParallelTests

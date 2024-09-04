@@ -52,10 +52,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 ##### LOOK FOR AND/OR BUILD REQUIRED DEPENDENCIES ######
 ########################################################
-GetDependency(PARCER)
-GetDependency(SPDLOG)
-GetDependency(OTF2)
-
 
 ###########################
 ##### LOOK FOR HDF5  ######
@@ -119,6 +115,38 @@ endif()
 
 set(BOOST_MIN_VERSION "1.56.0")
 find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS system filesystem graph regex)
+
+###############################################################
+##### LOOK FOR Parallel Sampling Algorithm dependencies  ######
+###############################################################
+
+if(MUQ_USE_MPI)
+    # PARCER
+    find_package(PARCER REQUIRED)
+    include_directories(${PARCER_INCLUDE_DIRS})
+    LIST(APPEND MUQ_EXTERNAL_INCLUDES ${PARCER_INCLUDE_DIRS})
+
+    LIST(APPEND MUQ_LINK_LIBS ${PARCER_LIBRARIES})
+    LIST(APPEND MUQ_LINK_LIBS_STATIC ${PARCER_LIBRARIES_STATIC})
+    set(MUQ_HAS_PARCER 1)
+
+    # otf2
+    set(OTF2_LIBRARIES ${otf2_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}otf2${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(OTF2_LIBRARY ${OTF2_LIBRARIES})
+
+    set(OTF2_INCLUDE_DIRS ${otf2_DIR}/include)
+
+    include_directories(${OTF2_INCLUDE_DIRS})
+    LIST(APPEND MUQ_EXTERNAL_INCLUDES ${OTF2_INCLUDE_DIRS})
+
+    LIST(APPEND MUQ_LINK_LIBS ${OTF2_LIBRARIES})
+    LIST(APPEND MUQ_LINK_LIBS_STATIC ${OTF2_LIBRARIES_STATIC})
+
+    set(MUQ_HAS_OTF2 1)
+
+    # spdlog
+    find_package(spdlog REQUIRED)
+endif()
 
 ########################################
 ##### REMOVE DUPLICATE INCLUDES   ######
