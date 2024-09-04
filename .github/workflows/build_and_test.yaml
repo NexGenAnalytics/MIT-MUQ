@@ -39,13 +39,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install packages
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y --install-suggests python3 pip python-is-python3 g++
 
       - name: Install CMake
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           export CMAKE_KEYRING=/usr/share/keyrings/kitware-archive-keyring.gpg
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
@@ -58,7 +58,7 @@ jobs:
           sudo apt-get install -y kitware-archive-keyring cmake
 
       - name: Setup MPI
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
@@ -89,7 +89,7 @@ jobs:
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
 
       - name: Build and Test MUQ (serial)
-        if: matrix.os == 'macos-14'
+        if: matrix.config.os == 'macos-14'
         run: |
           cd $MUQ_HOME
           cmake -DCMAKE_C_COMPILER=$CC \
@@ -103,7 +103,7 @@ jobs:
           ./RunAllTests
 
       - name: Build MUQ (mpi)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR
@@ -117,13 +117,13 @@ jobs:
           make -j4
 
       - name: Run Tests (serial)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           cd $MUQ_BUILD_DIR
           ./RunAllTests
 
       - name: Run Tests (mpi)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           cd $MUQ_BUILD_DIR
           mpirun -n 2 ./RunAllParallelTests
