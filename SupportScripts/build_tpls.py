@@ -7,6 +7,8 @@ import subprocess
 from typing import Union
 from os import environ
 from pathlib import Path
+import concurrent.futures
+import multiprocessing
 
 def remove_everything_if_needed_from(pathdir, force_rebuild: bool):
     if os.path.exists(pathdir) and force_rebuild:
@@ -544,6 +546,53 @@ def add_arguments(parser):
         "Use '--with all' to build everything.",
     )
 
+
+def dispatch(
+    workdir: Union[str, os.PathLike], 
+    force_rebuild: bool, 
+    tpl: str
+):
+    if tpl == 'hdf5':
+        p = build_install_hdf5(workdir, force_rebuild)
+        return ['HDF5_DIR', p, tpl + ' path']
+
+    if tpl == 'nlopt':
+        p = build_install_nlopt(workdir, force_rebuild)
+        return ['NLopt_DIR', p, tpl + ' path']
+
+    if tpl == 'boost':
+        p = build_install_boost(workdir, force_rebuild)
+        return ['Boost_DIR', p, tpl + ' path']
+
+    if tpl == 'sundials':
+        p = build_install_sundials(workdir, force_rebuild)
+        return ['SUNDIALS_DIR', p, tpl + ' path']
+
+    if tpl == 'eigen':
+        p = build_install_eigen(workdir, force_rebuild)
+        return ['Eigen3_DIR', p, tpl + ' path']
+
+    if tpl == 'nanoflann':
+        p = build_install_nanoflann(workdir, force_rebuild)
+        return ['nanoflann_DIR', p, tpl + ' path']
+
+    if tpl == 'stanmath':
+        p = build_install_stanmath(workdir, force_rebuild)
+        return ['stanmath_SRC_DIR', p, tpl + ' path']
+
+    if tpl == 'parcer':
+        p = build_install_parcer(workdir, force_rebuild)
+        return ['PARCER_DIR', p, tpl + ' path']
+
+    if tpl == 'spdlog':
+        p = build_install_spdlog(workdir, force_rebuild)
+        return ['spdlog_DIR', p, tpl + ' path']
+
+    if tpl == 'otf2':
+        p = build_install_otf2(workdir, force_rebuild)
+        return ['otf2_DIR', p, tpl + ' path']
+
+
 ##########################################################
 if __name__ == "__main__":
 ##########################################################
@@ -570,48 +619,18 @@ if __name__ == "__main__":
     print(f'workdir set to {args.workdir}')
     print(f'TPLs to build {final_tpls}')
 
+    pool_size = 4
+    with concurrent.futures.ProcessPoolExecutor(max_workers = pool_size) as executor:
+            these_futures = [executor.submit(dispatch, args.workdir, args.force_rebuild, tpl) for tpl in final_tpls]
+            concurrent.futures.wait(these_futures)
+
+    results = [future.result() for future in these_futures]
+    print(results)
+
+
     paths_for_config = {}
-    for tpl in final_tpls:
-        if tpl == 'hdf5':
-            p = build_install_hdf5(args.workdir, args.force_rebuild)
-            paths_for_config['HDF5_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'nlopt':
-            p = build_install_nlopt(args.workdir, args.force_rebuild)
-            paths_for_config['NLopt_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'boost':
-            p = build_install_boost(args.workdir, args.force_rebuild)
-            paths_for_config['Boost_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'sundials':
-            p = build_install_sundials(args.workdir, args.force_rebuild)
-            paths_for_config['SUNDIALS_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'eigen':
-            p = build_install_eigen(args.workdir, args.force_rebuild)
-            paths_for_config['Eigen3_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'nanoflann':
-            p = build_install_nanoflann(args.workdir, args.force_rebuild)
-            paths_for_config['nanoflann_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'stanmath':
-            p = build_install_stanmath(args.workdir, args.force_rebuild)
-            paths_for_config['stanmath_SRC_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'parcer':
-            p = build_install_parcer(args.workdir, args.force_rebuild)
-            paths_for_config['PARCER_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'spdlog':
-            p = build_install_spdlog(args.workdir, args.force_rebuild)
-            paths_for_config['spdlog_DIR'] = [tpl + ' path', p]
-
-        if tpl == 'otf2':
-            p = build_install_otf2(args.workdir, args.force_rebuild)
-            paths_for_config['otf2_DIR'] = [tpl + ' path', p]
-
+    for it in results:
+        paths_for_config[it[0]] = [it[2], it[1]]
 
     print(f'-'*50)
     print(f'writing cmake cache file for selected tpls')
