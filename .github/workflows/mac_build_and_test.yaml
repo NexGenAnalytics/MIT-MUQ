@@ -1,0 +1,76 @@
+name: MACOS MUQ CI
+
+on:
+  pull_request:
+    branches: [master]
+
+# Concurrency group: which jobs run together and which cancel each other
+concurrency:
+  group: ${{ github.event.repository.name }}-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: True
+
+jobs:
+  test:
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: true # true -> cancel all jobs if any fails
+
+      matrix:
+        config:
+          - { os: macos-14, cc: gcc-12, cxx: g++-12, python-version: "3.10" }
+          # - { os: macos-14, cc: clang, cxx: clang++, python-version: "3.10" }
+          # - { os: macos-13, cc: gcc-12, cxx: g++-12, python-version: "3.10" }
+
+    env: # environment variables available to all steps
+      CC: ${{ matrix.config.cc }}
+      CXX: ${{ matrix.config.cxx }}
+      TPL_WORK_DIR: /home/runner/work/tpls_workdir
+      MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
+      MUQ_BUILD_DIR: /home/runner/work/muq_build
+      MUQ_INSTALL_DIR: /home/runner/work/muq_install
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Check environment
+        run: |
+          echo ======================================================
+          echo $(which $CXX) --version
+          $CXX --version
+          echo ======================================================
+          echo $(which cmake) --version
+          cmake --version
+          echo ======================================================
+          echo $(which python) --version
+          python --version
+          echo ======================================================
+          echo Source directory: $MUQ_HOME
+          echo TPLs workdir: $TPL_WORK_DIR
+          echo ======================================================
+          git --version
+          cd $MUQ_HOME
+          git status
+
+      - name: Build TPLs
+        run: |
+          cd $MUQ_HOME
+          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
+
+      - name: Build MUQ
+        run: |
+          cd $MUQ_HOME
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON
+          cd $MUQ_BUILD_DIR
+          make -j4
+
+      - name: Run Tests
+        run: |
+          cd $MUQ_BUILD_DIR
+          ./RunAllTests

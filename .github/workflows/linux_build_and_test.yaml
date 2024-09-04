@@ -1,9 +1,8 @@
-name: Build deps and MUQ
+name: Linux MUQ CI
 
 on:
   pull_request:
     branches: [master]
-
 
 # Concurrency group: which jobs run together and which cancel each other
 concurrency:
@@ -18,18 +17,16 @@ jobs:
       fail-fast: true # true -> cancel all jobs if any fails
 
       matrix:
-        mpi: ['openmpi']
         config:
-          - { cc: gcc, cxx: g++, python-version: "3.10" }
+          - { mpi: openmpi, cc: gcc, cxx: g++, python-version: "3.10" }
 
     env: # environment variables available to all steps
       CC: ${{ matrix.config.cc }}
       CXX: ${{ matrix.config.cxx }}
-      APT_PACKAGES: python3 pip python-is-python3 g++
-      TPL_WORK_DIR: /home/runner/work/tpls_workdir
-      MUQ_HOME: /home/runner/work/MIT-MUQ/MIT-MUQ
-      MUQ_BUILD_DIR: /home/runner/work/muq_build
-      MUQ_INSTALL_DIR: /home/runner/work/muq_install
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_WORK_DIR: ${{ github.workspace }}/../tpls_workdir
 
     steps:
       - name: Check out code
@@ -38,7 +35,7 @@ jobs:
       - name: Install packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --install-suggests $APT_PACKAGES
+          sudo apt-get install -y --install-suggests python3 pip python-is-python3 g++
 
       - name: Install CMake
         run: |
@@ -73,6 +70,7 @@ jobs:
           echo TPLs workdir: $TPL_WORK_DIR
           echo ======================================================
           git --version
+          echo $MUQ_HOME
           cd $MUQ_HOME
           git status
 
@@ -80,23 +78,6 @@ jobs:
         run: |
           cd $MUQ_HOME
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
-
-      # - name: Build MUQ (serial)
-      #   run: |
-      #     cd $MUQ_HOME
-      #     cmake -DCMAKE_C_COMPILER=$CC \
-      #           -DCMAKE_CXX_COMPILER=$CXX \
-      #           -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-      #           -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-      #           -C $TPL_WORK_DIR/tpls_cache.txt \
-      #           -DMUQ_USE_GTEST=ON
-      #     cd $MUQ_BUILD_DIR
-      #     make -j4
-
-      # - name: Run Tests (serial)
-      #   run: |
-      #     cd $MUQ_BUILD_DIR
-      #     ./RunAllTests
 
       - name: Build MUQ (mpi)
         run: |
