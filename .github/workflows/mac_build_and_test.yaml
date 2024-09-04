@@ -52,7 +52,7 @@ jobs:
           echo TPLs workdir: $TPL_WORK_DIR
           echo ======================================================
           git --version
-	  brew install googletest
+          brew install googletest
           cd $MUQ_HOME
           git status
 
