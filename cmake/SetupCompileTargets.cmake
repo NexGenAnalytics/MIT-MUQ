@@ -25,26 +25,7 @@ foreach(libName ${MUQ_TARGETS})
             list(APPEND MUQ_LIBRARIES ${libName})
         endif()
 
-        TARGET_LINK_LIBRARIES(
-            ${libName}
-            PUBLIC
-            hdf5::hdf5
-            hdf5::hdf5_cpp
-            hdf5::hdf5_hl
-            NLopt::nlopt
-            Boost::system
-            Boost::filesystem
-            Boost::graph
-            Boost::regex
-            SUNDIALS::cvodes
-            SUNDIALS::idas
-            SUNDIALS::kinsol
-            SUNDIALS::nvecserial
-            Eigen3::Eigen
-            nanoflann::nanoflann
-            spdlog::spdlog
-            ${MUQ_LINK_LIBS}
-        )
+        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
 
         # Add dependencies for any required dependencies that MUQ is going to build internally
         foreach(depend ${MUQ_REQUIRES})
@@ -85,7 +66,6 @@ foreach(group ${MUQ_GROUPS})
 
         foreach(depend ${POSSIBLE_MUQ_DEPENDENCIES})
             list(FIND ${group}_REQUIRES ${depend} needsExternal)
-
             if(USE_INTERNAL_${depend})
                 if(needsExternal AND ${USE_INTERNAL_${depend}} AND (strLength GREATER 0))
                     add_dependencies(${${group}_LIBRARY} ${depend})
@@ -95,18 +75,17 @@ foreach(group ${MUQ_GROUPS})
 
         # Add dependencies between different MUQ libraries
         foreach(depend ${${group}_REQUIRES_GROUPS})
-
-        message(STATUS "Thinking about connection between ${${group}_LIBRARY} and ${${depend}_LIBRARY}")
-        string(COMPARE EQUAL "${${depend}_LIBRARY}" "" result)
-        if(NOT result)
-            if(NOT ${${group}_LIBRARY} STREQUAL ${${depend}_LIBRARY})
-                IF( ${depend}_IS_COMPILED )
-                    message(STATUS "Trying to add connection between ${${group}_LIBRARY} and ${${depend}_LIBRARY}")
-                    target_link_libraries(${${group}_LIBRARY} PUBLIC ${${depend}_LIBRARY})
-                    add_dependencies(${${group}_LIBRARY} ${${depend}_LIBRARY})
+            message(STATUS "Thinking about connection between ${${group}_LIBRARY} and ${${depend}_LIBRARY}")
+            string(COMPARE EQUAL "${${depend}_LIBRARY}" "" result)
+            if(NOT result)
+                if(NOT ${${group}_LIBRARY} STREQUAL ${${depend}_LIBRARY})
+                    IF( ${depend}_IS_COMPILED )
+                        message(STATUS "Trying to add connection between ${${group}_LIBRARY} and ${${depend}_LIBRARY}")
+                        target_link_libraries(${${group}_LIBRARY} PUBLIC ${${depend}_LIBRARY})
+                        add_dependencies(${${group}_LIBRARY} ${${depend}_LIBRARY})
+                    endif()
                 endif()
-            endif()
-          endif()
+              endif()
         endforeach()
     endif()
 

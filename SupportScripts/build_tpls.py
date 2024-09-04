@@ -125,20 +125,28 @@ def build_install_impl(
     exeargs += cmake_extra_args
     print(exeargs)
 
-    logfile = open(parentdir + "/logfile_build", "w")
+    logfile_path = parentdir + "/logfile_build"
+    logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
+    if p.returncode != 0:
+        with open(logfile_path, 'r') as f:
+            print(f.read())
     assert p.returncode == 0
 
     # make and install
     print("3. make and install")
     os.chdir(builddir)
     exeargs = ("make", "-j4", "install")
-    logfile = open(parentdir + "/logfile_makeinstall", "w")
+    logfile_path = parentdir + "/logfile_makeinstall"
+    logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
+    if p.returncode != 0:
+        with open(logfile_path, 'r') as f:
+            print(f.read())
     assert p.returncode == 0
 
     print(f'success installing: {tplname}\n')
@@ -151,10 +159,10 @@ def build_install_hdf5(
     myname = "hdf5"
     parent_path = os.path.join(workdir, myname)
 
-    zip_name = "hdf5-1_8_19.zip"
-    url = f'https://github.com/HDFGroup/hdf5/archive/refs/tags/{zip_name}'
+    zip_name = "hdf5-1_14_1-2.zip"
+    url = f'https://github.com/HDFGroup/hdf5/releases/download/hdf5-1_14_1-2/{zip_name}'
     zip_path = os.path.join(parent_path, zip_name)
-    unpack_path = os.path.join(parent_path,  "hdf5-hdf5-1_8_19")
+    unpack_path = os.path.join(parent_path,  "hdfsrc")
     build_path = os.path.join(parent_path, "build")
     install_path = os.path.join(parent_path, "install")
     custom_cmake_args = (f'-DHDF5_BUILD_CPP_LIB=ON',)
@@ -437,7 +445,7 @@ def build_install_otf2(
     assert p.returncode == 0
 
     print(f'success installing: {myname}\n')
-    
+
     return install_path
 
 
@@ -595,16 +603,16 @@ if __name__ == "__main__":
         if tpl == 'parcer':
             p = build_install_parcer(args.workdir, args.force_rebuild)
             paths_for_config['PARCER_DIR'] = [tpl + ' path', p]
-            
+
         if tpl == 'spdlog':
             p = build_install_spdlog(args.workdir, args.force_rebuild)
             paths_for_config['spdlog_DIR'] = [tpl + ' path', p]
-            
+
         if tpl == 'otf2':
             p = build_install_otf2(args.workdir, args.force_rebuild)
             paths_for_config['otf2_DIR'] = [tpl + ' path', p]
-            
-            
+
+
     print(f'-'*50)
     print(f'writing cmake cache file for selected tpls')
     cache_file_out = os.path.join(args.workdir, 'tpls_cache.txt')

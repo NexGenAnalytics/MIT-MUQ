@@ -28,27 +28,7 @@ IF(MUQ_USE_GTEST)
     endforeach()
 
     message("MUQ_LINK_LIBS = ${MUQ_LINK_LIBS}")
-    TARGET_LINK_LIBRARIES(
-        RunAllTests
-        hdf5::hdf5
-        hdf5::hdf5_cpp
-        hdf5::hdf5_hl
-        NLopt::nlopt
-        Boost::system
-        Boost::filesystem
-        Boost::graph
-        Boost::regex
-        SUNDIALS::cvodes
-        SUNDIALS::idas
-        SUNDIALS::kinsol
-        SUNDIALS::nvecserial
-        Eigen3::Eigen
-        nanoflann::nanoflann
-        gtest_main
-        spdlog::spdlog
-        ${MUQ_LIBRARIES}
-        ${MUQ_LINK_LIBS}
-    )
+    TARGET_LINK_LIBRARIES(RunAllTests gtest_main ${MUQ_LIBRARIES} ${MUQ_LINK_LIBS})
 
     if( MUQ_HAS_MPI )
         foreach(group ${MUQ_PARALLEL_TEST_GROUPS})
@@ -62,7 +42,6 @@ IF(MUQ_USE_GTEST)
 	endforeach()
 
         list(REMOVE_DUPLICATES all_gtest_sources_parallel)
-
         message("ALL PARALLEL TEST SOURCES = ${all_gtest_sources_parallel}")
         ADD_EXECUTABLE(RunAllParallelTests ${all_gtest_sources_parallel})
 
@@ -72,25 +51,6 @@ IF(MUQ_USE_GTEST)
 	endforeach()
 
 	TARGET_LINK_LIBRARIES(
-        RunAllParallelTests
-        hdf5::hdf5
-        hdf5::hdf5_cpp
-        hdf5::hdf5_hl
-        NLopt::nlopt
-        Boost::system
-        Boost::filesystem
-        Boost::graph
-        Boost::regex
-        SUNDIALS::cvodes
-        SUNDIALS::idas
-        SUNDIALS::kinsol
-        SUNDIALS::nvecserial
-        Eigen3::Eigen
-        nanoflann::nanoflann
-        gtest_main
-        spdlog::spdlog
-        ${MUQ_LIBRARIES}
-        ${MUQ_LINK_LIBS}
-    )
+        RunAllParallelTests gtest_main ${MUQ_LIBRARIES} ${MUQ_LINK_LIBS})
     endif()
 ENDIF()
