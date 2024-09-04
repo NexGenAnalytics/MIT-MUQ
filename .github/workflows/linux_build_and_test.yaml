@@ -76,12 +76,12 @@ jobs:
           cd $MUQ_HOME
           git status
 
-      - name: Build TPLs
+      - name: Build/install TPLs
         run: |
           cd $MUQ_HOME
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
 
-      - name: Build MUQ (mpi)
+      - name: Build/install MUQ (mpi)
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR
@@ -92,7 +92,7 @@ jobs:
                 -C $TPL_WORK_DIR/tpls_cache.txt \
                 -DMUQ_USE_GTEST=ON -DMUQ_USE_MPI=ON
           cd $MUQ_BUILD_DIR
-          make -j4
+          make -j4 install
 
       - name: Run Tests (serial)
         run: |
