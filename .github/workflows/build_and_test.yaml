@@ -28,11 +28,10 @@ jobs:
     env: # environment variables available to all steps
       CC: ${{ matrix.config.cc }}
       CXX: ${{ matrix.config.cxx }}
-      APT_PACKAGES: python3 pip python-is-python3 g++
-      TPL_WORK_DIR: /home/runner/work/tpls_workdir
       MUQ_HOME: ${{ github.workspace }}
       MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
       MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_WORK_DIR: ${{ github.workspace }}/../tpls_workdir
 
     steps:
       - name: Check out code
@@ -42,7 +41,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --install-suggests $APT_PACKAGES
+          sudo apt-get install -y --install-suggests python3 pip python-is-python3 g++
 
       - name: Install CMake
         if: matrix.os == 'ubuntu-latest'
