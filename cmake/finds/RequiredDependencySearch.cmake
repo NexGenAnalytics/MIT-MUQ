@@ -59,20 +59,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 
-###########################
-##### LOOK FOR ZLIB  ######
-###########################
-
-if(MUQ_USE_OPENMPI)
-	find_package(ZLIB)
-	include_directories(${ZLIB_INCLUDE_DIRS})
-	LIST(APPEND MUQ_LINK_LIBS ${ZLIB_LIBRARIES})
-	LIST(APPEND MUQ_LINK_LIBS_STATIC ${ZLIB_LIBRARIES_STATIC})
-	LIST(APPEND MUQ_EXTERNAL_INCLUDES ${ZLIB_INCLUDE_DIRS})
-	message("ZLIB_LIBRARIES" ${ZLIB_LIBRARIES})
-
-endif()
-
 ############################
 ##### LOOK FOR NLOPT  ######
 ############################
