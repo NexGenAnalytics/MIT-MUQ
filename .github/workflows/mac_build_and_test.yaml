@@ -59,21 +59,24 @@ jobs:
       - name: Build/install TPLs
         run: |
           cd $MUQ_HOME
-          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with parcer
+	  # note that here we build only the TPLs for serial MUQ
+	  # we do not need those for the MPI support
+          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
+             --with hdf5 nlopt boost sundials eigen nanoflann stanmath
 
-      # - name: Build/install MUQ
-      #   run: |
-      #     cd $MUQ_HOME
-      #     cmake -DCMAKE_C_COMPILER=$CC \
-      #           -DCMAKE_CXX_COMPILER=$CXX \
-      #           -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-      #           -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-      #           -C $TPL_WORK_DIR/tpls_cache.txt \
-      #           -DMUQ_USE_GTEST=ON
-      #     cd $MUQ_BUILD_DIR
-      #     make -j4 install
+      - name: Build/install MUQ
+        run: |
+          cd $MUQ_HOME
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON
+          cd $MUQ_BUILD_DIR
+          make -j4 install
 
-      # - name: Run Tests
-      #   run: |
-      #     cd $MUQ_BUILD_DIR
-      #     ./RunAllTests
+      - name: Run Tests
+        run: |
+          cd $MUQ_BUILD_DIR
+          ./RunAllTests
