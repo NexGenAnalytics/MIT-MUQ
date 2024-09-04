@@ -90,7 +90,7 @@ jobs:
                 -C $TPL_WORK_DIR/tpls_cache.txt \
                 -DMUQ_USE_GTEST=ON \
                 -DMUQ_ENABLEGROUP_SAMPLING_PROBLEMS=ON \
-		-DMUQ_ENABLEGROUP_DEFAULT=OFF
+                -DMUQ_ENABLEGROUP_DEFAULT=OFF
           cd $MUQ_BUILD_DIR
           make -j4 install
           ./RunAllTests
