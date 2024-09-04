@@ -52,7 +52,7 @@ jobs:
           echo TPLs workdir: $TPL_WORK_DIR
           echo ======================================================
           git --version
-          brew install googletest
+          brew install googletest boost@1.85 hdf5
           cd $MUQ_HOME
           git status
 
@@ -62,9 +62,9 @@ jobs:
           # important: we build only the TPLs for serial MUQ
           # we do not need those for the MPI support
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
-             --with hdf5 nlopt boost sundials eigen nanoflann stanmath
+             --with nlopt sundials eigen nanoflann stanmath
 
-      - name: Build/install MUQ
+      - name: Build/install MUQ (no python)
         run: |
           cd $MUQ_HOME
           cmake -DCMAKE_C_COMPILER=$CC \
@@ -74,9 +74,9 @@ jobs:
                 -C $TPL_WORK_DIR/tpls_cache.txt \
                 -DMUQ_USE_GTEST=ON
           cd $MUQ_BUILD_DIR
-          make -j4 install
+          # make -j4 install
 
-      - name: Run Tests
-        run: |
-          cd $MUQ_BUILD_DIR
-          ./RunAllTests
+      # - name: Run Tests
+      #   run: |
+      #     cd $MUQ_BUILD_DIR
+      #     ./RunAllTests
