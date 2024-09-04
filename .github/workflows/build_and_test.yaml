@@ -14,16 +14,17 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
 
     strategy:
       fail-fast: true # true -> cancel all jobs if any fails
 
       matrix:
-        os: [ubuntu-latest, macos-14]
         mpi: ['openmpi']
         config:
-          - { cc: gcc, cxx: g++, python-version: "3.10" }
+          - { os: ubuntu-latest, cc: gcc, cxx: g++, python-version: "3.10" }
+          - { os: macsos-14, cc: gcc-12, cxx: g++-12, python-version: "3.10" }
+          - { os: macsos-14, cc: clang, cxx: clang++, python-version: "3.10" }
 
     env: # environment variables available to all steps
       CC: ${{ matrix.config.cc }}
@@ -57,6 +58,7 @@ jobs:
           sudo apt-get install -y kitware-archive-keyring cmake
 
       - name: Setup MPI
+        if: matrix.os == 'ubuntu-latest'
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
@@ -78,7 +80,6 @@ jobs:
           echo ======================================================
           git --version
           echo $MUQ_HOME
-          ls -l $MUQ_HOME
           cd $MUQ_HOME
           git status
 
@@ -87,7 +88,7 @@ jobs:
           cd $MUQ_HOME
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
 
-      - name: Build MUQ (serial)
+      - name: Build and Test MUQ (serial)
         if: matrix.os == 'macos-14'
         run: |
           cd $MUQ_HOME
@@ -99,10 +100,6 @@ jobs:
                 -DMUQ_USE_GTEST=ON
           cd $MUQ_BUILD_DIR
           make -j4
-
-      - name: Run Tests (serial)
-        run: |
-          cd $MUQ_BUILD_DIR
           ./RunAllTests
 
       - name: Build MUQ (mpi)
@@ -120,11 +117,13 @@ jobs:
           make -j4
 
       - name: Run Tests (serial)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           cd $MUQ_BUILD_DIR
           ./RunAllTests
 
       - name: Run Tests (mpi)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           cd $MUQ_BUILD_DIR
           mpirun -n 2 ./RunAllParallelTests
