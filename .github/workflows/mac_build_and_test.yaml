@@ -59,8 +59,8 @@ jobs:
       - name: Build/install TPLs
         run: |
           cd $MUQ_HOME
-	  # note that here we build only the TPLs for serial MUQ
-	  # we do not need those for the MPI support
+          # important: we build only the TPLs for serial MUQ
+          # we do not need those for the MPI support
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
              --with hdf5 nlopt boost sundials eigen nanoflann stanmath
 
