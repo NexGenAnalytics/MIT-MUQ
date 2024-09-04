@@ -129,6 +129,9 @@ def build_install_impl(
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
+    if p.returncode != 0:
+        with open(logfile, 'r') as f:
+            print(f.read())
     assert p.returncode == 0
 
     # make and install
@@ -139,6 +142,9 @@ def build_install_impl(
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
+    if p.returncode != 0:
+        with open(logfile, 'r') as f:
+            print(f.read())
     assert p.returncode == 0
 
     print(f'success installing: {tplname}\n')
