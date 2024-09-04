@@ -30,9 +30,9 @@ jobs:
       CXX: ${{ matrix.config.cxx }}
       APT_PACKAGES: python3 pip python-is-python3 g++
       TPL_WORK_DIR: /home/runner/work/tpls_workdir
-      MUQ_HOME: $GITHUB_WORKSPACE
-      MUQ_BUILD_DIR: $GITHUB_WORKSPACE/../muq_build
-      MUQ_INSTALL_DIR: $GITHUB_WORKSPACE/../muq_install
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
 
     steps:
       - name: Check out code
