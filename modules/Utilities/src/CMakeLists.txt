@@ -17,7 +17,7 @@ CreateCompileGroup(
     "MUQ's wrapper for interacting with HDF5 binary files."
     muqUtilities
     ""
-    "EIGEN3;HDF5"
+    "EIGEN3;HDF5;BOOST"
     ""
     HDF5/Attributes.cpp
     HDF5/H5Object.cpp
@@ -32,7 +32,7 @@ CreateCompileGroup(
     "Basic utilties used throughout MUQ."
     muqUtilities
     ""
-    "EIGEN3"
+    "EIGEN3;BOOST"
     ""
     RandomGenerator.cpp
     StringUtilities.cpp
@@ -43,8 +43,8 @@ CreateCompileGroup(
     UTILITIES_MULTIINDEX
     "Classes for defining and generating multiindices and multiindex sets."
     muqUtilities
-    ""
-    "EIGEN3"
+    "UTILITIES_HDF5"
+    "EIGEN3;HDF5;BOOST"
     ""
     MultiIndices/MultiIndex.cpp
     MultiIndices/MultiIndexLimiter.cpp

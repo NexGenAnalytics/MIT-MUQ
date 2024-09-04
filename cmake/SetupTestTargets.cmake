@@ -41,9 +41,9 @@ IF(MUQ_USE_GTEST)
 	    endif()
 	endforeach()
 
-        list(REMOVE_DUPLICATES all_gtest_sources_parallel)
-        message("ALL PARALLEL TEST SOURCES = ${all_gtest_sources_parallel}")
-        ADD_EXECUTABLE(RunAllParallelTests ${all_gtest_sources_parallel})
+    list(REMOVE_DUPLICATES all_gtest_sources_parallel)
+    message("ALL PARALLEL TEST SOURCES = ${all_gtest_sources_parallel}")
+    ADD_EXECUTABLE(RunAllParallelTests ${all_gtest_sources_parallel})
 
 	# Make sure the test executable depends on all of the targets
 	foreach(target ${all_compiled_libraries})

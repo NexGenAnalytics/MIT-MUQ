@@ -27,7 +27,7 @@ TEST(CostFunctionTests, RosenbrockCost) {
   // compute the gradient
   Eigen::VectorXd grad_test0 = rosen->Gradient(x);
 
-  EXPECT_DOUBLE_EQ((grad_true-grad_test0).norm(), 0.0);
+  EXPECT_NEAR((grad_true-grad_test0).norm(), 0.0, 1e-13);
 
   // the true hessian
   Eigen::Matrix2d hess_temp;

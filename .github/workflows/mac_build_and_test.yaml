@@ -26,8 +26,7 @@ jobs:
       CC: ${{ matrix.config.cc }}
       CXX: ${{ matrix.config.cxx }}
       MUQ_HOME: ${{ github.workspace }}
-      MUQ_BUILD_CPP_ONLY_DIR: ${{ github.workspace }}/../muq_build_cpp
-      MUQ_BUILD_CPPPY_DIR: ${{ github.workspace }}/../muq_build_cpp_and_py
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
       MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
       TPL_WORK_DIR: ${{ github.workspace }}/../tpls_workdir
 
@@ -62,32 +61,48 @@ jobs:
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
              --with hdf5 nlopt boost sundials eigen nanoflann stanmath
 
-      - name: Build/install MUQ (no python)
+      - name: Build/install MUQ (with python too)
         run: |
           cd $MUQ_HOME
           cmake -DCMAKE_C_COMPILER=$CC \
                 -DCMAKE_CXX_COMPILER=$CXX \
-                -S $MUQ_HOME -B $MUQ_BUILD_CPP_ONLY_DIR \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
                 -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
                 -C $TPL_WORK_DIR/tpls_cache.txt \
-                -DMUQ_USE_GTEST=ON
-          cd $MUQ_BUILD_CPP_ONLY_DIR
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
           make -j4 install
 
       - name: Run Tests
         run: |
-          cd $MUQ_BUILD_CPP_ONLY_DIR
+          cd $MUQ_BUILD_DIR
           ./RunAllTests
 
-      - name: Build/install MUQ with python bindings
+      - name: Build only SAMPLING_PROBLEMS
         run: |
           cd $MUQ_HOME
-          rm -rf $MUQ_BUILD_CPPPY_DIR
+          rm -rf $MUQ_BUILD_DIR
           cmake -DCMAKE_C_COMPILER=$CC \
                 -DCMAKE_CXX_COMPILER=$CXX \
-                -S $MUQ_HOME -B $MUQ_BUILD_CPPPY_DIR \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
                 -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
                 -C $TPL_WORK_DIR/tpls_cache.txt \
-                -DMUQ_USE_PYTHON=ON
-          cd $MUQ_BUILD_CPPPY_DIR
+		-DMUQ_ENABLEGROUP_SAMPLING_PROBLEMS=ON
+          cd $MUQ_BUILD_DIR
           make -j4 install
+	  ./RunAllTests
+
+      - name: Build only APPROXIMATION_REGRESSION
+        run: |
+          cd $MUQ_HOME
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+		-DMUQ_ENABLEGROUP_APPROXIMATION_REGRESSION=ON
+          cd $MUQ_BUILD_DIR
+          make -j4 install
+	  ./RunAllTests

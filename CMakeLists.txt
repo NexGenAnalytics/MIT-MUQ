@@ -57,6 +57,7 @@ INCLUDE(DependencyCheck)
 # Create BUILD targets for cmake
 ###############################################
 
+# FRIZZI: we need to revise the logic for this
 # Remove any compile groups with unsatisfied dependencies
 INCLUDE(UpdateCompileGroups)
 
@@ -121,16 +122,13 @@ install(DIRECTORY spdlog
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${INSTALL_LIB_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${INSTALL_LIB_DIR})
 
-###############################################
-# Write summary to terminal
-###############################################
-
-# write a summary of the build configuration
-include(MakeSummaryFile)
-
-FILE(READ ${CMAKE_BINARY_DIR}/summary.log MUQ_LOG_SUMMARY)
-MESSAGE("${MUQ_LOG_SUMMARY}")
-
+# ###############################################
+# # Write summary to terminal
+# ###############################################
+# # write a summary of the build configuration
+# include(MakeSummaryFile)
+# FILE(READ ${CMAKE_BINARY_DIR}/summary.log MUQ_LOG_SUMMARY)
+# MESSAGE("${MUQ_LOG_SUMMARY}")
 
 ###############################################
 # Add a target to build documentation
@@ -147,10 +145,8 @@ if(DOXYGEN_FOUND)
 	endif()
 
 	if(Python3_Interpreter_FOUND)
-
 		message(STATUS "PYTHON3 EXE: ${Python3_EXECUTABLE}")
 		message(STATUS "To build documentation, run 'make doc'")
-
 		option(MUQDOC_INCLUDE_ANALYTICS OFF)
 		if(MUQDOC_INCLUDE_ANALYTICS)
 			message(STATUS "Will include google analytics header information in doxygen output.")

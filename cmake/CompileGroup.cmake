@@ -23,7 +23,7 @@ function(CreateCompileGroup
 
   option(MUQ_ENABLEGROUP_${GROUP_NAME} "Should the group ${GROUP_NAME} be compiled?" ${MUQ_ENABLEGROUP_DEFAULT})
 
-  message(STATUS "MUQ_ENABLEGROUP_${GROUP_NAME} = ${MUQ_ENABLEGROUP_${GROUP_NAME}}")
+  # message(STATUS "MUQ_ENABLEGROUP_${GROUP_NAME} = ${MUQ_ENABLEGROUP_${GROUP_NAME}}")
   set(MUQ_GROUPS "${MUQ_GROUPS};${GROUP_NAME}" CACHE INTERNAL "A list of all of the muq groups.")
 
   set(${GROUP_NAME}_REQUIRES_GROUPS ${GROUP_DEPENDENCIES} CACHE INTERNAL "Other compile groups that are required by the ${GROUP_NAME} group.")

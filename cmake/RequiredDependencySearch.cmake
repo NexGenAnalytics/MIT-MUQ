@@ -9,49 +9,69 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 ########################################################
 
 # HDF5
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-LIST(APPEND MUQ_LINK_LIBS hdf5::hdf5 hdf5::hdf5_cpp hdf5::hdf5_hl)
+list (FIND MUQ_REQUIRES HDF5 dindex)
+if (${dindex} GREATER -1)
+    find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+    LIST(APPEND MUQ_LINK_LIBS hdf5::hdf5 hdf5::hdf5_cpp hdf5::hdf5_hl)
+endif()
 
 # NLOPT
-find_package(NLopt REQUIRED)
-LIST(APPEND MUQ_LINK_LIBS NLopt::nlopt)
+list (FIND MUQ_REQUIRES NLOPT dindex)
+if (${dindex} GREATER -1)
+    find_package(NLopt REQUIRED)
+    LIST(APPEND MUQ_LINK_LIBS NLopt::nlopt)
+endif()
 
 # SUNDIALS
-find_package(SUNDIALS 5.5.0...<6.0.0 REQUIRED)
-set(MUQ_HAS_SUNDIALS 1) # this is needed for preprocessor directives in the MUQ source code
-LIST(APPEND MUQ_LINK_LIBS 
-    SUNDIALS::cvodes  SUNDIALS::idas SUNDIALS::kinsol SUNDIALS::nvecserial
-)
+set(MUQ_HAS_SUNDIALS 0) # needed for preprocessor directives in the MUQ source code
+list (FIND MUQ_REQUIRES SUNDIALS dindex)
+if (${dindex} GREATER -1)
+    find_package(SUNDIALS 5.5.0...<6.0.0 REQUIRED)
+    set(MUQ_HAS_SUNDIALS 1) 
+    LIST(APPEND MUQ_LINK_LIBS 
+        SUNDIALS::cvodes  SUNDIALS::idas SUNDIALS::kinsol SUNDIALS::nvecserial)
+endif()
 
 # EIGEN3
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-LIST(APPEND MUQ_LINK_LIBS Eigen3::Eigen)
+list (FIND MUQ_REQUIRES EIGEN3 dindex)
+if (${dindex} GREATER -1)
+    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+    LIST(APPEND MUQ_LINK_LIBS Eigen3::Eigen)
+endif()
 
 # NANOFLANN
-find_package(nanoflann REQUIRED)
-LIST(APPEND MUQ_LINK_LIBS nanoflann::nanoflann)
+list (FIND MUQ_REQUIRES NANOFLANN dindex)
+if (${dindex} GREATER -1)
+    find_package(nanoflann REQUIRED)
+    LIST(APPEND MUQ_LINK_LIBS nanoflann::nanoflann)
+endif()
 
 # STANMATH
-if(EXISTS "${stanmath_SRC_DIR}/stan/math.hpp")
-   include_directories(${stanmath_SRC_DIR})
-   LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_SRC_DIR})
-else()
-   message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
+list (FIND MUQ_REQUIRES STANMATH dindex)
+if (${dindex} GREATER -1)
+    if(EXISTS "${stanmath_SRC_DIR}/stan/math.hpp")
+        include_directories(${stanmath_SRC_DIR})
+        LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_SRC_DIR})
+    else()
+        message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
+    endif()
 endif()
 
 # BOOST
-set(BOOST_MIN_VERSION "1.56.0")
-find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS system filesystem graph regex)
-LIST(APPEND MUQ_LINK_LIBS 
-    Boost::system Boost::filesystem Boost::graph Boost::regex    
-)
+list (FIND MUQ_REQUIRES BOOST dindex)
+if (${dindex} GREATER -1)
+    set(BOOST_MIN_VERSION "1.56.0")
+    find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS system filesystem graph regex)
+    LIST(APPEND MUQ_LINK_LIBS 
+        Boost::system Boost::filesystem Boost::graph Boost::regex)
+endif()
 
-###############################################################
-##### LOOK FOR Parallel Sampling Algorithm dependencies  ######
-###############################################################
+# ###############################################################
+# ##### LOOK FOR Parallel Sampling Algorithm dependencies  ######
+# ###############################################################
 
-set(MUQ_HAS_PARCER 0)
-set(MUQ_HAS_OTF2 0)
+set(MUQ_HAS_PARCER 0) # needed for preprocessor directives 
+set(MUQ_HAS_OTF2 0)   # needed for preprocessor directives 
 if(MUQ_USE_MPI)
     # PARCER
     find_package(PARCER REQUIRED)
@@ -81,4 +101,6 @@ endif()
 ########################################
 
 list( REMOVE_DUPLICATES MUQ_EXTERNAL_INCLUDES)
-set(MUQ_EXTERNAL_INCLUDE_DIRS ${MUQ_EXTERNAL_INCLUDES} CACHE INTERNAL "List of external include directories for MUQ.")
+set(MUQ_EXTERNAL_INCLUDE_DIRS ${MUQ_EXTERNAL_INCLUDES} 
+    CACHE INTERNAL "List of external include directories for MUQ.")
+
