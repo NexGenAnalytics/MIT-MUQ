@@ -1,32 +1,32 @@
 cmake_minimum_required (VERSION 3.10)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-    cmake_policy(SET CMP0135 NEW)
-endif()
+# if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+#     cmake_policy(SET CMP0135 NEW)
+# endif()
 
 
-# Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
-# Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
-IF(APPLE)
+# # Check for the M1 chip and set the value of CMAKE_OSX_ARCHITECTURES accordingly
+# # Uses ideas outlined in the discussion at https://gitlab.kitware.com/cmake/cmake/-/issues/20989
+# IF(APPLE)
 
-	# Only run these checks is the OSX Architecture isn't already specified
-  if(NOT CMAKE_OSX_ARCHITECTURES)
+# 	# Only run these checks is the OSX Architecture isn't already specified
+#   if(NOT CMAKE_OSX_ARCHITECTURES)
 
-		# Use sysctl to detect for arm64 instructions in the hardware
-		set(ARM_TEST 0)
-	  execute_process(COMMAND sysctl hw.optional.arm64 OUTPUT_VARIABLE ARM_TEST OUTPUT_STRIP_TRAILING_WHITESPACE)
+# 		# Use sysctl to detect for arm64 instructions in the hardware
+# 		set(ARM_TEST 0)
+# 	  execute_process(COMMAND sysctl hw.optional.arm64 OUTPUT_VARIABLE ARM_TEST OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-		# If arm64 is supported, set the CMAKE_OSX_ARCHITECTURES variable
-	  if(${ARM_TEST} STREQUAL "hw.optional.arm64: 1")
-	    message(STATUS "FOUND APPLE M1.  Setting architecture to ARM64")
-			set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Architecture" FORCE)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch arm64 -arch x86_64")
-			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64 -arch x86_64")
-			set(BUILD_SHARED_LIBS ON)
-	  endif()
+# 		# If arm64 is supported, set the CMAKE_OSX_ARCHITECTURES variable
+# 	  if(${ARM_TEST} STREQUAL "hw.optional.arm64: 1")
+# 	    message(STATUS "FOUND APPLE M1.  Setting architecture to ARM64")
+# 			set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Architecture" FORCE)
+# 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch arm64 -arch x86_64")
+# 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64 -arch x86_64")
+# 			set(BUILD_SHARED_LIBS ON)
+# 	  endif()
 
-	endif()
-ENDIF(APPLE)
+# 	endif()
+# ENDIF(APPLE)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/finds)
