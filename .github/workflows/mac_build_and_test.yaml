@@ -33,6 +33,11 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+        array=( one two three )
+        for i in "${array[@]}"
+        do
+	  echo "$i"
+        done
 
       - name: Check environment
         run: |
