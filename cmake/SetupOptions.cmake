@@ -4,8 +4,8 @@ option(MUQ_ENABLEGROUP_DEFAULT "Whether compile groups should be enabled or disa
 option(MUQ_USE_MPI "Use OpenMPI" OFF)
 option(MUQ_USE_OPENMP "Use OpenMP (non OS X)" ON)
 
-# Bindings 
-option(MUQ_USE_PYTHON "Compile Python bindings using pybind11" ON)
+# Bindings
+option(MUQ_USE_PYTHON "Compile Python bindings using pybind11" OFF)
 
 # External dependencies
 option(MUQ_USE_EIGEN3 "Allow the use of Eigen. (Most of MUQ requires this.)" ON)
@@ -19,5 +19,5 @@ option(MUQ_USE_OTF2 "Enable the use of OTF2." ON)
 option(MUQ_USE_STANMATH "Enable the use of stan math functionality." ON)
 option(MUQ_USE_PARCER "Use ParCer (PARallel CEReal) MPI wrapper." ON)
 
-# Tests 
+# Tests
 option(MUQ_USE_GTEST "Enable unit testing using GTEST" OFF)

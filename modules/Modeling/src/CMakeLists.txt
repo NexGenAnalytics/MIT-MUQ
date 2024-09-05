@@ -16,8 +16,8 @@ CreateCompileGroup(
     MODELING_CORE
     "The basic building blocks of the Modeling library."
     muqModeling
-    "MODELING_LINEARALGEBRA;UTILITIES_CORE"
-    "EIGEN3;BOOST"
+    "MODELING_LINEARALGEBRA;UTILITIES_CORE;MODELING_DISTRIBUTIONS"
+    "EIGEN3;BOOST;STANMATH"
     ""
     WorkPiece.cpp
 

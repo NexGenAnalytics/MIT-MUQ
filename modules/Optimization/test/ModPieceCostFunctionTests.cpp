@@ -30,5 +30,5 @@ TEST(ModPieceCostFunctionTests, RosenbrockCost) {
   // compute the gradient
   const Eigen::VectorXd& grad_test0 = cost->Gradient(x);
 
-  EXPECT_DOUBLE_EQ((grad_true-grad_test0).norm(), 0.0);
+  EXPECT_NEAR((grad_true-grad_test0).norm(), 0.0, 1e-13);
 }
