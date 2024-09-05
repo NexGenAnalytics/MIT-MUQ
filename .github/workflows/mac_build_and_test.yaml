@@ -88,23 +88,22 @@ jobs:
       - name: Build individual utilities groups
         run: |
           array=( UTILITIES_HDF5 UTILITIES_CORE UTILITIES_MULTIINDEX )
-          for group in "${array[@]}"
+          for g in "${array[@]}"
           do
-	    echo "---------------------------"
-	    echo "processing ${group}"
-	    echo "---------------------------"
-	    cd $MUQ_HOME
-	    rm -rf $MUQ_BUILD_DIR
-	    cmake -DCMAKE_C_COMPILER=$CC \
-		  -DCMAKE_CXX_COMPILER=$CXX \
-		  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-		  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-		  -C $TPL_WORK_DIR/tpls_cache.txt \
-		  -DMUQ_USE_GTEST=ON \
-		  -DMUQ_ENABLEGROUP_$group=ON \
-		  -DMUQ_ENABLEGROUP_DEFAULT=OFF
-	    cd $MUQ_BUILD_DIR
-	    make -j4 install
-	    ./RunAllTests
-            echo "$i"
+            echo "---------------------------"
+            echo "processing ${group}"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
           done
