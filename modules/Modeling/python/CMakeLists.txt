@@ -32,7 +32,7 @@ CreateCompileGroup(
     MODELING_SUNDIALS_MODELS_PYTHON
     "Python interface for the ODE integrators using Sundials"
     pymuqModeling_
-    "MODELING_SUNDIALS_MODELS"
+    "MODELING_ODE"
     "PYTHON"
     ""
     ODEWrapper.cpp
