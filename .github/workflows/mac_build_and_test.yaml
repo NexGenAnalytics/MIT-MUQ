@@ -36,7 +36,7 @@ jobs:
         array=( one two three )
         for i in "${array[@]}"
         do
-	  echo "$i"
+          echo "$i"
         done
 
       - name: Check environment
