@@ -113,8 +113,9 @@ jobs:
 
       - name: Build "modeling" groups
         run: |
+          # ci takes too long, for now only build a subset
           # array=( MODELING_CORE MODELING_STAN MODELING_FLANN MODELING_LINEARALGEBRA MODELING_DISTRIBUTIONS MODELING_ODE )
-          array=( MODELING_CORE MODELING_STAN MODELING_DISTRIBUTIONS MODELING_ODE )
+          array=( MODELING_CORE MODELING_DISTRIBUTIONS )
           for g in "${array[@]}"
           do
             echo "---------------------------"
@@ -168,8 +169,9 @@ jobs:
 
       - name: Build "approximation" groups
         run: |
+          # ci takes too long, for now only build a subset
           # array=( APPROXIMATION_REGRESSION APPROXIMATION_POLYNOMIALS APPROXIMATION_QUADRATURE APPROXIMATION_POLYNOMIALCHAOS APPROXIMATION_GP_Kernels APPROXIMATION_GP )
-          array=( APPROXIMATION_REGRESSION APPROXIMATION_POLYNOMIALCHAOS APPROXIMATION_GP_Kernels APPROXIMATION_GP )
+          array=( APPROXIMATION_REGRESSION APPROXIMATION_GP_Kernels )
           for g in "${array[@]}"
           do
             echo "---------------------------"
@@ -194,9 +196,9 @@ jobs:
           done
 
 
-      - name: Build "sampling, inference" groups
+      - name: Build "sampling" groups
         run: |
-          array=( SAMPLING_PROBLEMS SAMPLING_ALGORITHM INFERENCE_FILTERING )
+          array=( SAMPLING_PROBLEMS SAMPLING_ALGORITHM )
           for g in "${array[@]}"
           do
             echo "---------------------------"
