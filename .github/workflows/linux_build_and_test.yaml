@@ -123,4 +123,5 @@ jobs:
                 -DMUQ_ENABLEGROUP_PARALLEL_SAMPLING_ALGORITHM=ON \
                 -DMUQ_ENABLEGROUP_DEFAULT=OFF
           cd $MUQ_BUILD_DIR
+          make -j4 install
           mpirun -n 2 ./RunAllParallelTests --gtest_filter=-LocalRegressionTest.SharedCache
