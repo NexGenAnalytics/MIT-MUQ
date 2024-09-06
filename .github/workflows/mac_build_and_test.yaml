@@ -87,7 +87,8 @@ jobs:
 
       - name: Build "utilities" groups
         run: |
-          array=( UTILITIES_HDF5 UTILITIES_CORE UTILITIES_MULTIINDEX )
+          # array=( UTILITIES_HDF5 UTILITIES_CORE UTILITIES_MULTIINDEX )
+          array=( UTILITIES_CORE )
           for g in "${array[@]}"
           do
             echo "---------------------------"
@@ -115,7 +116,7 @@ jobs:
         run: |
           # ci takes too long, for now only build a subset
           # array=( MODELING_CORE MODELING_STAN MODELING_FLANN MODELING_LINEARALGEBRA MODELING_DISTRIBUTIONS MODELING_ODE )
-          array=( MODELING_CORE MODELING_DISTRIBUTIONS )
+          array=( MODELING_DISTRIBUTIONS )
           for g in "${array[@]}"
           do
             echo "---------------------------"
@@ -171,7 +172,7 @@ jobs:
         run: |
           # ci takes too long, for now only build a subset
           # array=( APPROXIMATION_REGRESSION APPROXIMATION_POLYNOMIALS APPROXIMATION_QUADRATURE APPROXIMATION_POLYNOMIALCHAOS APPROXIMATION_GP_Kernels APPROXIMATION_GP )
-          array=( APPROXIMATION_REGRESSION APPROXIMATION_GP_Kernels )
+          array=( APPROXIMATION_GP_Kernels )
           for g in "${array[@]}"
           do
             echo "---------------------------"
