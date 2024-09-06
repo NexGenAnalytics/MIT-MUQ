@@ -109,8 +109,8 @@ jobs:
 
       - name: Build "parallel sampling" group
         run: |
-	  cd $MUQ_HOME
-	  rm -rf $MUQ_BUILD_DIR
+          cd $MUQ_HOME
+          rm -rf $MUQ_BUILD_DIR
           cmake -DCMAKE_C_COMPILER=mpicc \
                 -DCMAKE_CXX_COMPILER=mpic++ \
                 -S $MUQ_HOME -B $MUQ_BUILD_DIR \
@@ -119,6 +119,6 @@ jobs:
                 -DMUQ_USE_GTEST=ON \
                 -DMUQ_USE_MPI=ON \
                 -DMUQ_ENABLEGROUP_PARALLEL_SAMPLING_ALGORITHM=ON \
-		-DMUQ_ENABLEGROUP_DEFAULT=OFF
-	  cd $MUQ_BUILD_DIR
+                -DMUQ_ENABLEGROUP_DEFAULT=OFF
+          cd $MUQ_BUILD_DIR
           mpirun -n 2 ./RunAllParallelTests
