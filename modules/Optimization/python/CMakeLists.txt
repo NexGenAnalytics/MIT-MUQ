@@ -16,7 +16,7 @@ CreateCompileGroup(
   OPTIMIZATION_CORE_PYTHON
   "Python wrappers for the basic building blocks of the Optimization library."
   pymuqOptimization
-  "OPTIMIZATION_CORE"
+  "OPTIMIZATION_CORE;OPTIMIZATION_NLOPT"
   "PYTHON"
   ""
   Module.cpp
