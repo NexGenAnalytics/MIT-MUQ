@@ -99,7 +99,7 @@ if(MUQ_USE_MPI)
       PARALLEL_SAMPLING_ALGORITHM
       "Tools for sampling that require MPI distributed parallelism."
       muqSamplingAlgorithms
-      "MODELING_CORE;UTILITIES_CORE;SAMPLING_ALGORITHM"
+      "MODELING_CORE;UTILITIES_CORE;SAMPLING_ALGORITHM;FANCY_SAMPLING_PROBLEMS"
       "PARCER;SPDLOG;OTF2"
       ""
       ParallelAMProposal.cpp
