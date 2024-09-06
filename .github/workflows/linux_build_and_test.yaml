@@ -107,7 +107,7 @@ jobs:
           cd $MUQ_BUILD_DIR
           mpirun -n 2 ./RunAllParallelTests
 
-      - name: Build "parallel sampling" group
+      - name: Build and test "parallel sampling" group
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR
