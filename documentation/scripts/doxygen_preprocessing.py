@@ -156,7 +156,7 @@ def ProcessFiles():
     excludeDirs = ['external', 'build', 'cmake', 'joss', 'documentation/doxFiles/excluded/']
 
     # Read the template file
-    with open('../documentation/scripts/codeblock_template.html', 'r') as fin:
+    with open(baseDir + '/documentation/scripts/codeblock_template.html', 'r') as fin:
         template = fin.read()
 
     # Figure out which files in the source directory we will prepare for doxygen to parse
