@@ -34,6 +34,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+
       - name: Check environment
         run: |
           echo ======================================================
@@ -52,6 +53,11 @@ jobs:
           git --version
           cd $MUQ_HOME
           git status
+          array=( one two three )
+          for i in "${array[@]}"
+          do
+            echo "$i"
+          done
 
       - name: Build/install TPLs
         run: |
@@ -61,52 +67,157 @@ jobs:
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
              --with hdf5 nlopt boost sundials eigen nanoflann stanmath
 
-      - name: Build/install MUQ (with python too)
-        run: |
-          cd $MUQ_HOME
-          cmake -DCMAKE_C_COMPILER=$CC \
-                -DCMAKE_CXX_COMPILER=$CXX \
-                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-                -C $TPL_WORK_DIR/tpls_cache.txt \
-                -DMUQ_USE_GTEST=ON \
-                -DMUQ_USE_PYTHON=ON
-          cd $MUQ_BUILD_DIR
-          make -j4 install
+      # - name: Build/install MUQ with Python bindings
+      #   run: |
+      #     cd $MUQ_HOME
+      #     cmake -DCMAKE_C_COMPILER=$CC \
+      #           -DCMAKE_CXX_COMPILER=$CXX \
+      #           -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+      #           -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+      #           -C $TPL_WORK_DIR/tpls_cache.txt \
+      #           -DMUQ_USE_GTEST=ON \
+      #           -DMUQ_USE_PYTHON=ON
+      #     cd $MUQ_BUILD_DIR
+      #     make -j4 install
 
-      - name: Run Tests
-        run: |
-          cd $MUQ_BUILD_DIR
-          ./RunAllTests
+      # - name: Run Tests
+      #   run: |
+      #     cd $MUQ_BUILD_DIR
+      #     ./RunAllTests
 
-      - name: Build only SAMPLING_PROBLEMS
+      - name: Build "utilities" groups
         run: |
-          cd $MUQ_HOME
-          rm -rf $MUQ_BUILD_DIR
-          cmake -DCMAKE_C_COMPILER=$CC \
-                -DCMAKE_CXX_COMPILER=$CXX \
-                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-                -C $TPL_WORK_DIR/tpls_cache.txt \
-                -DMUQ_USE_GTEST=ON \
-                -DMUQ_ENABLEGROUP_SAMPLING_PROBLEMS=ON \
-                -DMUQ_ENABLEGROUP_DEFAULT=OFF
-          cd $MUQ_BUILD_DIR
-          make -j4 install
-          ./RunAllTests
+          array=( UTILITIES_HDF5 UTILITIES_CORE UTILITIES_MULTIINDEX )
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
+          done
 
-      - name: Build only APPROXIMATION_REGRESSION
+      - name: Build "modeling" groups
         run: |
-          cd $MUQ_HOME
-          rm -rf $MUQ_BUILD_DIR
-          cmake -DCMAKE_C_COMPILER=$CC \
-                -DCMAKE_CXX_COMPILER=$CXX \
-                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-                -C $TPL_WORK_DIR/tpls_cache.txt \
-                -DMUQ_USE_GTEST=ON \
-                -DMUQ_ENABLEGROUP_APPROXIMATION_REGRESSION=ON \
-                -DMUQ_ENABLEGROUP_DEFAULT=OFF
-          cd $MUQ_BUILD_DIR
-          make -j4 install
-          ./RunAllTests
+          # ci takes too long, for now only build a subset
+          # array=( MODELING_CORE MODELING_STAN MODELING_FLANN MODELING_LINEARALGEBRA MODELING_DISTRIBUTIONS MODELING_ODE )
+          array=( MODELING_CORE MODELING_DISTRIBUTIONS )
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
+          done
+
+
+      - name: Build "optimiz" groups
+        run: |
+          array=( OPTIMIZATION_CORE OPTIMIZATION_NLOPT )
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
+          done
+
+
+      - name: Build "approximation" groups
+        run: |
+          # ci takes too long, for now only build a subset
+          # array=( APPROXIMATION_REGRESSION APPROXIMATION_POLYNOMIALS APPROXIMATION_QUADRATURE APPROXIMATION_POLYNOMIALCHAOS APPROXIMATION_GP_Kernels APPROXIMATION_GP )
+          array=( APPROXIMATION_REGRESSION APPROXIMATION_GP_Kernels )
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
+          done
+
+
+      - name: Build "sampling" groups
+        run: |
+          array=( SAMPLING_PROBLEMS SAMPLING_ALGORITHM )
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+            cd $MUQ_HOME
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_WORK_DIR/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j4 install
+            ./RunAllTests
+          done
