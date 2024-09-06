@@ -122,13 +122,13 @@ install(DIRECTORY spdlog
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${INSTALL_LIB_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${INSTALL_LIB_DIR})
 
-# ###############################################
-# # Write summary to terminal
-# ###############################################
-# # write a summary of the build configuration
-# include(MakeSummaryFile)
-# FILE(READ ${CMAKE_BINARY_DIR}/summary.log MUQ_LOG_SUMMARY)
-# MESSAGE("${MUQ_LOG_SUMMARY}")
+###############################################
+# Write summary to terminal
+###############################################
+# write a summary of the build configuration
+include(MakeSummaryFile)
+FILE(READ ${CMAKE_BINARY_DIR}/summary.log MUQ_LOG_SUMMARY)
+MESSAGE("${MUQ_LOG_SUMMARY}")
 
 ###############################################
 # Add a target to build documentation

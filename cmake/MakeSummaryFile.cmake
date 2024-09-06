@@ -6,8 +6,6 @@ FILE(APPEND ${_log_summary}
 #
 #  MUQ configuration:
 #        CMAKE_BUILD_TYPE:         ${CMAKE_BUILD_TYPE}
-#        BUILD_SHARED_LIBS:        ${BUILD_SHARED_LIBS}
-#        BUILD_STATIC_LIBS:        ${build_static_libs}
 #        CMAKE_INSTALL_PREFIX:     ${CMAKE_INSTALL_PREFIX}
 #        CMAKE_SOURCE_DIR:         ${CMAKE_SOURCE_DIR}
 #        CMAKE_BINARY_DIR:         ${CMAKE_BINARY_DIR}
@@ -15,9 +13,9 @@ FILE(APPEND ${_log_summary}
 #        CMAKE_CXX_COMPILER path:  ${CMAKE_CXX_COMPILER}
 #
 "
-  )
+)
 
-  IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
 FILE(APPEND ${_log_summary}
 "#  Compiler flags used for this build:
 #        CMAKE_CXX_FLAGS:        ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}
@@ -38,117 +36,23 @@ FILE(APPEND ${_log_summary}
 "
 )
 
-macro (PrintRequired name pad)
-
-    if(USE_INTERNAL_${name})
-        if(${MUQ_FORCE_INTERNAL_${name}})
-            FILE(APPEND ${_log_summary}
-                        "#        ${name}${pad}-------------> Met with internal build -- User requested internal compilation.\n"
-                )
-        elseif(${name}_FOUND)
-            FILE(APPEND ${_log_summary}
-                        "#        ${name}${pad}-------------> Met with internal build -- Failed compilation test.\n"
-                )
-        else()
-            FILE(APPEND ${_log_summary}
-                        "#        ${name}${pad}-------------> Met with internal build -- Could not find library.\n"
-                )
-        endif()
-
-    elseif(NOT ${MUQ_NEEDS_${name}})
-        FILE(APPEND ${_log_summary}
-                    "#        ${name}${pad}-------------> Not required for selected compile groups.\n"
-            )
-    else()
-        FILE(APPEND ${_log_summary}
-                    "#        ${name}${pad}-------------> Met with existing library:\n"
-                    "#                                 Include Directory:\n"
-                    "#                                   ${${name}_INCLUDE_DIR}\n")
-
-        IF(DEFINED ${name}_LIBRARIES)
-            FILE(APPEND ${_log_summary} "#                                 Libraries:\n")
-
-            foreach(libName ${${name}_LIBRARIES})
-                FILE(APPEND ${_log_summary}
-                            "#                                   ${libName}\n")
-            endforeach(libName)
-        endif()
-    endif()
-    FILE(APPEND ${_log_summary} "#\n")
-
-endmacro(PrintRequired)
-
+FILE(APPEND ${_log_summary} "#  MUQ links these dependencies: \n")
+foreach(target ${MUQ_LINK_LIBS})
+    # string(REPLACE "muq" "" moduleName ${target})
+    FILE(APPEND ${_log_summary} "#        ${target}\n")
+endforeach()
 FILE(APPEND ${_log_summary}
-"#  Required dependencies: \n"
-)
-PrintRequired(EIGEN3 " ---")
-PrintRequired(BOOST " ----")
-PrintRequired(HDF5 " -----")
-PrintRequired(NANOFLANN " ")
-PrintRequired(SUNDIALS " -")
-PrintRequired(NLOPT " ----")
-PrintRequired(PARCER " ---")
-PrintRequired(SPDLOG " ---")
-PrintRequired(OTF2 " -----")
-PrintRequired(STANMATH " -")
-
-FILE(APPEND ${_log_summary} "#\n")
-
-
-
-macro(PrintOptional name pad)
-	IF(DEFINED ${name}_FOUND)
-		if(${name}_FOUND AND ${name}_TEST_FAIL)
-		FILE(APPEND ${_log_summary}
-"#        ${name}${pad}-----------> OFF -- Failed compilation test.\n")
-	elseif(NOT ${name}_FOUND)
-		FILE(APPEND ${_log_summary}
-"#        ${name}${pad}-----------> OFF -- Could not find library.\n")
-	else()
-		FILE(APPEND ${_log_summary}
-"#        ${name}${pad}------------> ON.\n"
-"#                                Include Directory:\n"
-"#                                  ${${name}_INCLUDE_DIRS}\n")
-
-IF(DEFINED ${name}_LIBRARIES)
-FILE(APPEND ${_log_summary} "#                                Libraries:\n")
-
-		foreach(libName ${${name}_LIBRARIES})
-    		FILE(APPEND ${_log_summary}
-"#                                  ${libName}\n")
-		endforeach(libName)
-endif()
-
-	endif()
-
-	else()
-		FILE(APPEND ${_log_summary} "#        ${name}:${pad}-----------> OFF.\n")
-	endif()
-	FILE(APPEND ${_log_summary} "#\n")
-endmacro(PrintOptional)
-
-# print glog status
-FILE(APPEND ${_log_summary} "#  Optional dependencies:\n")
-PrintOptional(GTEST " -----")
-
-FILE(APPEND ${_log_summary} "#\n")
-
-FILE(APPEND ${_log_summary}
-"#  Optional tools:
-#        MPI: -----------------> ${MUQ_USE_MPI}
-#
+"#
 "
 )
 
 FILE(APPEND ${_log_summary} "#  MUQ Modules: \n")
 foreach(target ${MUQ_TARGETS})
     string(REPLACE "muq" "" moduleName ${target})
-    FILE(APPEND ${_log_summary} "#        ${moduleName}:\n")
+    FILE(APPEND ${_log_summary} "#        ${moduleName}\n")
 endforeach()
 
 FILE(APPEND ${_log_summary} "#\n#  MUQ Libraries: \n")
 FILE(APPEND ${_log_summary} "#        ${MUQ_LIBRARIES}\n")
-
-
 
 FILE(APPEND ${_log_summary} "#############################################\n\n")
