@@ -20,11 +20,11 @@ jobs:
 
       matrix:
         config:
-          - { mpi: openmpi, cc: gcc, cxx: g++, python-version: "3.10" }
+          - { mpi: openmpi}
 
     env: # environment variables available to all steps
-      CC: ${{ matrix.config.cc }}
-      CXX: ${{ matrix.config.cxx }}
+      CC: mpicc
+      CXX: mpic++
       MUQ_HOME: ${{ github.workspace }}
       MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
       MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
@@ -71,10 +71,6 @@ jobs:
           echo Source directory: $MUQ_HOME
           echo TPLs workdir: $TPL_WORK_DIR
           echo ======================================================
-          git --version
-          echo $MUQ_HOME
-          cd $MUQ_HOME
-          git status
 
       - name: Build/install TPLs
         run: |
@@ -83,7 +79,7 @@ jobs:
           # them for enabling parallel groups in MUQ
           python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR --with all
 
-      - name: Build/install MUQ (mpi)
+      - name: Build/install MUQ with MPI
         run: |
           cd $MUQ_HOME
           rm -rf $MUQ_BUILD_DIR

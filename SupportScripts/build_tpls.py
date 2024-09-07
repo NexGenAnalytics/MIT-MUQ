@@ -405,7 +405,6 @@ def build_install_otf2(
     unpack_path = os.path.join(parent_path,  f'otf2-3.0.3')
     build_path = os.path.join(parent_path, "build")
     install_path = os.path.join(parent_path, "install")
-    custom_cmake_args = ()
 
     # prepare
     remove_everything_if_needed_from(parent_path, force_rebuild)
@@ -428,7 +427,12 @@ def build_install_otf2(
 
     # configure
     print("2. configuring")
-    exeargs = ("./configure", f'--prefix={install_path}')
+    # note that we disable Python support here
+    os.environ['PYTHON'] = ":"
+    exeargs = ("./configure", 
+        f'--prefix={install_path}', 
+        f'CC={os.environ['CC']}', 
+        f'CXX={os.environ['CXX']}')
     print(exeargs)
 
     logfile = open(parent_path + "/logfile_config", "w")

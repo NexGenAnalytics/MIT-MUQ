@@ -22,15 +22,15 @@ ENDIF(MUQ_USE_OPENMP)
 ########################################
 ##### LOOK FOR MPI                ######
 ########################################
+set(MUQ_HAS_MPI 0)
 if(MUQ_USE_MPI)
   find_package(MPI REQUIRED)
-  list(APPEND MUQ_LINK_LIBS ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
-  list(APPEND MUQ_EXTERNAL_INCLUDES ${MPI_CXX_INCLUDE_DIRS})
-  include_directories(${MPI_CXX_INCLUDE_DIRS})
-  link_directories(${MPI_CXX_LIBRARIES})
+  list(APPEND MUQ_LINK_LIBS MPI::MPI_CXX)
+  # list(APPEND MUQ_LINK_LIBS ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
+  # list(APPEND MUQ_EXTERNAL_INCLUDES ${MPI_CXX_INCLUDE_DIRS})
+  # include_directories(${MPI_CXX_INCLUDE_DIRS})
+  # link_directories(${MPI_CXX_LIBRARIES})
   set(MUQ_HAS_MPI 1)
-else(MUQ_USE_MPI)
-  set(MUQ_HAS_MPI 0)
 endif(MUQ_USE_MPI)
 
 
