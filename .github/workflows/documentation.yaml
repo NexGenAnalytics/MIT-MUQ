@@ -1,0 +1,73 @@
+name: Documentation CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+# Concurrency group: which jobs run together and which cancel each other
+concurrency:
+  group: ${{ github.event.repository.name }}-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: True
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true # true -> cancel all jobs if any fails
+
+    env:
+      CC: gcc
+      CXX: g++
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_WORK_DIR: ${{ github.workspace }}/../tpls_workdir
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 pip python-is-python3 python3-dev \
+                build-essential g++ doxygen cmake libhdf5-dev libeigen3-dev \
+                libboost-filesystem-dev libboost-regex-dev \
+                libboost-system-dev libboost-graph-dev graphviz
+          pip install Jinja2
+
+      - name: Setup MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: openmpi
+
+      - name: Check environment
+        run: |
+          echo ======================================================
+          echo Source directory: $MUQ_HOME
+          echo TPLs workdir: $TPL_WORK_DIR
+          echo ======================================================
+
+      - name: Build/install TPLs
+        run: |
+          cd $MUQ_HOME
+          # note: only install the tpls that we need since boost and hdf5 we done via apt
+          python SupportScripts/build_tpls.py --wdir $TPL_WORK_DIR \
+              --with nlopt sundials nanoflann stanmath parcer spdlog otf2 --poolsize 3
+
+      - name: Configure MUQ and make doc
+        run: |
+          cd $MUQ_HOME
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=mpicc \
+                -DCMAKE_CXX_COMPILER=mpic++ \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_MPI=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
+          make doc
