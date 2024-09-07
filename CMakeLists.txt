@@ -40,8 +40,7 @@ INCLUDE(ProcessCompileGroups)
 ###############################################
 # Manage dependencies
 ###############################################
-INCLUDE(RequiredDependencySearch)
-INCLUDE(OptionalDependencySearch)
+INCLUDE(DependencySearch)
 
 include_directories(. ./external/include)
 

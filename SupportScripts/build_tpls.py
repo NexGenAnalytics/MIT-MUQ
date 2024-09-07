@@ -65,7 +65,7 @@ def build_install_boost(
         "--with-libraries=filesystem,system,graph,regex")
     print(exeargs)
 
-    logfile = open(parent_path + "/logfile_config", "w")
+    logfile = open(parent_path + "/logfile_config.txt", "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
@@ -74,7 +74,7 @@ def build_install_boost(
     # make and install
     print("3. make and install")
     exeargs = ("./b2", "-j4", "install")
-    logfile = open(parent_path + "/logfile_makeinstall", "w")
+    logfile = open(parent_path + "/logfile_makeinstall.txt", "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
@@ -119,15 +119,15 @@ def build_install_impl(
     print("2. configuring")
     exeargs = (
         "cmake",
-        "-DCMAKE_C_COMPILER=", os.environ['CC'],
-        "-DCMAKE_CXX_COMPILER=", os.environ['CXX'],
+        f"-DCMAKE_C_COMPILER={os.environ['CC']}",
+        f"-DCMAKE_CXX_COMPILER={os.environ['CXX']}",
         "-S", unpacked,
         "-B", builddir,
         f'-DCMAKE_INSTALL_PREFIX={installdir}')
     exeargs += cmake_extra_args
     print(exeargs)
 
-    logfile_path = parentdir + "/logfile_build"
+    logfile_path = parentdir + "/logfile_config.txt"
     logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
@@ -141,7 +141,7 @@ def build_install_impl(
     print("3. make and install")
     os.chdir(builddir)
     exeargs = ("make", "-j4", "install")
-    logfile_path = parentdir + "/logfile_makeinstall"
+    logfile_path = parentdir + "/logfile_makeinstall.txt"
     logfile = open(logfile_path, "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
@@ -405,7 +405,6 @@ def build_install_otf2(
     unpack_path = os.path.join(parent_path,  f'otf2-3.0.3')
     build_path = os.path.join(parent_path, "build")
     install_path = os.path.join(parent_path, "install")
-    custom_cmake_args = ()
 
     # prepare
     remove_everything_if_needed_from(parent_path, force_rebuild)
@@ -428,10 +427,19 @@ def build_install_otf2(
 
     # configure
     print("2. configuring")
-    exeargs = ("./configure", f'--prefix={install_path}')
+
+    # note that we disable Python support here just for this step
+    python_env = None
+    if 'PYTHON' in os.environ:
+        python_env = os.environ['PYTHON']
+    os.environ['PYTHON'] = ":"
+    exeargs = ("./configure",
+               f'--prefix={install_path}',
+               f"CC={os.environ['CC']}",
+               f"CXX={os.environ['CXX']}")
     print(exeargs)
 
-    logfile = open(parent_path + "/logfile_config", "w")
+    logfile = open(parent_path + "/logfile_config.txt", "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
@@ -440,13 +448,17 @@ def build_install_otf2(
     # make and install
     print("3. make and install")
     exeargs = ("make", "-j4", "install")
-    logfile = open(parent_path + "/logfile_makeinstall", "w")
+    logfile = open(parent_path + "/logfile_makeinstall.txt", "w")
     p = subprocess.Popen(exeargs, stdout=logfile, stderr=logfile)
     p.wait()
     logfile.close()
     assert p.returncode == 0
 
     print(f'success installing: {myname}\n')
+
+    # reset to what it was before
+    if python_env is not None:
+        os.environ['PYTHON'] = python_env
 
     return install_path
 
@@ -634,8 +646,7 @@ if __name__ == "__main__":
             concurrent.futures.wait(these_futures)
 
     results = [future.result() for future in these_futures]
-    print(results)
-
+    print(*results, sep='\n')
 
     paths_for_config = {}
     for it in results:
