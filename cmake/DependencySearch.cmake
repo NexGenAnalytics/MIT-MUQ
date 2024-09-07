@@ -4,7 +4,6 @@ file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/include)
 file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
-
 # OPENMP
 IF(MUQ_USE_OPENMP)
   find_package(OpenMP)
@@ -88,11 +87,6 @@ set(MUQ_HAS_PARCER 0) # needed for preprocessor directives
 set(MUQ_HAS_OTF2 0)   # needed for preprocessor directives 
 set(MUQ_HAS_MPI 0)
 if(MUQ_USE_MPI)
-    # MPI
-    find_package(MPI REQUIRED)
-    list(APPEND MUQ_LINK_LIBS MPI::MPI_CXX)
-    set(MUQ_HAS_MPI 1)
-
     # PARCER
     find_package(PARCER REQUIRED)
     include_directories(${PARCER_INCLUDE_DIRS})
@@ -113,8 +107,19 @@ if(MUQ_USE_MPI)
 
     # spdlog
     find_package(spdlog REQUIRED)
-    LIST(APPEND MUQ_LINK_LIBS spdlog::spdlog)    
+    LIST(APPEND MUQ_LINK_LIBS spdlog::spdlog)
+
+    # MPI
+    find_package(MPI REQUIRED)
+    list(APPEND MUQ_LINK_LIBS MPI::MPI_CXX)
+    set(MUQ_HAS_MPI 1)
 endif()
+
+
+# REMOVE DUPLICATES 
+list( REMOVE_DUPLICATES MUQ_EXTERNAL_INCLUDES)
+set(MUQ_EXTERNAL_INCLUDE_DIRS ${MUQ_EXTERNAL_INCLUDES} 
+    CACHE INTERNAL "List of external include directories for MUQ.")
 
 
 ########################################
@@ -212,13 +217,8 @@ endif()
 
 
 ########################################
-# REMOVE DUPLICATEs
+##### REMOVE DUPLICATE INCLUDES   ######
 ########################################
-
-list( REMOVE_DUPLICATES MUQ_EXTERNAL_INCLUDES)
-set(MUQ_EXTERNAL_INCLUDE_DIRS ${MUQ_EXTERNAL_INCLUDES} 
-    CACHE INTERNAL "List of external include directories for MUQ.")
-
 if(MUQ_LINK_LIBS)
   list( REMOVE_DUPLICATES MUQ_LINK_LIBS)
 endif()
