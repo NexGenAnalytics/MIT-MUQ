@@ -62,7 +62,7 @@ def build_install_boost(
     exeargs = (
         "./bootstrap.sh",
         f'--prefix={install_path}',
-        "--with-libraries=filesystem,system,graph")
+        "--with-libraries=filesystem,system,graph,regex")
     print(exeargs)
 
     logfile = open(parent_path + "/logfile_config", "w")
@@ -550,10 +550,19 @@ def add_arguments(parser):
         "Use '--with all' to build everything.",
     )
 
+    parser.add_argument(
+        "--poolsize",
+        dest="concurrency",
+        type=int,
+        required=False,
+        default=4,
+        help="Set concurrency for processing TPLs"
+    )
+
 
 def dispatch(
-    workdir: Union[str, os.PathLike], 
-    force_rebuild: bool, 
+    workdir: Union[str, os.PathLike],
+    force_rebuild: bool,
     tpl: str
 ):
     if tpl == 'hdf5':
@@ -623,7 +632,7 @@ if __name__ == "__main__":
     print(f'workdir set to {args.workdir}')
     print(f'TPLs to build {final_tpls}')
 
-    pool_size = 4
+    pool_size = args.concurrency
     with concurrent.futures.ProcessPoolExecutor(max_workers = pool_size) as executor:
             these_futures = [executor.submit(dispatch, args.workdir, args.force_rebuild, tpl) for tpl in final_tpls]
             concurrent.futures.wait(these_futures)
