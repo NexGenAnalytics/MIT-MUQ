@@ -119,8 +119,8 @@ def build_install_impl(
     print("2. configuring")
     exeargs = (
         "cmake",
-        f'-DCMAKE_C_COMPILER={os.environ['CC']}',
-        f'-DCMAKE_CXX_COMPILER={os.environ['CXX']}',
+        f"-DCMAKE_C_COMPILER={os.environ['CC']}",
+        f"-DCMAKE_CXX_COMPILER={os.environ['CXX']}",
         "-S", unpacked,
         "-B", builddir,
         f'-DCMAKE_INSTALL_PREFIX={installdir}')
@@ -433,10 +433,10 @@ def build_install_otf2(
     if 'PYTHON' in os.environ:
         python_env = os.environ['PYTHON']
     os.environ['PYTHON'] = ":"
-    exeargs = ("./configure", 
-        f'--prefix={install_path}', 
-        f'CC={os.environ['CC']}', 
-        f'CXX={os.environ['CXX']}')
+    exeargs = ("./configure",
+               f'--prefix={install_path}',
+               f"CC={os.environ['CC']}",
+               f"CXX={os.environ['CXX']}")
     print(exeargs)
 
     logfile = open(parent_path + "/logfile_config.txt", "w")
