@@ -4,19 +4,6 @@ MUQ/config.h
 
 *.ipynb_checkpoints*
 *__pycache__
-modules/Modeling/test/WorkGraphVisualizations/FixedInOutNum.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/FixedInOutType.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/UnfixedInOut.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/DependentCut.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/FixedInOutNum_WorkPiece.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/ConstantDependentCut_BeforeCut.pdf
-
-modules/Modeling/test/WorkGraphVisualizations/ConstantDependentCut_AfterCut.pdf
 
 examples/Modeling/example-0/build/cmake_install.cmake
 
