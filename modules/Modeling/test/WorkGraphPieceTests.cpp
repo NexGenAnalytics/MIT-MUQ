@@ -48,7 +48,7 @@ TEST(WorkGraphPiece, FixedInOutNum) {
   graph->AddEdge("test 3", 1, "test 1", 1);
   EXPECT_EQ(graph->NumEdges(), 5);
 
-  graph->Visualize("modules/Modeling/test/WorkGraphVisualizations/FixedInOutNum_WorkPiece.pdf");
+  graph->Visualize("FixedInOutNum_WorkPiece.pdf");
 
   // create a WorkPiece whose outs are from "test 0"
   auto work = graph->CreateWorkPiece("test 0");

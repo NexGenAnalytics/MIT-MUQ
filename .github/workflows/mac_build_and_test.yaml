@@ -53,11 +53,8 @@ jobs:
           git --version
           cd $MUQ_HOME
           git status
-          array=( one two three )
-          for i in "${array[@]}"
-          do
-            echo "$i"
-          done
+          # we need this for "dot"
+          brew install graphviz
 
       - name: Build/install TPLs
         run: |

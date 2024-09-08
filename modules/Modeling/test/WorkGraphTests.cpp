@@ -45,7 +45,7 @@ TEST(WorkGraphTests, UnfixedInOut) {
   graph->AddEdge("test 0", 0, "test 2", 2);
   EXPECT_EQ(graph->NumEdges(), 2);
 
-  graph->Visualize("modules/Modeling/test/WorkGraphVisualizations/UnfixedInOut.pdf");
+  graph->Visualize("UnfixedInOut.pdf");
 }
 
 TEST(WorkGraphTests, NodeLookup)
@@ -234,7 +234,7 @@ TEST(WorkGraphTests, FixedInOutNum) {
   graph->AddEdge("test 0", 0, "test 3", 0);
   EXPECT_EQ(graph->NumEdges(), 3);
 
-  graph->Visualize("modules/Modeling/test/WorkGraphVisualizations/FixedInOutNum.pdf");
+  graph->Visualize("FixedInOutNum.pdf");
 }
 
 TEST(WorkGraphTests, FixedInOutType) {
@@ -272,7 +272,7 @@ TEST(WorkGraphTests, FixedInOutType) {
   EXPECT_EQ(graph->NumEdges(), 2);
 
   graph->Print();
-  graph->Visualize("modules/Modeling/test/WorkGraphVisualizations/FixedInOutType.pdf");
+  graph->Visualize("FixedInOutType.pdf");
 }
 
 TEST(WorkGraphTests, DependentCut) {
@@ -329,7 +329,7 @@ TEST(WorkGraphTests, DependentCut) {
   EXPECT_EQ(graph->NumEdges(), 3);
   EXPECT_EQ(newGraph->NumEdges(), 2);
 
-  newGraph->Visualize("modules/Modeling/test/WorkGraphVisualizations/DependentCut.pdf");
+  newGraph->Visualize("DependentCut.pdf");
 }
 
 TEST(WorkGraphTests, IsConstant) {
@@ -478,6 +478,6 @@ TEST(WorkGraphTests, ConstantDependentCut) {
   EXPECT_EQ(newGraph1->NumNodes(), 2);
   EXPECT_EQ(newGraph1->NumEdges(), 2);
 
-  graph->Visualize("modules/Modeling/test/WorkGraphVisualizations/ConstantDependentCut_BeforeCut.pdf");
-  newGraph1->Visualize("modules/Modeling/test/WorkGraphVisualizations/ConstantDependentCut_AfterCut.pdf");
+  graph->Visualize("ConstantDependentCut_BeforeCut.pdf");
+  newGraph1->Visualize("ConstantDependentCut_AfterCut.pdf");
 }
