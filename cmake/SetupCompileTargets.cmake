@@ -27,6 +27,13 @@ foreach(libName ${MUQ_TARGETS})
 
         TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
 
+        # Set the include directories
+        target_include_directories(${libName}
+                PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+                $<INSTALL_INTERFACE:include>
+        )
+
         # # Add dependencies for any required dependencies that MUQ is going to build internally
         # foreach(depend ${MUQ_REQUIRES})
         #     message(STATUS "Checking for dependency of ${libName} on internal build of ${depend}")
@@ -46,6 +53,15 @@ foreach(libName ${MUQ_TARGETS})
                     EXPORT ${CMAKE_PROJECT_NAME}Depends
                     LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
                     ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+            # Collect the targets into an export set
+            install(
+                    EXPORT ${CMAKE_PROJECT_NAME}Depends       # Export set containing all targets
+                    DESTINATION lib/cmake/MUQ                 # Correct path where CMake will look for the config
+                    NAMESPACE muq::dev::                      # Namespace for the targets
+                    FILE "muqTargets.cmake"                   # Exported CMake file
+                    COMPONENT dev                             # This is part of the 'dev' component
+            )
         endif()
     endif()
 
