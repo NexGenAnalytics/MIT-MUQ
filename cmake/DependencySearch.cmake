@@ -24,8 +24,13 @@ ENDIF(MUQ_USE_OPENMP)
 # HDF5
 list (FIND MUQ_REQUIRES HDF5 dindex)
 if (${dindex} GREATER -1)
-    find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-    LIST(APPEND MUQ_LINK_LIBS hdf5::hdf5 hdf5::hdf5_cpp hdf5::hdf5_hl)
+    set (LIB_TYPE STATIC)
+    string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
+
+    find_package (HDF5 NAMES hdf5 hdf5_cpp hdf5_hl COMPONENTS C CXX HL ${SEARCH_TYPE})
+
+    set (LINK_LIBS ${LINK_LIBS} ${HDF5_C_${LIB_TYPE}_LIBRARY} ${HDF5_CXX_${LIB_TYPE}_LIBRARY} ${HDF5_HL_${LIB_TYPE}_LIBRARY})
+    LIST(APPEND MUQ_LINK_LIBS ${LINK_LIBS})
 endif()
 
 # NLOPT
@@ -65,6 +70,9 @@ if (${dindex} GREATER -1)
     if(EXISTS "${stanmath_SRC_DIR}/stan/math.hpp")
         include_directories(${stanmath_SRC_DIR})
         LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_SRC_DIR})
+        install(DIRECTORY ${stanmath_SRC_DIR}/stan
+                DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+                FILES_MATCHING PATTERN "*.hpp")
     else()
         message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
     endif()

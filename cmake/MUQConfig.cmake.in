@@ -6,16 +6,39 @@
 #  MUQ_INCLUDE_DIRS   - Include directories that MUQ uses
 #  MUQ_COMPILE_DEFINITIONS -Definitions used during compilation (i.e. variables added with add_definitions)
 
+get_filename_component(MUQ_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+include(${MUQ_CMAKE_DIR}/muqTargets.cmake)
+
 include(CMakeFindDependencyMacro)
 if (@OpenMP_CXX_FOUND@)
   find_dependency(OpenMP)
 endif()
 if (@Boost_FOUND@)
-  find_dependency(Boost @BOOST_MIN_VERSION@ COMPONENTS system filesystem graph)
+  find_dependency(Boost @BOOST_MIN_VERSION@ HINTS @Boost_DIR@ COMPONENTS system filesystem graph)
+endif()
+
+if (@HDF5_FOUND@)
+  find_dependency(HDF5 COMPONENTS C CXX HL HINTS @HDF5_DIR@)
+endif()
+
+if (@NLopt_FOUND@)
+  find_dependency(NLopt HINTS @NLopt_DIR@)
+endif()
+
+if (@Eigen3_FOUND@)
+  find_dependency(Eigen3 3.3 HINTS @Eigen3_DIR@)
+endif()
+
+if (@SUNDIALS_FOUND@)
+  find_dependency(SUNDIALS 5.5.0...<6.0.0 HINTS @SUNDIALS_DIR@)
+endif()
+
+if (@nanoflann_FOUND@)
+  find_dependency(nanoflann HINTS @nanoflann_DIR@)
 endif()
 
 set(MUQ_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include @MUQ_EXTERNAL_INCLUDES@)
-
 set(MUQ_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/lib)
 set(MUQ_EXTERNAL_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/muq_external/lib)
 
