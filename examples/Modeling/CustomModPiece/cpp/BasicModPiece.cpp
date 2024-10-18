@@ -7,7 +7,8 @@
 class SimpleModel : public muq::Modeling::ModPiece
 {
 public:
-  SimpleModel(int numPts) : muq::Modeling::ModPiece({numPts,2},{numPts}) {};
+  SimpleModel(int numPts) : muq::Modeling::ModPiece(std::vector<int>{numPts,2},
+                                                    std::vector<int>{numPts}) {};
 
 protected:
   void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) override
