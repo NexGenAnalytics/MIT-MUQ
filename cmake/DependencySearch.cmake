@@ -177,7 +177,7 @@ endif()
 ##### LOOK FOR DOLFIN/Fenics      ######
 ########################################
 list (FIND MUQ_REQUIRES DOLFIN dindex)
-message(${MUQ_REQUIRES})
+message(STATUS ${MUQ_REQUIRES})
 if (${dindex} GREATER -1)
     set(MUQ_NEEDS_DOLFIN ON)
 
