@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(GaussianProcess_CO2_exe GaussianProcess_CO2.cpp)
 
-target_link_libraries(GaussianProcess_CO2_exe muq::dev::muqApproximation)
+target_link_libraries(GaussianProcess_CO2_exe muq::muqApproximation)

@@ -5,4 +5,4 @@ project(MALASampler)
 find_package(MUQ REQUIRED)
 
 add_executable(malaSampling MALASampler.cpp)
-target_link_libraries(malaSampling muq::dev::muqSamplingAlgorithms)
+target_link_libraries(malaSampling muq::muqSamplingAlgorithms)

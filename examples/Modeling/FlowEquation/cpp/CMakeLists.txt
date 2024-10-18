@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(FlowEquation FlowEquation.cpp)
 
-target_link_libraries(FlowEquation muq::dev::muqModeling)
+target_link_libraries(FlowEquation muq::muqModeling)

@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(BasicModPiece BasicModPiece.cpp)
 
-target_link_libraries(BasicModPiece muq::dev::muqModeling)
+target_link_libraries(BasicModPiece muq::muqModeling)

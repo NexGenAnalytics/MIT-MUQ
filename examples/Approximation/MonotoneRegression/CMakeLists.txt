@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(MonotoneRegression MonotoneRegression.cpp)
 
-target_link_libraries(MonotoneRegression muq::dev::muqApproximation)
+target_link_libraries(MonotoneRegression muq::muqApproximation)

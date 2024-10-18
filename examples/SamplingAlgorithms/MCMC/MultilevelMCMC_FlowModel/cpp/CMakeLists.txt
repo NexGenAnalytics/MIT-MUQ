@@ -12,4 +12,4 @@ set(SOURCE
 )
 
 add_executable(MultilevelMCMC_FLowModel ${SOURCE})
-target_link_libraries(MultilevelMCMC_FLowModel muq::dev::muqSamplingAlgorithms)
+target_link_libraries(MultilevelMCMC_FLowModel muq::muqSamplingAlgorithms)

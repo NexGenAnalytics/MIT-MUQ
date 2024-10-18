@@ -7,4 +7,4 @@ set (CMAKE_CXX_STANDARD 17)
 find_package(MUQ REQUIRED)
 
 add_executable(InvariantSampling InvariantSampling.cpp)
-target_link_libraries(InvariantSampling muq::dev::muqSamplingAlgorithms)
+target_link_libraries(InvariantSampling muq::muqSamplingAlgorithms)

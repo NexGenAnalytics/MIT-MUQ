@@ -58,7 +58,7 @@ foreach(libName ${MUQ_TARGETS})
             install(
                     EXPORT ${CMAKE_PROJECT_NAME}Depends       # Export set containing all targets
                     DESTINATION lib/cmake/MUQ                 # Correct path where CMake will look for the config
-                    NAMESPACE muq::dev::                      # Namespace for the targets
+                    NAMESPACE muq::                      # Namespace for the targets
                     FILE "muqTargets.cmake"                   # Exported CMake file
                     COMPONENT dev                             # This is part of the 'dev' component
             )

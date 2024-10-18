@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(MemoryUsage MemoryUsage.cpp)
 
-target_link_libraries(MemoryUsage muq::dev::muqModeling)
+target_link_libraries(MemoryUsage muq::muqModeling)

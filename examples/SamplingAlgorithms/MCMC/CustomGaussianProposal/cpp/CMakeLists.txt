@@ -7,4 +7,4 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(MUQ REQUIRED)
 
 add_executable(CustomProposal CustomProposal.cpp)
-target_link_libraries(CustomProposal muq::dev::muqSamplingAlgorithms)
+target_link_libraries(CustomProposal muq::muqSamplingAlgorithms)

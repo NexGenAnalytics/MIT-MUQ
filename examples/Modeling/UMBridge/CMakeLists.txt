@@ -7,7 +7,7 @@ set (CMAKE_CXX_STANDARD 17)
 find_package(MUQ REQUIRED)
 
 add_executable(UMBridgeModelClient UMBridgeModelClient.cpp)
-target_link_libraries(UMBridgeModelClient muq::dev::muqModeling)
+target_link_libraries(UMBridgeModelClient muq::muqModeling)
 
 add_executable(UMBridgeModelServer UMBridgeModelServer.cpp)
-target_link_libraries(UMBridgeModelServer muq::dev::muqModeling)
+target_link_libraries(UMBridgeModelServer muq::muqModeling)

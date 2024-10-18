@@ -8,4 +8,4 @@ find_package(MUQ REQUIRED)
 
 add_executable(SimpleReadWrite SimpleReadWrite.cpp)
 
-target_link_libraries(SimpleReadWrite muq::dev::muqUtilities)
+target_link_libraries(SimpleReadWrite muq::muqUtilities)
