@@ -49,8 +49,8 @@ public:
     INPUTS:
       @param[in] sourceTerm A numpy array containing the value of the source term $f(x)$ in each grid cell.
   */
-  FlowEquation(Eigen::VectorXd const& sourceTerm) : muq::Modeling::ModPiece({int(sourceTerm.size())},
-                                                                            {int(sourceTerm.size()+1)})
+  FlowEquation(Eigen::VectorXd const& sourceTerm) : muq::Modeling::ModPiece(std::vector<int>{int(sourceTerm.size())},
+                                                                            std::vector<int>{int(sourceTerm.size()+1)})
   {
     numCells = sourceTerm.size();
     numNodes = sourceTerm.size()+1;
