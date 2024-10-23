@@ -29,7 +29,7 @@ std::shared_ptr<GaussianProcess> BuildStateSpaceGP(MeanType const& mu, KernelTyp
 int main()
 {
     // Open and read in data
-    string dataFile = "data/MaunaLoaCO2.h5";
+    string dataFile = "../data/MaunaLoaCO2.h5";
     H5Object f = OpenFile(dataFile);
 
     Eigen::VectorXd times          = f["/Weekly/Dates"];
@@ -81,7 +81,7 @@ int main()
     std::tie(postMean,postVar) = gp->Predict(evalPts, GaussianProcess::DiagonalCov);
 
     // Write results to new file
-    string writeFile = "results/CO2_Prediction.h5";
+    string writeFile = "../results/CO2_Prediction.h5";
     H5Object fout = OpenFile(writeFile);
 
     fout["/Predict/Dates"] = evalPts;

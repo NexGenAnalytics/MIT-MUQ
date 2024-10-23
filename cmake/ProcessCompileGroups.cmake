@@ -71,7 +71,7 @@ endforeach()
 
 message("\n")
 message("==========================================")
-message("  PROCESSING TPLS                         ")
+message("  FIGURING OUT REQUIRED TPLS              ")
 message("==========================================")
 foreach(group ${MUQ_GROUPS})
   # if enabled, deal with this
@@ -102,6 +102,12 @@ if(MUQ_DESIRES)
 endif()
 MESSAGE(STATUS "List of TPLs needed = ${MUQ_REQUIRES}")
 
+
+message("\n")
+message("==========================================")
+message("  CREATING MUQ TARGETS                    ")
+message("==========================================")
+
 # Create a list of all MUQ libraries to build
 set(MUQ_TARGETS )
 foreach(group ${MUQ_GROUPS})
@@ -111,7 +117,7 @@ foreach(group ${MUQ_GROUPS})
     endif()
 endforeach()
 list(REMOVE_DUPLICATES MUQ_TARGETS)
-message("MUQ_TARGETS = ${MUQ_TARGETS}")
+message(STATUS "MUQ_TARGETS = ${MUQ_TARGETS}")
 
 # Set up the source for each target library
 foreach(target ${MUQ_TARGETS})
@@ -119,7 +125,7 @@ foreach(target ${MUQ_TARGETS})
 
     foreach(group ${MUQ_GROUPS})
         if(MUQ_ENABLEGROUP_${group})
-	          if(${${group}_LIBRARY} MATCHES ${target})
+	          if(${${group}_LIBRARY} STREQUAL ${target})
 
                 # Check to see if a group has any source (e.g., *.cpp) files.  
                 # Flag it as something that will be built if it does.
@@ -138,3 +144,4 @@ foreach(target ${MUQ_TARGETS})
         list(REMOVE_DUPLICATES ${target}_SOURCES)
     endif()
 endforeach()
+

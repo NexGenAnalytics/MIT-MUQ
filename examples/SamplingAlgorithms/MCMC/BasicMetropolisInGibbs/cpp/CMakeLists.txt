@@ -5,7 +5,6 @@ project(MetrpolisInGibbs)
 set (CMAKE_CXX_STANDARD 17)
 
 find_package(MUQ REQUIRED)
-include_directories(${MUQ_INCLUDE_DIRS})
-link_libraries(${MUQ_LIBRARIES} ${MUQ_LINK_LIBRARIES})
 
 add_executable(MetropolisInGibbs MetropolisInGibbs.cpp)
+target_link_libraries(MetropolisInGibbs muq::muqSamplingAlgorithms)
