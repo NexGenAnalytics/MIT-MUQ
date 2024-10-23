@@ -59,6 +59,11 @@ jobs:
           echo TPLs pfx: $TPL_PFX
           echo ======================================================
 
+      # ============================================================
+      #
+      # SERIAL cases
+      #
+      # ============================================================
       - name: Build and test without MPI, selected groups
         shell: bash
         if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'selection') }}
@@ -109,6 +114,22 @@ jobs:
           ./RunAllTests
           cd -
 
+      # the following must be run after the one above
+      - name: Build and run examples without MPI
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          ./BuildAllExamples.sh
+          cd -
+
+
+      # ============================================================
+      #
+      # MPI cases
+      #
+      # ============================================================
       - name: Build and test with MPI, selected groups
         shell: bash
         if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'selection') }}
