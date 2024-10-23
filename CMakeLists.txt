@@ -49,6 +49,9 @@ INCLUDE(ProcessCompileGroups)
 ###############################################
 INCLUDE(DependencySearch)
 
+# write a configure file containing information about what libraries are available
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/MUQ/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/MUQ/config.h)
+
 ###############################################
 # targets
 ###############################################
