@@ -1,0 +1,163 @@
+name: Linux MUQ CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.event.repository.name }}-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: True
+
+jobs:
+  CI:
+    name: baseline
+    continue-on-error: false
+    strategy:
+      fail-fast: true
+      matrix:
+        image:
+          - ubuntu-2404-gnu-11-serial
+          - ubuntu-2404-gnu-11-mpi
+        build_type:
+          - Release
+        muq_groups:
+          - default
+          - selection
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nexgenanalytics/muqcontainers/${{ matrix.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    env:
+      num_cpus: 2 # $(cat /proc/cpuinfo | grep processor -c)
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_PFX: /home/tpls
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check environment
+        shell: bash
+        run: |
+          echo ======================================================
+          echo $(which $CXX) --version
+          $CXX --version
+          echo ======================================================
+          echo $(which cmake) --version
+          cmake --version
+          echo ======================================================
+          echo $(which python) --version
+          python --version
+          echo ======================================================
+          echo Source directory: $MUQ_HOME
+          echo TPLs pfx: $TPL_PFX
+          echo ======================================================
+
+      - name: Build and test without MPI, selected groups
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'selection') }}
+        run: |
+          # choosing for now some packages but ideally should test all individually
+          array=(UTILITIES_HDF5 APPROXIMATION_POLYNOMIALCHAOS SAMPLING_ALGORITHM)
+          for g in "${array[@]}"
+          do
+            echo "---------------------------"
+            echo "---------------------------"
+            echo "handling group = ${g}"
+            echo "---------------------------"
+            echo "---------------------------"
+
+            rm -rf $MUQ_BUILD_DIR
+            cmake -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX \
+                  -D CMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} \
+                  -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                  -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                  -C $TPL_PFX/tpls_cache.txt \
+                  -DMUQ_USE_GTEST=ON \
+                  -DMUQ_ENABLEGROUP_${g}=ON \
+                  -DMUQ_ENABLEGROUP_DEFAULT=OFF \
+                  -DMUQ_USE_PYTHON=ON
+            cd $MUQ_BUILD_DIR
+            make -j${num_cpus} install
+            ./RunAllTests
+            cd -
+          done
+
+      - name: Build and test without MPI, all default groups
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -D CMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_PFX/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
+          make -j${num_cpus} install
+          ./RunAllTests
+          cd -
+
+      - name: Build and test with MPI, selected groups
+        shell: bash
+        if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'selection') }}
+        run: |
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                  -D CMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_PFX/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_USE_MPI=ON \
+                -DMUQ_ENABLEGROUP_PARALLEL_SAMPLING_ALGORITHM=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=OFF
+          cd $MUQ_BUILD_DIR
+          make -j4 install
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          mpirun -n 2 ./RunAllParallelTests --gtest_filter=-LocalRegressionTest.SharedCache
+
+
+      - name: Build and test with MPI, default groups
+        shell: bash
+        if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -D CMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_PFX/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_USE_MPI=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=ON
+          cd $MUQ_BUILD_DIR
+          make -j${num_cpus} install
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          # skipping test because on github ci it fails sometimes
+          mpirun -n 2 ./RunAllParallelTests --gtest_filter=-LocalRegressionTest.SharedCache
+          cd -
+
+      - name: Build documentation
+        shell: bash
+        if: ${{ contains(matrix.image, 'mpi') }}
+        run: |
+          # this reuses the build above and so must be sequential to that
+          cd $MUQ_BUILD_DIR
+          make doc
+          cd -
