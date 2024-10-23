@@ -34,6 +34,7 @@ message(STATUS "Python packages will be installed to ${PYTHON_INSTALL_PREFIX}.")
 ###############################################
 INCLUDE(SetupCompiler)
 INCLUDE(CompilerCheck)
+include_directories(.)
 
 ###############################################
 # Find source files and calculate required dependencies
