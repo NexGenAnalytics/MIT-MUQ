@@ -124,6 +124,14 @@ jobs:
           ./BuildAllExamples.sh
           cd -
 
+     - name: Basic check for working bindings
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          python SupportScripts/basic_python.py
+          cd -
 
       # ============================================================
       #
@@ -181,7 +189,7 @@ jobs:
         run: |
           export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
           export OMPI_ALLOW_RUN_AS_ROOT=1
-          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1	  
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           cd $MUQ_HOME
           ./BuildAllParallelExamples.sh
           cd -
