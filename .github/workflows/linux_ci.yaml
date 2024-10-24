@@ -177,7 +177,7 @@ jobs:
       # the following must be run after the one above
       - name: Build and run examples with MPI
         shell: bash
-        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'default') }}
         run: |
           export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
           cd $MUQ_HOME
