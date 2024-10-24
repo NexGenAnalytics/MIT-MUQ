@@ -125,7 +125,7 @@ jobs:
           cd -
 
       # the following must be run after the one above
-      - name: Build and run examples without MPI
+      - name: Test bindings via simple script
         shell: bash
         if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
         run: |
