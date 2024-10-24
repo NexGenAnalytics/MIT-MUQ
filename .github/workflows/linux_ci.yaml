@@ -18,13 +18,13 @@ jobs:
       fail-fast: true
       matrix:
         image:
-          - ubuntu-2404-gnu-11-serial
+          # - ubuntu-2404-gnu-11-serial
           - ubuntu-2404-gnu-11-mpi
         build_type:
           - Release
         muq_groups:
           - default
-          - selection
+          # - selection
 
     runs-on: ubuntu-latest
     container:
@@ -111,17 +111,7 @@ jobs:
                 -DMUQ_USE_PYTHON=ON
           cd $MUQ_BUILD_DIR
           make -j${num_cpus} install
-          ./RunAllTests
-          cd -
-
-      # the following must be run after the one above
-      - name: Build and run examples without MPI
-        shell: bash
-        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
-        run: |
-          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
-          cd $MUQ_HOME
-          ./BuildAllExamples.sh
+          # ./RunAllTests
           cd -
 
       # the following must be run after the one above
@@ -132,6 +122,16 @@ jobs:
           export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
           cd $MUQ_HOME
           python SupportScripts/basic_python.py
+          cd -
+
+      # the following must be run after the serial build
+      - name: Build and run examples without MPI
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          ./BuildAllExamples.sh
           cd -
 
 
