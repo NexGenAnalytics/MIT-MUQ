@@ -59,6 +59,11 @@ jobs:
           echo TPLs pfx: $TPL_PFX
           echo ======================================================
 
+      # ============================================================
+      #
+      # SERIAL cases
+      #
+      # ============================================================
       - name: Build and test without MPI, selected groups
         shell: bash
         if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'selection') }}
@@ -109,6 +114,32 @@ jobs:
           ./RunAllTests
           cd -
 
+      # the following must be run after the one above
+      - name: Test bindings via simple script
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          python SupportScripts/basic_python.py
+          cd -
+
+      # the following must be run after the serial build
+      - name: Build and run examples without MPI
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          ./BuildAllExamples.sh
+          cd -
+
+
+      # ============================================================
+      #
+      # MPI cases
+      #
+      # ============================================================
       - name: Build and test with MPI, selected groups
         shell: bash
         if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'selection') }}
@@ -151,6 +182,18 @@ jobs:
           export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           # skipping test because on github ci it fails sometimes
           mpirun -n 2 ./RunAllParallelTests --gtest_filter=-LocalRegressionTest.SharedCache
+          cd -
+
+      # the following must be run after the one above
+      - name: Build and run examples with MPI
+        shell: bash
+        if: ${{ contains(matrix.image, 'mpi') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          cd $MUQ_HOME
+          ./BuildAllParallelExamples.sh
           cd -
 
       - name: Build documentation

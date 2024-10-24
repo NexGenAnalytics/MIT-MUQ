@@ -20,8 +20,20 @@ function(CreateCompileGroup
 	       GROUP_DEPENDENCIES
 	       REQUIRED_DEPENDENCIES
 	       OPTIONAL_DEPENDENCIES)
-
+  
+  # # if this is a Python group, check if the corresponding CPP group is enabled 
+  # # and if MUQ_USE_PYTHON is ON. If so, enable it.
+  # string (FIND ${GROUP_NAME} "PYTHON" isPythonGroup)
+  # if (${isPythonGroup} GREATER -1)
+  #   STRING(REGEX REPLACE "_PYTHON" "" CPPNAME "${GROUP_NAME}")
+  #   if (MUQ_USE_PYTHON AND MUQ_ENABLEGROUP_${CPPNAME})
+  #     set(MUQ_ENABLEGROUP_${GROUP_NAME} ON CACHE INTERNAL "Toggle for group")
+  #     message(STATUS "Enabling ${GROUP_NAME} because MUQ_USE_PYTHON is ON and ${MUQ_ENABLEGROUP_${CPPNAME}} is ON.")
+  #   endif()
+  # else()
   option(MUQ_ENABLEGROUP_${GROUP_NAME} "Should the group ${GROUP_NAME} be compiled?" ${MUQ_ENABLEGROUP_DEFAULT})
+  # endif()
+
 
   # message(STATUS "MUQ_ENABLEGROUP_${GROUP_NAME} = ${MUQ_ENABLEGROUP_${GROUP_NAME}}")
   set(MUQ_GROUPS "${MUQ_GROUPS};${GROUP_NAME}" CACHE INTERNAL "A list of all of the muq groups.")

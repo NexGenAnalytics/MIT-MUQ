@@ -25,16 +25,14 @@ foreach(libName ${MUQ_TARGETS})
             list(APPEND MUQ_LIBRARIES ${libName})
         endif()
 
-        TARGET_LINK_LIBRARIES(${libName} PUBLIC ${MUQ_LINK_LIBS})
+        target_link_libraries(${libName} PUBLIC ${MUQ_LINK_LIBS})
 
-        # # Add dependencies for any required dependencies that MUQ is going to build internally
-        # foreach(depend ${MUQ_REQUIRES})
-        #     message(STATUS "Checking for dependency of ${libName} on internal build of ${depend}")
-        #     if(USE_INTERNAL_${depend})
-        #         message(STATUS "Adding dependency of ${libName} on ${depend}")
-        #         add_dependencies(${libName} ${depend})
-        #     endif()
-        # endforeach()
+        target_include_directories(
+            ${libName}
+            PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        )
 
         if(IsPythonWrapper)
             install(TARGETS ${libName}
@@ -44,8 +42,15 @@ foreach(libName ${MUQ_TARGETS})
         else()
             install(TARGETS ${libName}
                     EXPORT ${CMAKE_PROJECT_NAME}Depends
-                    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
-                    ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+                    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+            install(
+                    EXPORT ${CMAKE_PROJECT_NAME}Depends
+                    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MUQ
+                    NAMESPACE muq::
+                    FILE "muqTargets.cmake"
+            )            
         endif()
     endif()
 
@@ -53,22 +58,14 @@ endforeach()
 
 INSTALL (
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/MUQ
-    DESTINATION include
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.h")
 
-# If a group depends on an external library that is going to be built by MUQ, then make sure we account for that dependency
+# If a group depends on an external library that is going to be built by MUQ, 
+# then make sure we account for that dependency
 foreach(group ${MUQ_GROUPS})
     if(${group}_IS_COMPILED)
         list(LENGTH ${group}_SOURCES strLength)
-
-        # foreach(depend ${POSSIBLE_MUQ_DEPENDENCIES})
-        #     list(FIND ${group}_REQUIRES ${depend} needsExternal)
-        #     if(USE_INTERNAL_${depend})
-        #         if(needsExternal AND ${USE_INTERNAL_${depend}} AND (strLength GREATER 0))
-        #             add_dependencies(${${group}_LIBRARY} ${depend})
-        #         endif()
-	    # endif()
-        # endforeach()
 
         # Add dependencies between different MUQ libraries
         foreach(depend ${${group}_REQUIRES_GROUPS})
@@ -86,3 +83,4 @@ foreach(group ${MUQ_GROUPS})
         endforeach()
     endif()
 endforeach()
+

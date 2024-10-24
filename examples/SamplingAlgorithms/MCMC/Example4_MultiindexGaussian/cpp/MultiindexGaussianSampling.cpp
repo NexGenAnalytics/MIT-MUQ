@@ -84,9 +84,9 @@ int main(){
 
     std::cout << "mean QOI: " << estimators.at(chainInd)->Mean().transpose() << std::endl;
 
-    std::stringstream filename;
-    filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
-    mimcmc.WriteToFile(filename.str());
+    //std::stringstream filename;
+    //filename << "MultilevelGaussianSampling_Chain" << chainInd << ".h5";
+    //mimcmc.WriteToFile(filename.str());
   }
   
   std::cout << "\n=============================\n";

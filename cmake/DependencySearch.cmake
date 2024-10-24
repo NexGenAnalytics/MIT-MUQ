@@ -1,8 +1,8 @@
 
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/)
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/include)
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/muq_external/lib)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+message("\n")
+message("==========================================")
+message("  DEPENDENCIES/TPLs SEARCH/FIND           ")
+message("==========================================")
 
 # OPENMP
 IF(MUQ_USE_OPENMP)
@@ -23,9 +23,10 @@ ENDIF(MUQ_USE_OPENMP)
 
 # HDF5
 list (FIND MUQ_REQUIRES HDF5 dindex)
+
 if (${dindex} GREATER -1)
-    find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-    LIST(APPEND MUQ_LINK_LIBS hdf5::hdf5 hdf5::hdf5_cpp hdf5::hdf5_hl)
+    find_package (HDF5 COMPONENTS C CXX HL REQUIRED)
+    LIST(APPEND MUQ_LINK_LIBS ${HDF5_LIBRARIES} ${HDF5_CXX_HL_LIBRARIES})
 endif()
 
 # NLOPT
@@ -65,6 +66,11 @@ if (${dindex} GREATER -1)
     if(EXISTS "${stanmath_SRC_DIR}/stan/math.hpp")
         include_directories(${stanmath_SRC_DIR})
         LIST(APPEND MUQ_EXTERNAL_INCLUDES ${stanmath_SRC_DIR})
+
+        install(
+            DIRECTORY ${stanmath_SRC_DIR}/stan
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+            FILES_MATCHING PATTERN "*.hpp")
     else()
         message(FATAL_ERROR "stanmath directory provided doesn't contain stan/math.hpp")
     endif()
@@ -158,7 +164,9 @@ if (${dindex} GREATER -1)
 
     if(MUQ_USE_PYTHON)
         set(PYBIND11_CPP_STANDARD -std=c++11)
-        FIND_PACKAGE(pybind11)
+        # set(PYBIND11_FINDPYTHON ON)
+
+        find_package(pybind11 QUIET)
         if(NOT pybind11_FOUND)
             message(STATUS "Falling back to internal pybind11 version")
             add_subdirectory(${CMAKE_SOURCE_DIR}/external/pybind11)
@@ -177,7 +185,6 @@ endif()
 ##### LOOK FOR DOLFIN/Fenics      ######
 ########################################
 list (FIND MUQ_REQUIRES DOLFIN dindex)
-message(${MUQ_REQUIRES})
 if (${dindex} GREATER -1)
     set(MUQ_NEEDS_DOLFIN ON)
 

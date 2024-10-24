@@ -28,7 +28,7 @@ using namespace muq::Utilities;
 /** Reads SFC3 stress strain data. */
 std::pair<Eigen::VectorXd, Eigen::VectorXd> ReadData()
 {
-  auto f = muq::Utilities::OpenFile("data/LTA01.h5");
+  auto f = muq::Utilities::OpenFile("../data/LTA01.h5");
 
   std::cout << "Reading strain data..." << std::endl;
   std::cout << "  Units: " << std::string(f["/Strain"].attrs["Units"]) << std::endl;
@@ -56,7 +56,7 @@ std::shared_ptr<MonotoneExpansion> SetupExpansion(unsigned order)
     polyCoeffs(0,1) = 500.0; // add an initial linear trend
 
     auto polyBase = std::make_shared<BasisExpansion>(bases, multis, polyCoeffs);
-    auto expansion = std::make_shared<MonotoneExpansion>(polyBase);
+    auto expansion = std::make_shared<MonotoneExpansion>(polyBase, true);
 
     return expansion;
 }
@@ -153,7 +153,7 @@ void WriteResults(Eigen::VectorXd             const& x,
     preds(k) = boost::any_cast<Eigen::VectorXd>(expansion->Evaluate(xslice).at(0))(0);
   }
 
-  auto f = muq::Utilities::OpenFile("results/StressPredictions.h5");
+  auto f = muq::Utilities::OpenFile("../results/StressPredictions.h5");
   f["/Strain"] = x;
   f["/Stress"] = preds;
 }
@@ -170,7 +170,7 @@ int main()
 
   FitData(strain, stress, expansion);
 
-  WriteResults(strain, expansion);
+  // WriteResults(strain, expansion);
 
   return 0;
 };

@@ -28,6 +28,7 @@ FILE(APPEND ${_log_summary}
 "
 )
 endif()
+
 FILE(APPEND ${_log_summary}
 "#
 #  Compiler definitions used for this build:
