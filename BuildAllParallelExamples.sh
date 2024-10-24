@@ -8,33 +8,12 @@ if [ -z "${MUQ_DIR}" ]; then
     exit 21
 fi
 
+# note that below we only build but not run some examples
+# because of https://github.com/NexGenAnalytics/MIT-MUQ/issues/88
 ARRAY=( 
-    "Utilities/HDF5/BlockOperations:BlockOperations"
-    "Utilities/HDF5/SimpleReadWrite:SimpleReadWrite"
-
-    "Approximation/GaussianProcess_CO2:GaussianProcess_CO2_exe"
-    "Approximation/MonotoneRegression:MonotoneRegression"
-
-    "Modeling/MemoryTest/cpp:MemoryUsage"
-    "Modeling/FlowEquation/cpp:FlowEquation"
-    "Modeling/CustomModPiece/cpp:BasicModPiece"
-    "Modeling/WorkGraphs/cpp:SimpleWorkGraph"
-    "Modeling/WorkGraphs/cpp:SplitSum"
-    "Modeling/UMBridge:void" # for this only build as it was already in master branch
-
-    "SamplingAlgorithms/MC/Example1_Gaussian:MonteCarlo"
-    "SamplingAlgorithms/MC/Example1_Gaussian:MultilevelMonteCarlo"
-    "SamplingAlgorithms/MC/Example1_Gaussian:ParallelMultilevelMonteCarlo"
-
-    "SamplingAlgorithms/MCMC/BasicMetropolisInGibbs/cpp/:MetropolisInGibbs"
-    "SamplingAlgorithms/MCMC/CustomGaussianProposal/cpp/:CustomProposal"
-    "SamplingAlgorithms/MCMC/EllipticInference/cpp/:InvariantSampling"
-    "SamplingAlgorithms/MCMC/Example1_Gaussian/cpp/:GaussianSampling"
-    "SamplingAlgorithms/MCMC/Example2_GaussianInverseGamma/cpp/:GaussianGammaSampling"
-    "SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp/:BasicMultilevel"
-    "SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp/:AdvancedMultilevel"
-    "SamplingAlgorithms/MCMC/Example4_MultiindexGaussian/cpp/:MultiindexGaussianSampling"
-    "SamplingAlgorithms/MCMC/Example5_MALASampling:malaSampling"
+    "SamplingAlgorithms/MC/Example1_Gaussian:void"
+    "SamplingAlgorithms/MCMC/Example3_MultilevelGaussian/cpp/:ModelParallelMultilevelGaussianSampling"
+    "SamplingAlgorithms/MCMC/Example4_MultiindexGaussian/cpp/:void"
 )
 
 
@@ -84,7 +63,7 @@ for it in "${ARRAY[@]}" ; do
     if [ -f ${exampleBuildDir}/${executableName} ]; then
         if [ "$executableName" != "void" ]; then
             cd ${exampleBuildDir}
-            ./${executableName}
+            mpirun -n 2 ./${executableName}
             run_exit=$?
             exit_code=$(($exit_code + $run_exit)) 
             cd -

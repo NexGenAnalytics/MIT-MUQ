@@ -1,10 +1,3 @@
-# - Config file for the MUQ package
-# It defines the following variables
-#  MUQ_INCLUDE_DIRS - include directories for MUQ
-#  MUQ_LIBRARIES    - MUQ libraries to link against
-#  MUQ_LINK_LIBRARIES - libraries MUQ links against
-#  MUQ_INCLUDE_DIRS   - Include directories that MUQ uses
-#  MUQ_COMPILE_DEFINITIONS -Definitions used during compilation (i.e. variables added with add_definitions)
 
 @PACKAGE_INIT@
 
@@ -37,34 +30,41 @@ if (@nanoflann_FOUND@)
   find_dependency(nanoflann HINTS @nanoflann_DIR@)
 endif()
 
+if (@MUQ_USE_MPI@)
+  include_directories(@PARCER_INCLUDE_DIRS@)
+  link_libraries(@PARCER_LIBRARIES@)
+  link_libraries(@PARCER_LIBRARIES_STATIC@)
+
+  link_libraries(@OTF2_LIBRARY@ @OTF2_LIBRARIES_STATIC@)
+  include_directories(@OTF2_INCLUDE_DIRS@)
+  
+  find_dependency(spdlog HINTS @spdlog_DIR@)
+
+  # make sure we can find the MPI consistent with
+  # the one used to build
+  set(MPIEXEC_EXECUTABLE @MPIEXEC_EXECUTABLE@)
+  find_dependency(MPI)
+  
+endif()
+
+# needed to build examples
+set(MUQ_HAS_PARCER @MUQ_HAS_PARCER@)
+
 include(${CMAKE_CURRENT_LIST_DIR}/muqTargets.cmake)
 
 check_required_components(muq)
 
 
-
-# include(CMakeFindDependencyMacro)
-# if (@OpenMP_CXX_FOUND@)
-#   find_dependency(OpenMP)
-# endif()
-# if (@Boost_FOUND@)
-#   find_dependency(Boost @BOOST_MIN_VERSION@ COMPONENTS system filesystem graph)
-# endif()
-
 # set(MUQ_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include @MUQ_EXTERNAL_INCLUDES@)
-
 # set(MUQ_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/lib)
 # set(MUQ_EXTERNAL_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/muq_external/lib)
-
 # set(MUQ_HAS_PARCER @MUQ_HAS_PARCER@)
 
-# # These are IMPORTED targets created by MUQDepends.cmake
 # set(MUQ_LIBRARIES @MUQ_EXPORT_LIBRARIES@)
 # set(MUQ_LINK_LIBRARIES @MUQ_LINK_LIBS@)
 # set(MUQ_LINK_LIBRARIES_STATIC @MUQ_LINK_LIBS_STATIC@)
 # set(MUQ_PYTHON_LIBRARIES @MUQ_PYTHON_LIBRARIES@)
 
-# # These are the compiler flags used to compile MUQ
 # string(TOUPPER "@CMAKE_BUILD_TYPE@" uppercase_CMAKE_BUILD_TYPE)
 # if (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELEASE")
 #   set(MUQ_CXX_FLAGS "@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_RELEASE@")
