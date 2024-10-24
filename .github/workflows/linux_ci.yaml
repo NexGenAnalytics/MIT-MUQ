@@ -18,8 +18,8 @@ jobs:
       fail-fast: true
       matrix:
         image:
-          # - ubuntu-2404-gnu-11-serial
-          - ubuntu-2404-gnu-11-mpi
+          - ubuntu-2404-gnu-11-serial
+          # - ubuntu-2404-gnu-11-mpi
         build_type:
           - Release
         muq_groups:
