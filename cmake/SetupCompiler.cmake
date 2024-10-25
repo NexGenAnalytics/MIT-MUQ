@@ -15,8 +15,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 message(STATUS "Final build type = " ${CMAKE_BUILD_TYPE})
 
-# Require C++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Check to see if const& and by value need to be treated separately in AnyConstCast
