@@ -67,7 +67,6 @@ jobs:
           cd $MUQ_HOME
           # important: we build only the TPLs for serial MUQ
           # we do not need those for the MPI support
-          git clone git@github.com:NexGenAnalytics/MIT-MUQ-containers.git
           python3 ${GITHUB_WORKSPACE}/MIT-MUQ-containers/build_tpls.py \
              --wdir $TPL_WORK_DIR \
              --with hdf5 nlopt boost sundials eigen nanoflann stanmath \
