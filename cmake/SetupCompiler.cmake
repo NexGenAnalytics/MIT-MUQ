@@ -17,7 +17,7 @@ message(STATUS "Final build type = " ${CMAKE_BUILD_TYPE})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-message(STATUS "Setting c++ standard = ${CMAKE_CXX_STANDARD})
+message(STATUS "Setting c++ standard = ${CMAKE_CXX_STANDARD}")
 
 # Check to see if const& and by value need to be treated separately in AnyConstCast
 INCLUDE(AnyCastCheck)
