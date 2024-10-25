@@ -37,7 +37,7 @@ jobs:
       - name: Check environment
         run: |
           # we need this for "dot"
-          brew install graphviz gcc@12 numpy node
+          brew install graphviz gcc@12 numpy
 
           echo ======================================================
           echo $(which $CXX) --version
