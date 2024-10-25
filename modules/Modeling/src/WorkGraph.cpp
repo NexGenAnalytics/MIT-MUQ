@@ -926,10 +926,10 @@ void WorkGraph::Visualize(std::string const& filename) const {
 
   if( knownExtension ) {
     // move the *.dot file into the *.[whatever extension file]
-    std::system(("dot -T" + *(strs.end() - 1) + " " + tempname + " -o " + filename).c_str());
+    [[maybe_unused]] const int retValue1 = std::system(("dot -T" + *(strs.end() - 1) + " " + tempname + " -o " + filename).c_str());
 
     // remove the temporary *.dot file
-    std::system(("rm "+tempname).c_str());
+    [[maybe_unused]] const int retValue2 = std::system(("rm "+tempname).c_str());
   }
 }
 
