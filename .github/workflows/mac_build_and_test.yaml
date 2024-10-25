@@ -19,7 +19,7 @@ jobs:
 
       matrix:
         config:
-          - { os: macos-14, cc: gcc-12, cxx: g++-12}
+          - { os: macos-14, cc: gcc-11, cxx: g++-11}
 
     env: # environment variables available to all steps
       CC: ${{ matrix.config.cc }}
@@ -37,7 +37,7 @@ jobs:
       - name: Check environment
         run: |
           # we need this for "dot"
-          brew install graphviz gcc@12 numpy
+          brew install graphviz gcc@11 numpy
 
           echo ======================================================
           echo $(which $CXX) --version
