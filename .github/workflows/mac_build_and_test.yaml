@@ -88,7 +88,6 @@ jobs:
       # the following must be run after the one above
       - name: Test bindings via simple script
         shell: bash
-        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
         run: |
           export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
           cd $MUQ_HOME
