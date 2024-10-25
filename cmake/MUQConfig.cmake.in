@@ -37,42 +37,20 @@ if (@MUQ_USE_MPI@)
 
   link_libraries(@OTF2_LIBRARY@ @OTF2_LIBRARIES_STATIC@)
   include_directories(@OTF2_INCLUDE_DIRS@)
-  
+
   find_dependency(spdlog HINTS @spdlog_DIR@)
 
   # make sure we can find the MPI consistent with
   # the one used to build
   set(MPIEXEC_EXECUTABLE @MPIEXEC_EXECUTABLE@)
   find_dependency(MPI)
-  
+
 endif()
 
-# needed to build examples
+# this is needed here because the examples
+# need it to be visible by cmake
 set(MUQ_HAS_PARCER @MUQ_HAS_PARCER@)
 
 include(${CMAKE_CURRENT_LIST_DIR}/muqTargets.cmake)
 
 check_required_components(muq)
-
-
-# set(MUQ_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include @MUQ_EXTERNAL_INCLUDES@)
-# set(MUQ_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/lib)
-# set(MUQ_EXTERNAL_LIBRARY_DIR @CMAKE_INSTALL_PREFIX@/muq_external/lib)
-# set(MUQ_HAS_PARCER @MUQ_HAS_PARCER@)
-
-# set(MUQ_LIBRARIES @MUQ_EXPORT_LIBRARIES@)
-# set(MUQ_LINK_LIBRARIES @MUQ_LINK_LIBS@)
-# set(MUQ_LINK_LIBRARIES_STATIC @MUQ_LINK_LIBS_STATIC@)
-# set(MUQ_PYTHON_LIBRARIES @MUQ_PYTHON_LIBRARIES@)
-
-# string(TOUPPER "@CMAKE_BUILD_TYPE@" uppercase_CMAKE_BUILD_TYPE)
-# if (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELEASE")
-#   set(MUQ_CXX_FLAGS "@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_RELEASE@")
-# else()
-#   set(MUQ_CXX_FLAGS "@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_DEBUG@")
-# endif()
-# set(MUQ_C_FLAGS "@CMAKE_C_FLAGS@")
-# set(MUQ_CXX_COMPILER "@CMAKE_CXX_COMPILER@")
-# set(MUQ_C_COMPILER "@CMAKE_C_COMPILER@")
-
-# set(MUQ_COMPILE_DEFINITIONS "@MUQ_COMPILE_DEFINITIONS@")
