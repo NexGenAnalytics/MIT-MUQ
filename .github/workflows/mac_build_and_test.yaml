@@ -62,43 +62,42 @@ jobs:
           path: MIT-MUQ-containers
           ref: main
 
+      - name: Build/install TPLs
+        run: |
+          cd $MUQ_HOME
+          # important: we build only the TPLs for serial MUQ
+          # we do not need those for the MPI support
+          git clone git@github.com:NexGenAnalytics/MIT-MUQ-containers.git
+          python3 ${GITHUB_WORKSPACE}/MIT-MUQ-containers/build_tpls.py \
+             --wdir $TPL_WORK_DIR \
+             --with hdf5 nlopt boost sundials eigen nanoflann stanmath \
+             --poolsize 2
 
-      # - name: Build/install TPLs
-      #   run: |
-      #     cd $MUQ_HOME
-      #     # important: we build only the TPLs for serial MUQ
-      #     # we do not need those for the MPI support
-      #     git clone git@github.com:NexGenAnalytics/MIT-MUQ-containers.git
-      #     python3 ./MIT-MUQ-containers/build_tpls.py \
-      #        --wdir $TPL_WORK_DIR \
-      #        --with hdf5 nlopt boost sundials eigen nanoflann stanmath \
-      #        --poolsize 2
+      - name: Build/install MUQ with Python bindings
+        run: |
+          cd $MUQ_HOME
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
+          make -j4 install
 
-      # - name: Build/install MUQ with Python bindings
-      #   run: |
-      #     cd $MUQ_HOME
-      #     cmake -DCMAKE_C_COMPILER=$CC \
-      #           -DCMAKE_CXX_COMPILER=$CXX \
-      #           -S $MUQ_HOME -B $MUQ_BUILD_DIR \
-      #           -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
-      #           -C $TPL_WORK_DIR/tpls_cache.txt \
-      #           -DMUQ_USE_GTEST=ON \
-      #           -DMUQ_ENABLEGROUP_DEFAULT=ON \
-      #           -DMUQ_USE_PYTHON=ON
-      #     cd $MUQ_BUILD_DIR
-      #     make -j4 install
+      # the following must be run after the build/install above
+      - name: Run Tests
+        run: |
+          cd $MUQ_BUILD_DIR
+          ./RunAllTests
 
-      # - name: Run Tests
-      #   run: |
-      #     cd $MUQ_BUILD_DIR
-      #     ./RunAllTests
-
-
-      # # the following must be run after the one above
-      # - name: Test bindings via simple script
-      #   shell: bash
-      #   run: |
-      #     export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
-      #     cd $MUQ_HOME
-      #     python3 SupportScripts/basic_python.py
-      #     cd -
+      # the following must be run after the build/install above
+      - name: Test bindings via simple script
+        shell: bash
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          python3 SupportScripts/basic_python.py
+          cd -
