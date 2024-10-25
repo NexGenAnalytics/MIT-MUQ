@@ -1,0 +1,96 @@
+name: MACOS MUQ CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.event.repository.name }}-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: True
+
+jobs:
+  test:
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: true # true -> cancel all jobs if any fails
+
+      matrix:
+        config:
+          - { os: macos-14, cc: gcc-12, cxx: g++-12}
+
+    env: # environment variables available to all steps
+      CC: ${{ matrix.config.cc }}
+      CXX: ${{ matrix.config.cxx }}
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_WORK_DIR: ${{ github.workspace }}/../tpls_workdir
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+
+      - name: Check environment
+        run: |
+          # we need this for "dot"
+          brew install graphviz gcc@12
+
+          echo ======================================================
+          echo $(which $CXX) --version
+          $CXX --version
+          echo ======================================================
+          echo $(which cmake) --version
+          cmake --version
+          echo ======================================================
+          echo $(which python) --version
+          python3 --version
+          echo ======================================================
+          echo Source directory: $MUQ_HOME
+          echo TPLs workdir: $TPL_WORK_DIR
+          echo ======================================================
+          git --version
+
+
+      - name: Build/install TPLs
+        run: |
+          cd $MUQ_HOME
+          # important: we build only the TPLs for serial MUQ
+          # we do not need those for the MPI support
+          git clone git@github.com:NexGenAnalytics/MIT-MUQ-containers.git
+          python3 ./MIT-MUQ-containers/build_tpls.py \
+             --wdir $TPL_WORK_DIR \
+             --with hdf5 nlopt boost sundials eigen nanoflann stanmath \
+             --poolsize 2
+
+      - name: Build/install MUQ with Python bindings
+        run: |
+          cd $MUQ_HOME
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_WORK_DIR/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
+          make -j4 install
+
+      # - name: Run Tests
+      #   run: |
+      #     cd $MUQ_BUILD_DIR
+      #     ./RunAllTests
+
+      # the following must be run after the one above
+      - name: Test bindings via simple script
+        shell: bash
+        if: ${{ contains(matrix.image, 'serial') && contains(matrix.muq_groups, 'default') }}
+        run: |
+          export MUQ_DIR=$MUQ_INSTALL_DIR/lib/cmake/MUQ
+          cd $MUQ_HOME
+          python3 SupportScripts/basic_python.py
+          cd -
