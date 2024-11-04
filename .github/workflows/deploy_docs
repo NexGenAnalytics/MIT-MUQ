@@ -1,0 +1,69 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nexgenanalytics/muqcontainers/ubuntu-2404-gnu-11-serial
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+
+    env:
+      num_cpus: 2 # $(cat /proc/cpuinfo | grep processor -c)
+      MUQ_HOME: ${{ github.workspace }}
+      MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
+      MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
+      TPL_PFX: /home/tpls
+        
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure default groups and build doc
+        shell: bash
+        run: |
+          rm -rf $MUQ_BUILD_DIR
+          cmake -DCMAKE_C_COMPILER=$CC \
+                -DCMAKE_CXX_COMPILER=$CXX \
+                -D CMAKE_BUILD_TYPE:STRING=Release \
+                -S $MUQ_HOME -B $MUQ_BUILD_DIR \
+                -DCMAKE_INSTALL_PREFIX=$MUQ_INSTALL_DIR \
+                -C $TPL_PFX/tpls_cache.txt \
+                -DMUQ_USE_GTEST=ON \
+                -DMUQ_ENABLEGROUP_DEFAULT=ON \
+                -DMUQ_USE_PYTHON=ON
+          cd $MUQ_BUILD_DIR
+          make doc
+          cd -
+
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${MUQ_BUILD_DIR}/doxygen_output/html
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+                  
