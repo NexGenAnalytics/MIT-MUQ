@@ -53,7 +53,7 @@ jobs:
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${MUQ_BUILD_DIR}/doxygen_output/html
+          path: /__w/MIT-MUQ/muq_build/doxygen_output/html/
 
   # Deployment job
   deploy:
