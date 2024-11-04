@@ -33,11 +33,11 @@ def MakeInstallation():
     Combines markdown files in "doxFiles/Installation" with the bash script in
     "SupportScripts" to create a single set of installation instructions.
     """
-    md1 = baseDir + '/documentation/doxFiles/excluded/source_install1.md'
-    md2 = baseDir + '/documentation/doxFiles/excluded/source_install2.md'
-    bash = baseDir + '/SupportScripts/install-instructions.sh'
+    md = baseDir + '/documentation/doxFiles/source_install.md'
+    # md2 = baseDir + '/documentation/doxFiles/excluded/source_install2.md'
+    # bash = baseDir + '/SupportScripts/install-instructions.sh'
 
-    newText = subprocess.run(["cat", md1, bash, md2], stdout=subprocess.PIPE)
+    newText = subprocess.run(["cat", md], stdout=subprocess.PIPE)
     print(newText.stdout)
     with open(buildDir+'/doxygen_prep/source_install.md', 'wb') as f:
         f.write(newText.stdout)
