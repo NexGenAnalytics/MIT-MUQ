@@ -34,9 +34,6 @@ def MakeInstallation():
     "SupportScripts" to create a single set of installation instructions.
     """
     md = baseDir + '/documentation/doxFiles/source_install.md'
-    # md2 = baseDir + '/documentation/doxFiles/excluded/source_install2.md'
-    # bash = baseDir + '/SupportScripts/install-instructions.sh'
-
     newText = subprocess.run(["cat", md], stdout=subprocess.PIPE)
     print(newText.stdout)
     with open(buildDir+'/doxygen_prep/source_install.md', 'wb') as f:
@@ -191,5 +188,4 @@ def ProcessFiles():
 
 
 ProcessFiles()
-MakeInstallation()
 copy_tree(baseDir + '/documentation/pics', buildDir + '/documentation/pics')
