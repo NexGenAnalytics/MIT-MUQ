@@ -48,7 +48,7 @@ jobs:
           cd $MUQ_BUILD_DIR
           make doc
           cd -
-          mv -rf $MUQ_BUILD_DIR/doxygen_output/html/* $MUQ_HOME/website/source/_site/latest
+          mv -f $MUQ_BUILD_DIR/doxygen_output/html/* $MUQ_HOME/website/source/_site/latest
 
       - name: Upload static files as artifact
         id: deployment
