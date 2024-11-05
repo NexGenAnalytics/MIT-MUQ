@@ -54,8 +54,8 @@ jobs:
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: /__w/MIT-MUQ/website
-
+          path: $MUQ_HOME/website
+  
   # Deployment job
   deploy:
     environment:
