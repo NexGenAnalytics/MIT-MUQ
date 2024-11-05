@@ -1,0 +1,53 @@
+{% include head.html %}
+
+<body>
+    {% include navigation.html %}
+    <section class="page-header">
+      <h1 class="project-name">MUQ</h1>
+      <h2 class="project-tagline">The MIT Uncertainty Quantification Library</h2>
+    </section>
+
+
+    <div class="container" role="main">
+    <div class="row">
+    <div class="col-md-9 col-sm-12">
+
+        {{ content }}
+        {% include footer.html %}
+
+    </div>
+    <div class="col-md-3 col-sm-12">
+      {% include slack.html %}
+      <div class="panel panel-default">
+        <div class="panel-heading">Test Status</div>
+        <ul class="list-group">
+        <li class="list-group-item">
+        <a href='https://bitbucket.org/mituq/muq2/addon/pipelines/home'><img src='https://img.shields.io/bitbucket/pipelines/mituq/muq2/master'></a>
+        </li>
+        </ul>
+      </div>
+
+      <div class="panel panel-default">
+      <div class="panel-heading">Acknowledgments</div>
+      <div class="panel-body">
+
+        <div>
+          <p style="float: left;"><img src="{{ site.url }}/images/nsf_logo.gif" alt="NSF Logo" hspace="5" align="left" height="70" width="70"></p>
+          <p style="font-size: 1.0rem;">This material is based upon work supported by the National Science Foundation under Grant No. 1550487.</p>
+          <p style="font-size: 1.0rem;">Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.</p>
+        </div>
+
+        <div>
+            <p style="float: left;"><img src="{{ site.url }}/images/doe_logo.png" alt="DOE Logo" hspace="5" align="left" height="70" width="70"></p>
+            <p style="font-size: 1.0rem;">This material is based upon work supported by the US Department of Energy, Office of Advanced Scientific Computing Research, SciDAC (Scientific Discovery through Advanced Computing) program under awards DE-SC0007099 and DE-SC0021226, for the QUEST and <a href="https://fastmath-scidac.llnl.gov/">FASTMath</a> SciDAC Institutes. </p>
+        </div>
+      </div>
+      </div>
+
+
+    </div>
+    </div>
+    </div>
+
+  </body>
+</html>

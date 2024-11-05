@@ -48,12 +48,13 @@ jobs:
           cd $MUQ_BUILD_DIR
           make doc
           cd -
+          mv -rf $MUQ_BUILD_DIR/doxygen_output/html/* $MUQ_HOME/website/source/_site/latest
 
       - name: Upload static files as artifact
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: /__w/MIT-MUQ/muq_build/doxygen_output/html/
+          path: /__w/MIT-MUQ/website
 
   # Deployment job
   deploy:

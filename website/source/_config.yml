@@ -1,0 +1,17 @@
+title: MUQ
+description: Software for uncertainty quantification
+author: MUQ TEAM
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+
+url: https://mituq.bitbucket.io/source/_site
+
+collections:
+  example_pages:
+    output: true
+  example_pages_v0_3_1:
+    output: true

@@ -1,0 +1,103 @@
+---
+---
+
+
+@import "{{ site.theme }}";
+
+@import "bootstrap";
+
+.blockquote p {
+  font-weight: normal;
+}
+
+.page-header {
+  color: $header-heading-color;
+  text-align: left;
+  background-color: $header-bg-color;
+  background-image: url("https://mituq.bitbucket.io/source/_site/images/MUQBanner.png");
+  background-size:100% 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+
+  @include large {
+    padding: 4rem 4rem 1rem;
+  }
+
+  @include medium {
+    padding: 3rem 4rem 1rem;
+  }
+
+  @include small {
+    padding: 2.1rem 1rem 1rem;
+  }
+}
+
+
+.page-header a {
+  color: $header-heading-color;
+  text-decoration: none;
+  padding: 0 1rem;
+  &:hover {
+    text-decoration: underline;
+     @include large {
+    	background-color: $header-bg-color;
+    	}
+	 @include medium {
+    	background-color: $header-bg-color;
+    	}
+  }
+}
+
+
+.project-name {
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.1rem;
+  color: rgb(230, 230, 230);
+
+  @include large {
+    font-size: 4.4rem;
+  }
+
+  @include medium {
+    font-size: 4.4rem;
+  }
+
+  @include small {
+    font-size: 3.5rem;
+  }
+}
+
+.btn-outline-primary {
+    color: rgb(42,62,63);
+    background-color: rgb(230,230,230);
+    border-color: rgb(0,0,0);
+}
+.btn-outline-primary:focus,
+.btn-outline-primary.focus {
+    background-color: rgb(250,250,250);
+    box-shadow: 0 0 0 .2rem rgba(150, 150, 150, 0.5)
+}
+
+
+.project-tagline {
+  font-weight: regular;
+  color: rgb(170, 170, 170);
+  opacity: 1.0;
+
+  @include large {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  @include medium {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @include small {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+}

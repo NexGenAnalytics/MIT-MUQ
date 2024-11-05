@@ -1,0 +1,8 @@
+docs_list_title: MUQ website
+docs:
+
+- title: Home
+  url: index.html
+
+- title: Examples
+  url: examples.html

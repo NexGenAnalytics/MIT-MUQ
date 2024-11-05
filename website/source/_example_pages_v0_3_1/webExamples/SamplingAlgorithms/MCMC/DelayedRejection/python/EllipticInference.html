@@ -1,0 +1,134 @@
+---
+title: Delayed Rejection MCMC
+layout: default
+description: Illustrates thee use of delayed rejection MCMC on a Bayesian inverse problem constructed from an elliptic PDE forward model.
+language: python
+tag: MCMC
+doc_level: 1
+---
+<h1><small class="text-muted">Example</small> </br> Delayed Rejection MCMC<h1>
+<blockquote class="blockquote"><p class="mb-0">Illustrates thee use of delayed rejection MCMC on a Bayesian inverse problem constructed from an elliptic PDE forward model.</p></blockquote>
+</br>
+
+
+<pre class="prettyprint" style="height:auto;max-height:400px;">
+import muq.Modeling as mm
+import muq.SamplingAlgorithms as ms
+import muq.Approximation as ma
+import muq.Utilities as mu
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Import a DiffusionEquation ModPiece from the CustomModPiece example
+from CustomModPiece import DiffusionEquation
+
+# The standard deviation of the additive Gaussian noise
+noiseStd = 1e-3
+
+# Number of cells to use in Finite element discretization
+numCells = 200
+
+mod = DiffusionEquation(numCells)
+
+# Create an exponential operator to transform log-conductivity into conductivity
+cond = mm.ExpOperator(numCells)
+recharge = mm.ConstantVector( 10.0*np.ones((numCells,)) )
+
+# Combine the two models into a graph
+graph = mm.WorkGraph()
+graph.AddNode(mm.IdentityOperator(numCells), &quot;Log-Conductivity&quot;)
+graph.AddNode(cond, &quot;Conductivity&quot;)
+graph.AddNode(recharge, &quot;Recharge&quot;)
+graph.AddNode(mod,&quot;Forward Model&quot;)
+
+graph.AddEdge(&quot;Log-Conductivity&quot;, 0, &quot;Conductivity&quot;, 0)
+graph.AddEdge(&quot;Conductivity&quot;,0,&quot;Forward Model&quot;,0)
+graph.AddEdge(&quot;Recharge&quot;,0,&quot;Forward Model&quot;,1)
+
+
+# Set up the Gaussian process prior on the log-conductivity
+gpKern = ma.MaternKernel(1, 1.0, 0.1, 3.0/2.0)
+gpMean = ma.ZeroMean(1,1)
+prior = ma.GaussianProcess(gpMean,gpKern).Discretize(mod.xs[0:-1].reshape(1,-1))
+graph.AddNode(prior.AsDensity(), &quot;Prior&quot;)
+graph.AddEdge(&quot;Log-Conductivity&quot;,0,&quot;Prior&quot;,0)
+
+# Generate a &quot;true&quot; log conductivity
+trueLogK = prior.Sample()
+
+trueHead = mod.Evaluate([np.exp(trueLogK), 10.0*np.ones((numCells,))])[0]
+obsHead = trueHead + noiseStd*mu.RandomGenerator.GetNormal(numCells+1)[:,0]
+
+# Set up the likelihood and posterior
+likely = mm.Gaussian(trueHead, noiseStd*noiseStd*np.ones((numCells+1,)))
+graph.AddNode(likely.AsDensity(),&quot;Likelihood&quot;)
+graph.AddNode(mm.DensityProduct(2), &quot;Posterior&quot;)
+
+graph.AddEdge(&quot;Forward Model&quot;,0,&quot;Likelihood&quot;,0)
+graph.AddEdge(&quot;Prior&quot;,0,&quot;Posterior&quot;,0)
+graph.AddEdge(&quot;Likelihood&quot;,0,&quot;Posterior&quot;,1)
+
+graph.Visualize(&#x27;ModelGraph.png&#x27;)
+
+#### MCMC
+opts = dict()
+opts[&#x27;NumSamples&#x27;] = 20000 # Number of MCMC steps to take
+opts[&#x27;BurnIn&#x27;] = 0 # Number of steps to throw away as burn in
+opts[&#x27;PrintLevel&#x27;] = 3 # in {0,1,2,3} Verbosity of the output
+opts[&#x27;Beta&#x27;] = 0.02 # Crank Nicholson parameter
+opts[&#x27;StepSize&#x27;] = 1e-5 # MALA Step Size
+
+postDens = graph.CreateModPiece(&quot;Posterior&quot;)
+problem = ms.SamplingProblem(postDens)
+
+# Construct a prior-preconditioned Crank-Nicolson proposal
+pcnProp = ms.CrankNicolsonProposal(opts, problem, prior)
+malaProp = ms.MALAProposal(opts,problem,prior)
+
+# Use the proposal to construct a Metropolis-Hastings kernel
+#kern = ms.MHKernel(opts,problem,malaProp) # &lt;- USE THIS FOR PRIOR-PRECONDITIONED MALA
+#kern = ms.MHKernel(opts,problem,malaProp) # &lt;- USE THIS FOR PRIOR-PRECONDITIONED Crank-Nicolson
+kern = ms.DRKernel(opts, problem, [pcnProp, malaProp], [1.0,1.0]) # &lt;- USE THIS FOR Delayed Rejection
+
+# Construct the MCMC sampler using this transition kernel
+sampler = ms.SingleChainMCMC(opts, [kern])
+
+# Run the MCMC sampler
+x0 = [np.zeros((numCells,))]
+samps = sampler.Run(x0)
+
+# Extract the posteior samples as a matrix and compute some posterior statistics
+sampMat = samps.AsMatrix()
+
+postMean = np.mean(sampMat,axis=1)
+q05 = np.percentile(sampMat,5,axis=1)
+q95 = np.percentile(sampMat,95,axis=1)
+
+# Plot the results
+fig, axs = plt.subplots(ncols=3)
+axs[0].plot(trueHead, label=&#x27;True Head&#x27;)
+axs[0].plot(obsHead,&#x27;.k&#x27;,label=&#x27;Observed Head&#x27;)
+axs[0].legend()
+axs[0].set_title(&#x27;Data&#x27;)
+axs[0].set_xlabel(&#x27;Position, $x$&#x27;)
+axs[0].set_ylabel(&#x27;Hydraulic head $h(x)$&#x27;)
+
+axs[1].fill_between(mod.xs[0:-1], q05, q95, alpha=0.5,label=&#x27;5%-95% CI&#x27;)
+axs[1].plot(mod.xs[0:-1],postMean, label=&#x27;Posterior Mean&#x27;)
+axs[1].plot(mod.xs[0:-1],trueLogK,label=&#x27;Truth&#x27;)
+axs[1].legend()
+axs[1].set_title(&#x27;Posterior on log(K)&#x27;)
+axs[1].set_xlabel(&#x27;Position, $x$&#x27;)
+axs[1].set_ylabel(&#x27;Log-Conductivity $log(K(x))$&#x27;)
+
+axs[2].plot(sampMat[0,:], label=&#x27;$log K_0$&#x27;)
+axs[2].plot(sampMat[100,:],label=&#x27;$log K_{100}$&#x27;)
+axs[2].plot(sampMat[190,:],label=&#x27;$log K_{190}&#x27;)
+axs[2].set_title(&#x27;MCMC Trace&#x27;)
+axs[2].set_xlabel(&#x27;MCMC Iteration (after burnin)&#x27;)
+axs[2].set_ylabel(&#x27;Log-Conductivity&#x27;)
+plt.show()
+
+</pre>
+
