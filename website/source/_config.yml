@@ -8,10 +8,8 @@ relative_links:
   enabled: true
   collections: true
 
-url: https://mituq.bitbucket.io/source/_site
+url: https://nexgenanalytics.github.io/MIT-MUQ/
 
 collections:
   example_pages:
-    output: true
-  example_pages_v0_3_1:
     output: true
