@@ -1,0 +1,390 @@
+---
+title: Multiindex MCMC
+layout: default
+description: Defines a two-dimensional hierarchy of simple Gaussian models and applies Multiindex MCMC to it.
+language: c++
+tag: MCMC
+doc_level: 1
+---
+<h1><small class="text-muted">Example</small> </br> Multiindex MCMC<h1>
+<blockquote class="blockquote"><p class="mb-0">Defines a two-dimensional hierarchy of simple Gaussian models and applies Multiindex MCMC to it.</p></blockquote>
+</br>
+
+
+
+<pre class="prettyprint lang-cpp">
+#include "MUQ/SamplingAlgorithms/SLMCMC.h"
+#include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
+#include "MUQ/SamplingAlgorithms/MIMCMC.h"
+
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/MHProposal.h"
+#include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
+#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+
+#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+
+#include &lt;boost/property_tree/ptree.hpp&gt;
+
+namespace pt = boost::property_tree;
+using namespace muq::Modeling;
+using namespace muq::SamplingAlgorithms;
+using namespace muq::Utilities;
+
+
+#include "Problem.h"
+
+
+
+/*class MySamplingProblem : public AbstractSamplingProblem {
+public:
+  MySamplingProblem(std::shared_ptr&lt;muq::Modeling::ModPiece&gt; const& targetIn)
+   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,2), Eigen::VectorXi::Constant(1,2)),
+     target(targetIn){}
+
+  virtual ~MySamplingProblem() = default;
+
+
+  virtual double LogDensity(std::shared_ptr&lt;SamplingState&gt; const& state) override {
+    lastState = state;
+    return target-&gt;Evaluate(state-&gt;state).at(0)(0);
+  };
+
+  virtual std::shared_ptr&lt;SamplingState&gt; QOI() override {
+    assert (lastState != nullptr);
+    return std::make_shared&lt;SamplingState&gt;(lastState-&gt;state, 1.0);
+  }
+
+private:
+  std::shared_ptr&lt;SamplingState&gt; lastState = nullptr;
+
+  std::shared_ptr&lt;muq::Modeling::ModPiece&gt; target;
+
+};
+
+
+class MyInterpolation : public MIInterpolation {
+public:
+  std::shared_ptr&lt;SamplingState&gt; Interpolate (std::shared_ptr&lt;SamplingState&gt; const& coarseProposal, std::shared_ptr&lt;SamplingState&gt; const& fineProposal) {
+    return std::make_shared&lt;SamplingState&gt;(coarseProposal-&gt;state);
+  }
+};
+
+class MyMIComponentFactory : public MIComponentFactory {
+public:
+  virtual std::shared_ptr&lt;MCMCProposal&gt; Proposal (std::shared_ptr&lt;MultiIndex&gt; const& index, std::shared_ptr&lt;AbstractSamplingProblem&gt; const& samplingProblem) override {
+    pt::ptree pt;
+    pt.put("BlockIndex",0);
+
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    Eigen::MatrixXd cov(2,2);
+    cov &lt;&lt; 0.7, 0.6,
+    0.6, 1.0;
+    cov *= 20.0;
+
+    auto prior = std::make_shared&lt;Gaussian&gt;(mu, cov);
+
+    return std::make_shared&lt;CrankNicolsonProposal&gt;(pt, samplingProblem, prior);
+  }
+
+  virtual std::shared_ptr&lt;MultiIndex&gt; FinestIndex() override {
+    auto index = std::make_shared&lt;MultiIndex&gt;(2);
+    index-&gt;SetValue(0, 2);
+    index-&gt;SetValue(1, 2);
+    return index;
+  }
+
+  virtual std::shared_ptr&lt;MCMCProposal&gt; CoarseProposal (std::shared_ptr&lt;MultiIndex&gt; const& index,
+                                                        std::shared_ptr&lt;AbstractSamplingProblem&gt; const& coarseProblem,
+                                                           std::shared_ptr&lt;SingleChainMCMC&gt; const& coarseChain) override {
+    pt::ptree ptProposal;
+    ptProposal.put("BlockIndex",0);
+    int subsampling = 5;
+    ptProposal.put("subsampling", subsampling);
+    return std::make_shared&lt;SubsamplingMIProposal&gt;(ptProposal, coarseProblem, coarseChain);
+  }
+
+  virtual std::shared_ptr&lt;AbstractSamplingProblem&gt; SamplingProblem (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    Eigen::MatrixXd cov(2,2);
+    cov &lt;&lt; 0.7, 0.6,
+           0.6, 1.0;
+
+    if (index-&gt;GetValue(0) == 0) {
+      mu[0] *= 0.8;
+    } else if (index-&gt;GetValue(0) == 1) {
+      mu[0] *= 0.9;
+    } else if (index-&gt;GetValue(0) == 2) {
+      mu[0] *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+    if (index-&gt;GetValue(1) == 0) {
+      mu[1] *= 0.8;
+    } else if (index-&gt;GetValue(1) == 1) {
+      mu[1] *= 0.9;
+    } else if (index-&gt;GetValue(1) == 2) {
+      mu[1] *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+    if (index-&gt;Max() == 0) {
+      cov *= 1.5;
+    } else if (index-&gt;Max() == 1) {
+      cov *= 1.2;
+    } else if (index-&gt;Max() == 2) {
+      cov *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+
+    auto coarseTargetDensity = std::make_shared&lt;Gaussian&gt;(mu, cov)-&gt;AsDensity();
+    return std::make_shared&lt;MySamplingProblem&gt;(coarseTargetDensity);
+  }
+
+  virtual std::shared_ptr&lt;MIInterpolation&gt; Interpolation (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    return std::make_shared&lt;MyInterpolation&gt;();
+  }
+
+  virtual Eigen::VectorXd StartingPoint (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    return mu;
+  }
+
+};*/
+
+
+int main(){
+
+  pt::ptree pt;
+
+  pt.put("NumSamples", 1e4); // number of samples for single level MCMC
+  pt.put("NumSamples_0_0", 1e5);
+  pt.put("NumSamples_0_1", 1e5);
+  pt.put("NumSamples_0_2", 1e4);
+  pt.put("NumSamples_1_0", 1e5);
+  pt.put("NumSamples_1_1", 1e4);
+  pt.put("NumSamples_1_2", 1e3);
+  pt.put("NumSamples_2_0", 1e4);
+  pt.put("NumSamples_2_1", 1e3);
+  pt.put("NumSamples_2_2", 1e3);
+  pt.put("MLMCMC.Subsampling", 5);
+
+  auto componentFactory = std::make_shared&lt;MyMIComponentFactory&gt;(pt);
+
+
+  std::cout &lt;&lt; std::endl &lt;&lt; "*************** multiindex chain" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+  MIMCMC mimcmc (pt, componentFactory);
+  mimcmc.Run();
+  mimcmc.Draw(false);
+  std::cout &lt;&lt; "mean QOI: " &lt;&lt; mimcmc.MeanQOI().transpose() &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; std::endl &lt;&lt; "*************** single chain reference" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+  SLMCMC slmcmc (pt, componentFactory);
+  slmcmc.Run();
+  std::cout &lt;&lt; "mean QOI: " &lt;&lt; slmcmc.MeanQOI().transpose() &lt;&lt; std::endl;
+
+  return 0;
+}
+</pre>
+<h1>Complete Code</h1>
+
+<pre class="prettyprint lang-cpp">
+#include "MUQ/SamplingAlgorithms/SLMCMC.h"
+#include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
+#include "MUQ/SamplingAlgorithms/MIMCMC.h"
+
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/MHProposal.h"
+#include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
+#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+
+#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+
+#include &lt;boost/property_tree/ptree.hpp&gt;
+
+namespace pt = boost::property_tree;
+using namespace muq::Modeling;
+using namespace muq::SamplingAlgorithms;
+using namespace muq::Utilities;
+
+
+#include "Problem.h"
+
+
+
+/*class MySamplingProblem : public AbstractSamplingProblem {
+public:
+  MySamplingProblem(std::shared_ptr&lt;muq::Modeling::ModPiece&gt; const& targetIn)
+   : AbstractSamplingProblem(Eigen::VectorXi::Constant(1,2), Eigen::VectorXi::Constant(1,2)),
+     target(targetIn){}
+
+  virtual ~MySamplingProblem() = default;
+
+
+  virtual double LogDensity(std::shared_ptr&lt;SamplingState&gt; const& state) override {
+    lastState = state;
+    return target-&gt;Evaluate(state-&gt;state).at(0)(0);
+  };
+
+  virtual std::shared_ptr&lt;SamplingState&gt; QOI() override {
+    assert (lastState != nullptr);
+    return std::make_shared&lt;SamplingState&gt;(lastState-&gt;state, 1.0);
+  }
+
+private:
+  std::shared_ptr&lt;SamplingState&gt; lastState = nullptr;
+
+  std::shared_ptr&lt;muq::Modeling::ModPiece&gt; target;
+
+};
+
+
+class MyInterpolation : public MIInterpolation {
+public:
+  std::shared_ptr&lt;SamplingState&gt; Interpolate (std::shared_ptr&lt;SamplingState&gt; const& coarseProposal, std::shared_ptr&lt;SamplingState&gt; const& fineProposal) {
+    return std::make_shared&lt;SamplingState&gt;(coarseProposal-&gt;state);
+  }
+};
+
+class MyMIComponentFactory : public MIComponentFactory {
+public:
+  virtual std::shared_ptr&lt;MCMCProposal&gt; Proposal (std::shared_ptr&lt;MultiIndex&gt; const& index, std::shared_ptr&lt;AbstractSamplingProblem&gt; const& samplingProblem) override {
+    pt::ptree pt;
+    pt.put("BlockIndex",0);
+
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    Eigen::MatrixXd cov(2,2);
+    cov &lt;&lt; 0.7, 0.6,
+    0.6, 1.0;
+    cov *= 20.0;
+
+    auto prior = std::make_shared&lt;Gaussian&gt;(mu, cov);
+
+    return std::make_shared&lt;CrankNicolsonProposal&gt;(pt, samplingProblem, prior);
+  }
+
+  virtual std::shared_ptr&lt;MultiIndex&gt; FinestIndex() override {
+    auto index = std::make_shared&lt;MultiIndex&gt;(2);
+    index-&gt;SetValue(0, 2);
+    index-&gt;SetValue(1, 2);
+    return index;
+  }
+
+  virtual std::shared_ptr&lt;MCMCProposal&gt; CoarseProposal (std::shared_ptr&lt;MultiIndex&gt; const& index,
+                                                        std::shared_ptr&lt;AbstractSamplingProblem&gt; const& coarseProblem,
+                                                           std::shared_ptr&lt;SingleChainMCMC&gt; const& coarseChain) override {
+    pt::ptree ptProposal;
+    ptProposal.put("BlockIndex",0);
+    int subsampling = 5;
+    ptProposal.put("subsampling", subsampling);
+    return std::make_shared&lt;SubsamplingMIProposal&gt;(ptProposal, coarseProblem, coarseChain);
+  }
+
+  virtual std::shared_ptr&lt;AbstractSamplingProblem&gt; SamplingProblem (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    Eigen::MatrixXd cov(2,2);
+    cov &lt;&lt; 0.7, 0.6,
+           0.6, 1.0;
+
+    if (index-&gt;GetValue(0) == 0) {
+      mu[0] *= 0.8;
+    } else if (index-&gt;GetValue(0) == 1) {
+      mu[0] *= 0.9;
+    } else if (index-&gt;GetValue(0) == 2) {
+      mu[0] *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+    if (index-&gt;GetValue(1) == 0) {
+      mu[1] *= 0.8;
+    } else if (index-&gt;GetValue(1) == 1) {
+      mu[1] *= 0.9;
+    } else if (index-&gt;GetValue(1) == 2) {
+      mu[1] *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+    if (index-&gt;Max() == 0) {
+      cov *= 1.5;
+    } else if (index-&gt;Max() == 1) {
+      cov *= 1.2;
+    } else if (index-&gt;Max() == 2) {
+      cov *= 1.0;
+    } else {
+      std::cerr &lt;&lt; "Sampling problem not defined!" &lt;&lt; std::endl;
+      assert (false);
+    }
+
+    auto coarseTargetDensity = std::make_shared&lt;Gaussian&gt;(mu, cov)-&gt;AsDensity();
+    return std::make_shared&lt;MySamplingProblem&gt;(coarseTargetDensity);
+  }
+
+  virtual std::shared_ptr&lt;MIInterpolation&gt; Interpolation (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    return std::make_shared&lt;MyInterpolation&gt;();
+  }
+
+  virtual Eigen::VectorXd StartingPoint (std::shared_ptr&lt;MultiIndex&gt; const& index) override {
+    Eigen::VectorXd mu(2);
+    mu &lt;&lt; 1.0, 2.0;
+    return mu;
+  }
+
+};*/
+
+
+int main(){
+
+  pt::ptree pt;
+
+  pt.put("NumSamples", 1e4); // number of samples for single level MCMC
+  pt.put("NumSamples_0_0", 1e5);
+  pt.put("NumSamples_0_1", 1e5);
+  pt.put("NumSamples_0_2", 1e4);
+  pt.put("NumSamples_1_0", 1e5);
+  pt.put("NumSamples_1_1", 1e4);
+  pt.put("NumSamples_1_2", 1e3);
+  pt.put("NumSamples_2_0", 1e4);
+  pt.put("NumSamples_2_1", 1e3);
+  pt.put("NumSamples_2_2", 1e3);
+  pt.put("MLMCMC.Subsampling", 5);
+
+  auto componentFactory = std::make_shared&lt;MyMIComponentFactory&gt;(pt);
+
+
+  std::cout &lt;&lt; std::endl &lt;&lt; "*************** multiindex chain" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+  MIMCMC mimcmc (pt, componentFactory);
+  mimcmc.Run();
+  mimcmc.Draw(false);
+  std::cout &lt;&lt; "mean QOI: " &lt;&lt; mimcmc.MeanQOI().transpose() &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; std::endl &lt;&lt; "*************** single chain reference" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+  SLMCMC slmcmc (pt, componentFactory);
+  slmcmc.Run();
+  std::cout &lt;&lt; "mean QOI: " &lt;&lt; slmcmc.MeanQOI().transpose() &lt;&lt; std::endl;
+
+  return 0;
+}
+</pre>
