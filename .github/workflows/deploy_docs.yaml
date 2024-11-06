@@ -35,8 +35,8 @@ jobs:
       - name: Build website with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: "/__w/MIT-MUQ/MIT-MUQ/website/source/"
-          destination: "/__w/MIT-MUQ/MIT-MUQ/website/source/_site/"
+          source: $MUQ_HOME/website/source/
+          destination: $MUQ_HOME/website/source/_site/
 
       - name: Configure default groups and build Doxygen
         shell: bash
