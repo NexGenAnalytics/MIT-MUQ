@@ -4,7 +4,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="Overview"/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="modules" visible="yes" title="Chapters" intro=""/>
+    <tab type="topics" visible="yes" title="Chapters" intro=""/>
     <tab type="examples" visible="yes" title="" intro=""/>
   </navindex>
 
