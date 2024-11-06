@@ -6,7 +6,7 @@ layout: default
 <script type="text/javascript">
   function filterUsingCategory(selectedCategory) {
     var id = 0;
-    {% for page in site.example_pages_v0_3_1 %}
+    {% for page in site.example_pages %}
       var cats = {{ page.tag | jsonify }}
 
       var postDiv = document.getElementById(++id);
@@ -31,7 +31,7 @@ layout: default
 
 <div class="btn-group" role="group" aria-label="Tags">
   <button class="btn btn-sm btn-outline-primary" id="All" onclick="filterUsingCategory('All')">All</button>
-  {% assign tags =  site.example_pages_v0_3_1 | map: 'tag' | join: ','  | split: ',' | uniq %}
+  {% assign tags =  site.example_pages | map: 'tag' | join: ','  | split: ',' | uniq %}
   {% for tag in tags %}
   <button class="btn btn-sm btn-outline-primary" id="{{ tag }}" onclick="filterUsingCategory(this.id)">{{ tag }}</button>
   {% endfor %}
@@ -42,7 +42,7 @@ layout: default
 
 <div class="row">
 {% assign id = 0 %}
-{% for page in site.example_pages_v0_3_1 %}
+{% for page in site.example_pages %}
   {% assign id = id | plus:1 %}
   <div class="list-group" id="{{id}}"><a href="{{ site.url }}{{ page.url }}" class="list-group-item"><span class="badge">{{ page.language }}</span><span class="badge">{{ page.tag }}</span><h4 class="list-group-item-heading">{{ page.title }}</h4><p class="list-group-item-text">{{ page.description }}</p></a></div>
 {% endfor %}
