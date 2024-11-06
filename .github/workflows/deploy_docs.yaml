@@ -61,7 +61,7 @@ jobs:
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: /__w/MIT-MUQ/MIT-MUQ/website/source/
+          path: /__w/MIT-MUQ/MIT-MUQ/website/source/_site
   
   # Deployment job
   deploy:
