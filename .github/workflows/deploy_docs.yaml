@@ -7,14 +7,16 @@ on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
     branches: [ "master" ]
+  pull_request:
+    branches: [master]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
+    if: "!contains(github.event.head_commit.message, 'build_doc')"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/nexgenanalytics/muqcontainers/ubuntu-2404-gnu-11-serial
@@ -28,7 +30,7 @@ jobs:
       MUQ_BUILD_DIR: ${{ github.workspace }}/../muq_build
       MUQ_INSTALL_DIR: ${{ github.workspace }}/../muq_install
       TPL_PFX: /home/tpls
-        
+
     steps:
       - uses: actions/checkout@v4
 
@@ -62,7 +64,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: /__w/MIT-MUQ/MIT-MUQ/website/source/_site
-  
+
   # Deployment job
   deploy:
     environment:
@@ -77,4 +79,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-                  
