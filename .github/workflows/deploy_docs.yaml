@@ -32,7 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure default groups and build doc
+      - name: Build website with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: website/source/
+          destination: website/source/_site/
+
+      - name: Configure default groups and build Doxygen
         shell: bash
         run: |
           rm -rf $MUQ_BUILD_DIR
@@ -48,13 +54,14 @@ jobs:
           cd $MUQ_BUILD_DIR
           make doc
           cd -
+          mkdir $MUQ_HOME/website/source/_site/latest
           mv -f $MUQ_BUILD_DIR/doxygen_output/html/* $MUQ_HOME/website/source/_site/latest
 
       - name: Upload static files as artifact
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: /__w/MIT-MUQ/MIT-MUQ/website
+          path: /__w/MIT-MUQ/MIT-MUQ/website/source/
   
   # Deployment job
   deploy:

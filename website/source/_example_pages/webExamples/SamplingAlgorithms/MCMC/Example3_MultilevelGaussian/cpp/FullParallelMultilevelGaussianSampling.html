@@ -1,0 +1,148 @@
+---
+title: Parallel Multilevel MCMC with parallel model
+layout: default
+description: Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it. The MLMCMC method itself allows massive parallelization, and the forward model may be parallelized as well. We use simple Gaussian target densities here, but the example can serve as a template for actually parallel models.
+language: c++
+tag: MCMC
+doc_level: 1
+---
+<h1><small class="text-muted">Example</small> </br> Parallel Multilevel MCMC with parallel model<h1>
+<blockquote class="blockquote"><p class="mb-0">Defines a hierarchy of simple Gaussian models and applies Multilevel MCMC to it. The MLMCMC method itself allows massive parallelization, and the forward model may be parallelized as well. We use simple Gaussian target densities here, but the example can serve as a template for actually parallel models.</p></blockquote>
+</br>
+
+
+
+<pre class="prettyprint lang-cpp">
+#include "MUQ/SamplingAlgorithms/SLMCMC.h"
+#include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
+#include "MUQ/SamplingAlgorithms/MIMCMC.h"
+
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/MHProposal.h"
+#include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
+#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+
+#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+
+#include &lt;boost/property_tree/ptree.hpp&gt;
+
+namespace pt = boost::property_tree;
+using namespace muq::Modeling;
+using namespace muq::SamplingAlgorithms;
+using namespace muq::Utilities;
+
+#include "MUQ/SamplingAlgorithms/ParallelMIMCMCWorker.h"
+#include "MUQ/SamplingAlgorithms/ParallelFixedSamplesMIMCMC.h"
+
+#include "ParallelProblem.h"
+
+#include &lt;ctime&gt;
+
+int main(int argc, char **argv){
+  spdlog::set_level(spdlog::level::debug);
+
+  MPI_Init(&argc, &argv);
+  auto comm = std::make_shared&lt;parcer::Communicator&gt;();
+
+  // Name trace according to current time stamp
+  std::time_t result = std::time(nullptr);
+  std::string timestamp = std::asctime(std::localtime(&result));
+  auto tracer = std::make_shared&lt;OTF2Tracer&gt;("trace", timestamp);
+
+  pt::ptree pt;
+  pt.put("NumSamples_0", 1e3);
+  pt.put("NumSamples_1", 5e2);
+  pt.put("NumSamples_2", 1e2);
+  pt.put("NumSamples_3", 1e2);
+  pt.put("MCMC.BurnIn", 100);
+  pt.put("MLMCMC.Subsampling", 10);
+  pt.put("MLMCMC.Scheduling", true);
+
+
+  auto componentFactory = std::make_shared&lt;MyMIComponentFactory&gt;(pt);
+  StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory, std::make_shared&lt;RoundRobinStaticLoadBalancer&gt;(), std::make_shared&lt;parcer::Communicator&gt;(), tracer);
+
+  if (comm-&gt;GetRank() == 0) {
+    parallelMIMCMC.Run();
+    Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
+    std::cout &lt;&lt; "mean QOI: " &lt;&lt; meanQOI.transpose() &lt;&lt; std::endl;
+  }
+  parallelMIMCMC.WriteToFile("parallelMIMCMC.h5");
+  parallelMIMCMC.Finalize();
+  tracer-&gt;write();
+
+  MPI_Finalize();
+}
+</pre>
+<h1>Complete Code</h1>
+
+<pre class="prettyprint lang-cpp">
+#include "MUQ/SamplingAlgorithms/SLMCMC.h"
+#include "MUQ/SamplingAlgorithms/GreedyMLMCMC.h"
+#include "MUQ/SamplingAlgorithms/MIMCMC.h"
+
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/MHProposal.h"
+#include "MUQ/SamplingAlgorithms/CrankNicolsonProposal.h"
+#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/SamplingAlgorithms/SubsamplingMIProposal.h"
+
+#include "MUQ/SamplingAlgorithms/MIComponentFactory.h"
+
+#include &lt;boost/property_tree/ptree.hpp&gt;
+
+namespace pt = boost::property_tree;
+using namespace muq::Modeling;
+using namespace muq::SamplingAlgorithms;
+using namespace muq::Utilities;
+
+#include "MUQ/SamplingAlgorithms/ParallelMIMCMCWorker.h"
+#include "MUQ/SamplingAlgorithms/ParallelFixedSamplesMIMCMC.h"
+
+#include "ParallelProblem.h"
+
+#include &lt;ctime&gt;
+
+int main(int argc, char **argv){
+  spdlog::set_level(spdlog::level::debug);
+
+  MPI_Init(&argc, &argv);
+  auto comm = std::make_shared&lt;parcer::Communicator&gt;();
+
+  // Name trace according to current time stamp
+  std::time_t result = std::time(nullptr);
+  std::string timestamp = std::asctime(std::localtime(&result));
+  auto tracer = std::make_shared&lt;OTF2Tracer&gt;("trace", timestamp);
+
+  pt::ptree pt;
+  pt.put("NumSamples_0", 1e3);
+  pt.put("NumSamples_1", 5e2);
+  pt.put("NumSamples_2", 1e2);
+  pt.put("NumSamples_3", 1e2);
+  pt.put("MCMC.BurnIn", 100);
+  pt.put("MLMCMC.Subsampling", 10);
+  pt.put("MLMCMC.Scheduling", true);
+
+
+  auto componentFactory = std::make_shared&lt;MyMIComponentFactory&gt;(pt);
+  StaticLoadBalancingMIMCMC parallelMIMCMC (pt, componentFactory, std::make_shared&lt;RoundRobinStaticLoadBalancer&gt;(), std::make_shared&lt;parcer::Communicator&gt;(), tracer);
+
+  if (comm-&gt;GetRank() == 0) {
+    parallelMIMCMC.Run();
+    Eigen::VectorXd meanQOI = parallelMIMCMC.MeanQOI();
+    std::cout &lt;&lt; "mean QOI: " &lt;&lt; meanQOI.transpose() &lt;&lt; std::endl;
+  }
+  parallelMIMCMC.WriteToFile("parallelMIMCMC.h5");
+  parallelMIMCMC.Finalize();
+  tracer-&gt;write();
+
+  MPI_Finalize();
+}
+</pre>
