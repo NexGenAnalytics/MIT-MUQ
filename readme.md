@@ -26,25 +26,27 @@ MUQ is available on Linux and OSX as a conda package, docker image, or from sour
 conda install -c conda-forge muq
 ```
 
-For more installation options, check out the [installation guide](https://mituq.bitbucket.io/source/_site/latest/muqinstall.html).
+For more installation options, check out the [installation guide](https://nexgenanalytics.github.io/MIT-MUQ/latest/muqinstall.html).
 
 ## Getting Started
 
-MUQ is composed of several different modules, which work together to define and solve UQ problems.  Documentation for each of these modules is included with our doxygen-generated [API documentation](https://mituq.bitbucket.io/source/_site/latest/index.html).   Most applications will require using the [modeling module](https://mituq.bitbucket.io/source/_site/latest/group__modeling.html) to define statistical models or interact with user-defined models.  Learning the basics of this module is therefore a good place to start.
+MUQ is composed of several different modules, which work together to define and solve UQ problems. 
+Documentation for each of these modules is included with our doxygen-generated [API documentation](https://nexgenanalytics.github.io/MIT-MUQ/latest/index.html). 
+Most applications will require using the [modeling module](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__modeling.html) to define statistical models or interact with user-defined models. Learning the basics of this module is therefore a good place to start.
 
 #### Interested in forward UQ?
 
-- First, get acquainted with the [modeling module](https://mituq.bitbucket.io/source/_site/latest/group__modeling.html).  You'll need to use one or more instances of the [ModPiece class](https://mituq.bitbucket.io/source/_site/latest/classmuq_1_1Modeling_1_1ModPiece.html) to define the model that will be evaluated by the UQ algorithm.
-- Once you have a model, check out the [polynomial chaos module](https://mituq.bitbucket.io/source/_site/latest/group__polychaos.html).
-- Other examples can be found by selecting the "PCE" examples on the MUQ [webpage](https://mituq.bitbucket.io/source/_site/examples.html).
+- First, get acquainted with the [modeling module](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__modeling.html).  You'll need to use one or more instances of the [ModPiece class](https://nexgenanalytics.github.io/MIT-MUQ/latest/classmuq_1_1Modeling_1_1ModPiece.html) to define the model that will be evaluated by the UQ algorithm.
+- Once you have a model, check out the [polynomial chaos module](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__polychaos.html).
+- Other examples can be found by selecting the "PCE" examples on the MUQ [webpage](https://nexgenanalytics.github.io/MIT-MUQ/examples.html).
 
 #### Want to tackle Bayesian inverse problems?
 
-- Just like for forward UQ, you'll want to get familiar with the [modeling module](https://mituq.bitbucket.io/source/_site/latest/group__modeling.html) module to define a forward model.  The [WorkGraph class](https://mituq.bitbucket.io/source/_site/latest/classmuq_1_1Modeling_1_1WorkGraph.html) within the modeling module is also used to combine multiple components (e.g., the prior, forward model, and likelihood function) comprising the Bayesian posterior distribution.
-- Look at methods in the [sampling algorithms](https://mituq.bitbucket.io/source/_site/latest/group__sampling.html) module to generate samples of your Bayesian posterior.
-- Other examples can be found by filtering the "MCMC" examples on the MUQ [webpage](https://mituq.bitbucket.io/source/_site/examples.html).
+- Just like for forward UQ, you'll want to get familiar with the [modeling module](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__modeling.html) module to define a forward model.  The [WorkGraph class](https://nexgenanalytics.github.io/MIT-MUQ/latest/classmuq_1_1Modeling_1_1WorkGraph.html) within the modeling module is also used to combine multiple components (e.g., the prior, forward model, and likelihood function) comprising the Bayesian posterior distribution.
+- Look at methods in the [sampling algorithms](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__sampling.html) module to generate samples of your Bayesian posterior.
+- Other examples can be found by filtering the "MCMC" examples on the MUQ [webpage](https://nexgenanalytics.github.io/MIT-MUQ/examples.html).
 
-You can also find many [examples](https://mituq.bitbucket.io/source/_site/examples.html) using both the c++ and Python interfaces to MUQ.  These examples can provide useful starting places for using MUQ on your own problems.
+You can also find many [examples](https://nexgenanalytics.github.io/MIT-MUQ/examples.html) using both the c++ and Python interfaces to MUQ.  These examples can provide useful starting places for using MUQ on your own problems.
 
 #### Getting Connected
 
@@ -72,16 +74,16 @@ When publishing work based on MUQ, please cite our publication in the Journal of
 #### Want to help develop MUQ?
 
 Yes, please! We frequently discuss future developments on Slack ([join via our website](http://muq.mit.edu/)), so feel free to drop by!
-Then fork the [muq2 repository](https://bitbucket.org/mituq/muq2/src/master/) and submit a pull request when ready.
-Also check out our [style guide](https://mituq.bitbucket.io/source/_site/latest/muqstyle.html).
+Then fork the [muq2 repository](https://github.com/NexGenAnalytics/MIT-MUQ) and submit a pull request when ready.
+Also check out our [style guide](https://nexgenanalytics.github.io/MIT-MUQ/latest/muqstyle.html).
 
 #### Find a bug?
 
-[Submit the issue on bitbucket](https://bitbucket.org/mituq/muq2/issues/new).  Make sure to label the issue as a bug.
+[Submit the issue](https://github.com/NexGenAnalytics/MIT-MUQ/issues).  Make sure to label the issue as a bug.
 
 #### Want a new feature?
 
-[Submit a request on bitbucket](https://bitbucket.org/mituq/muq2/issues/new).  Label the issue as an enhancement or proposal.
+[Submit a request](https://github.com/NexGenAnalytics/MIT-MUQ/pulls).  Label the issue as an enhancement or proposal.
 
 
 #### Developer Information
