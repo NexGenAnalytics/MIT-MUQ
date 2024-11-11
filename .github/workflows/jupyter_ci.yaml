@@ -18,7 +18,7 @@ jobs:
       fail-fast: true
       matrix:
         image:
-          - ubuntu-2404-gnu-serial-jupyter
+          - ubuntu-2404-gnu-11-serial-jupyter
         build_type:
           - Release
 
