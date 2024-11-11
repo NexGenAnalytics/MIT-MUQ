@@ -1,37 +1,31 @@
 \page infrastructure Developer Infrastructure Notes
 
 ### Git
-- Hosted at https://bitbucket.org/mituq/muq2
+- Hosted at https://github.com/NexGenAnalytics/MIT-MUQ
 
 ### Testing
 - GTest for running c++ unit tests for each compile groups, sequential and MPI parallel
 - RunAllNotebooks.sh for automatically running all python notebook examples
 
 ### CI
-- See bitbucket-pipelines.yml in MUQ2 repo
-- Coverage
-  - Basic c++ unit tests and python notebooks test on push
-  - Weekly extended runs mainly for different OS configs
-  - Weekly installation instructions script run to ensure they it still leads to a running MUQ setup
+- See https://github.com/NexGenAnalytics/MIT-MUQ/tree/master/.github/workflows in MUQ2 repo
 
 ### Website
-- Hosted on bitbucket pages in the mituq.bitbucket.io repository.
-- Accessible at https://mituq.bitbucket.io/
-- When something is committed to this repository, bitbucket pipelines runs Jekyll and generate the html.
-- (in progress) HTML example pages are generated from the documentation/scripts/ProcessExamples.py in the MUQ2 repository.   This script is run from the pipelines script in the MUQ2 repository when a new git tag is created.
-- The bitbucket.io site is static, but the slack invitation button requires extra processing that cannot occur on a static site.  To overcome this,  a "cloud function" has been set up on the Google cloud platform to handle POST requests when the invitation modal and interact with the slack API.
+- Hosted on Github pages.
+- Accessible at https://nexgenanalytics.github.io/MIT-MUQ/
+- When something is committed to this repository, Github pipelines runs Jekyll and generate the html.
+- The site is static, but the slack invitation button requires extra processing that cannot occur on a static site.  To overcome this,  a "cloud function" has been set up on the Google cloud platform to handle POST requests when the invitation modal and interact with the slack API.
 
 ### Doxygen
 - Built via CI when release tag is defined on master repo, pushed as commit to website repo
 
 ### Docker (in progress)
-- The docker images are built on dockerhub using their [automated builds](https://docs.docker.com/docker-hub/builds/) functionality.
-- Dockerfiles for the images can be found in muq/SupportScripts/docker
-- Built images can be found in https://hub.docker.com/r/mparno .
+- Dockerfiles are located at https://github.com/NexGenAnalytics/MIT-MUQ-containers
+- The docker images are built on dockerhub automatically via pipelines.
+- Images are available at: https://github.com/orgs/NexGenAnalytics/packages?repo_name=MIT-MUQ-containers
 
 ### Conda
 - The MUQ2 conda image lives on conda-forge.
 - The recipe for the MUQ2 conda image lives in the [muq-feedstock repository](https://github.com/conda-forge/muq-feedstock) on github.   
 - Directions for updating the recipe manually can be found [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html).
 - Linus and Matt are currently recipe maintainers.
-- In our bitbucket-pipelines.yml file, a fork of conda-forge's muq-feedstock repository is updated every time a new tag is created on the MUQ2 repository.   To update the image on conda-forge, we then need to go into github and create a pull request to merge our fork into conda-forge's repo.
