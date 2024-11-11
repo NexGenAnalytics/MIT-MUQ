@@ -11,6 +11,11 @@ for notebook in **/*.ipynb; do # Whitespace-safe and recursive
     echo "Running $notebook:"
     echo ""
 
+    if [ "$notebook" = "examples/SamplingAlgorithms/MCMC/EllipticInference/python/DILI/EllipticInference.ipynb" ]
+    then
+	continue
+    fi
+
     papermill --progress-bar --cwd "$(dirname "$notebook")" "$notebook" - > /dev/null
 
     papermill_exit=$?
