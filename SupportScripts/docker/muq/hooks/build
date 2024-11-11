@@ -1,3 +1,0 @@
-#!/bin/bash
-
-docker build --build-arg DOCKER_TAG=$DOCKER_TAG --build-arg GIT_BRANCH=$SOURCE_BRANCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .
