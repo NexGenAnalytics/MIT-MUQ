@@ -1,8 +1,22 @@
 \page docker Using MUQ with Docker
 
 # Docker
-First, make sure you have docker installed.  Follow [these](https://docs.docker.com/get-started/) instructions if you don't.  We provide several MUQ docker images:
+First, make sure you have docker installed.  Follow [these](https://docs.docker.com/get-started/) instructions if you don't.  
 
+We provide several MUQ docker images all located at: https://github.com/orgs/NexGenAnalytics/packages?repo_name=MIT-MUQ-containers
+which have been built from the dockerfiles available in https://github.com/NexGenAnalytics/MIT-MUQ-containers.
+These images are automatically built by GitHub everytime a new change is pushed to this repo. 
+The workflow files used for updating these images can be found here: https://github.com/NexGenAnalytics/MIT-MUQ-containers/tree/main/.github/workflows
+
+| Dockerfile Name                          | Description                                                                                  |
+|------------------------------------------|----------------------------------------------------------------------------------------------|
+| `ubuntu-2404-gnu-serial.dockerfile`      | Creates an Ubuntu 24.04 environment with GNU compilers.   |
+| `ubuntu-2404-gnu-serial-jupyter.dockerfile` | Configures an Ubuntu 24.04 environment with GNU compilers, and Jupyter.   |
+| `ubuntu-2404-gnu-mpi.dockerfile`         | Sets up an Ubuntu 24.04 environment with GNU compilers and MPI support.                      |
+
+
+
+<!-- 
 | Image Name | Description  |
 |---|---|
 | `mparno/muq`  | A simple image containing MUQ (c++ and python) installed in a debian environment with minimal dependencies.  |
@@ -20,3 +34,4 @@ To launch a container using the `muq-jupyter` image, we should also share port 8
 ```
 docker run -it -p 8888:8888 -v ${PWD}:/home/muq-user muq-jupyter bash
 ```
+ -->
