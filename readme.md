@@ -50,7 +50,7 @@ You can also find many [examples](https://nexgenanalytics.github.io/MIT-MUQ/exam
 
 #### Getting Connected
 
-Join the MUQ Slack channel via our [website](http://muq.mit.edu/) to get in touch with MUQ developers and other users. We are always happy to help!
+Join the MUQ Slack channel via our [website](https://nexgenanalytics.github.io/MIT-MUQ) to get in touch with MUQ developers and other users. We are always happy to help!
 
 ## Citing
 
@@ -73,7 +73,7 @@ When publishing work based on MUQ, please cite our publication in the Journal of
 
 #### Want to help develop MUQ?
 
-Yes, please! We frequently discuss future developments on Slack ([join via our website](http://muq.mit.edu/)), so feel free to drop by!
+Yes, please! We frequently discuss future developments on Slack ([join via our website](https://nexgenanalytics.github.io/MIT-MUQ)), so feel free to drop by!
 Then fork the [muq2 repository](https://github.com/NexGenAnalytics/MIT-MUQ) and submit a pull request when ready.
 Also check out our [style guide](https://nexgenanalytics.github.io/MIT-MUQ/latest/muqstyle.html).
 
