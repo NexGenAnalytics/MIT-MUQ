@@ -18,7 +18,7 @@ MUQ has a variety of capabilities, including:
 *  Nonlinear Optimization
 *  Generalized Polynomial Chaos Expansions
 
-## Installation:
+## Installation
 
 MUQ is available on Linux and OSX as a conda package, docker image, or from source. For many users, getting started can be as easy as running
 
