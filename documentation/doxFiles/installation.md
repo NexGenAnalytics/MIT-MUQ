@@ -1,7 +1,9 @@
+\page installation Installing MUQ
+
 # Installing MUQ
 
-This page provides step-by-step instructions for installing MUQ, including setting 
-up required dependencies, choosing which MUQ's features to enable, and testing your installation. 
+This page provides step-by-step instructions for installing MUQ, including setting
+up required dependencies, choosing which MUQ's features to enable, and testing your installation.
 
 Follow these steps carefully to ensure compatibility and successful setup.
 
@@ -11,7 +13,7 @@ Follow these steps carefully to ensure compatibility and successful setup.
 
 - **Operating System**: Linux or MacOS
 
-- **C++ Compiler**: A C++17-compatible compiler. MUQ is currently tested only with GNU 11. Compatibility with higher versions is not fully 
+- **C++ Compiler**: A C++17-compatible compiler. MUQ is currently tested only with GNU 11. Compatibility with higher versions is not fully
 guaranteed. If you happen to try and observe errors, please report them by creating new issues.
 
 - **Python**: Python 3.12 (matching the latest `python3-dev` version for Ubuntu 24.04).
@@ -22,12 +24,12 @@ guaranteed. If you happen to try and observe errors, please report them by creat
 
 ## MUQ Compile Groups
 
-MUQ contains several capabilities which can be enabled via what MUQ calls "compile groups". 
-Compile groups might have different dependency requirements, and each compile group possibly depends on other groups. 
+MUQ contains several capabilities which can be enabled via what MUQ calls "compile groups".
+Compile groups might have different dependency requirements, and each compile group possibly depends on other groups.
 
-They have the following advantages: 
+They have the following advantages:
 - they allow you to select specific functionalities you want to build/install
-- when you enable a target compile group, internally the build system automatically turns on the other groups that are needed, 
+- when you enable a target compile group, internally the build system automatically turns on the other groups that are needed,
 so that you don't have to know all their interdependencies.
 
 The following table shows the compile groups and which TPLs each group depends on.
@@ -59,7 +61,7 @@ The following table shows the compile groups and which TPLs each group depends o
 | `INFERENCE_FILTERING`             | EIGEN3, BOOST, STANMATH                                               |
 
 
-When building Python bindings, the following table shows the Python compile groups: 
+When building Python bindings, the following table shows the Python compile groups:
 
 | Compile Group                     | Dependencies                                            |
 |-----------------------------------|---------------------------------------------------------|
@@ -74,10 +76,10 @@ When building Python bindings, the following table shows the Python compile grou
 
 **Does this mean you have to manually select a compile group every time you build MUQ?**
 
-No, you don't. Compile groups can be seen as an "expert mode" feature, since they provide a 
-conveniente way to have finer-grained control on what you enable, build and install. 
-If you want to avoid this, MUQ provides "default compile groups", namely groups that are enabled by default. 
-This can be done using the `-DMUQ_ENABLEGROUP_DEFAULT=ON` CMake argument when configuring MUQ. 
+No, you don't. Compile groups can be seen as an "expert mode" feature, since they provide a
+convenient way to have finer-grained control on what you enable, build and install.
+If you want to avoid this, MUQ provides "default compile groups", namely groups that are enabled by default.
+This can be done using the `-DMUQ_ENABLEGROUP_DEFAULT=ON` CMake argument when configuring MUQ.
 This is shown further in the [Configuration Examples section](#configuration-examples).
 
 
@@ -108,14 +110,14 @@ To install these dependencies, you can either:
 
 - use a suitable package manager or build them from source individually, or
 
-- use the provided build script in [our other repository](https://github.com/NexGenAnalytics/MIT-MUQ-containers): 
+- use the provided build script in [our other repository](https://github.com/NexGenAnalytics/MIT-MUQ-containers):
 ```
 python build_tpls.py --wdir $PWD --with all
 ```
 where `--wdir` specifies a working directory of your choice (can be non-existent) and `--with` allows you to specify which TPLs to build.
 
-This script will fetch, build and install the selected TPLs, and will generate a `tpls_cache.txt` file inside the working directory 
-containing all necessary information to give to CMake in order to find the needed dependencies. 
+This script will fetch, build and install the selected TPLs, and will generate a `tpls_cache.txt` file inside the working directory
+containing all necessary information to give to CMake in order to find the needed dependencies.
 As example of how to use this file with CMake is shown in the next section.
 
 We highly recommend using the build script as MUQ is tested only with this build process.

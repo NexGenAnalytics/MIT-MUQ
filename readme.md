@@ -26,12 +26,12 @@ MUQ is available on Linux and OSX as a conda package, docker image, or from sour
 conda install -c conda-forge muq
 ```
 
-For more installation options, check out the [installation guide](https://nexgenanalytics.github.io/MIT-MUQ/latest/muqinstall.html).
+For more installation options, check out the [installation guide](https://nexgenanalytics.github.io/MIT-MUQ/latest/installation.html).
 
 ## Getting Started
 
-MUQ is composed of several different modules, which work together to define and solve UQ problems. 
-Documentation for each of these modules is included with our doxygen-generated [API documentation](https://nexgenanalytics.github.io/MIT-MUQ/latest/index.html). 
+MUQ is composed of several different modules, which work together to define and solve UQ problems.
+Documentation for each of these modules is included with our doxygen-generated [API documentation](https://nexgenanalytics.github.io/MIT-MUQ/latest/index.html).
 Most applications will require using the [modeling module](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__modeling.html) to define statistical models or interact with user-defined models. Learning the basics of this module is therefore a good place to start.
 
 #### Interested in forward UQ?
