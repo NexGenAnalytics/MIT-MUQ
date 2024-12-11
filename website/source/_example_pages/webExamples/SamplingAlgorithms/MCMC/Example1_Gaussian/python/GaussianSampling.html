@@ -1,13 +1,13 @@
 ---
 title: Simple MCMC
 layout: default
-description: Introduces MUQ's MCMC capabilities using a random walk proposal on a Gaussian target densityl.
+description: Introduces MUQ's MCMC capabilities using a random walk proposal on a Gaussian target density.
 language: python
 tag: MCMC
 doc_level: 4
 ---
 <h1><small class="text-muted">Example</small> </br> Simple MCMC<h1>
-<blockquote class="blockquote"><p class="mb-0">Introduces MUQ's MCMC capabilities using a random walk proposal on a Gaussian target densityl.</p></blockquote>
+<blockquote class="blockquote"><p class="mb-0">Introduces MUQ's MCMC capabilities using a random walk proposal on a Gaussian target density.</p></blockquote>
 </br>
 
 
@@ -157,8 +157,8 @@ classTK = (&quot;Kernel1.Method&quot;, &quot;MHKernel&quot;)  # name of the tran
 blockNamePD = (&quot;Kernel1.Proposal&quot;, &quot;MyProposal&quot;) # name of block defining the proposal distribution
 classP = (&quot;Kernel1.MyProposal.Method&quot;, &quot;MHProposal&quot;) # name of proposal class
 varianceMH = (&quot;Kernel1.MyProposal.ProposalVariance&quot;, 0.5) # variance of the isotropic MH proposal
-               
-# dictionary of sampling parameters               
+
+# dictionary of sampling parameters
 pt = dict([numMCMC, blockNameTK, classTK, blockNamePD, classP, varianceMH])
 </pre>
 
@@ -226,8 +226,8 @@ classTK = (&quot;Kernel1.Method&quot;, &quot;MHKernel&quot;)  # name of the tran
 blockNamePD = (&quot;Kernel1.Proposal&quot;, &quot;MyProposal&quot;) # name of block defining the proposal distribution
 classP = (&quot;Kernel1.MyProposal.Method&quot;, &quot;MHProposal&quot;) # name of proposal class
 varianceMH = (&quot;Kernel1.MyProposal.ProposalVariance&quot;, 0.5) # variance of the isotropic MH proposal
-               
-# dictionary of sampling parameters               
+
+# dictionary of sampling parameters
 pt = dict([numMCMC, blockNameTK, classTK, blockNamePD, classP, varianceMH])
 
 mcmc = ms.SingleChainMCMC(pt,problem)
