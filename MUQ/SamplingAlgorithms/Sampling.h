@@ -15,7 +15,7 @@ where \f$h(x)\f$ is some utility function and \f$p(x)\f$ is the probability dens
 where \f$w_i\f$ are appropriately defined weights.  Typically, \f$w_i = N^{-1}\f$.   MUQ's sampling module provides tools for constructing Monte Carlo estimates like \f$\hat{h}\f$.  In particular, MUQ provides a suite of [Markov chain Monte Carlo](\ref mcmc) (MCMC) algorithms for generating samples \f$x^{(i)}\f$ that can be used in Monte Carlo.
 
 
-- The basics of **defining a sampling problem** in MUQ can be found [here](\ref mcmcprob).
+- The basics of **defining a sampling problem** in MUQ can be found [here](\ref mcmcalg).
 - An introduction to **MCMC algorithms** is provided [here](\ref mcmc).
 - An introduction to **dimension independent MCMC algorithms** can also be found [here](\ref disamp).
 - **Multi-fidelity and Multi-index MCMC algorithms** are described [here](\ref MIMCMC).
