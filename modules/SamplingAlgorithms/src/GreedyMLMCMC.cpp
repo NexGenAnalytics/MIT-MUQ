@@ -7,18 +7,18 @@ using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 using namespace muq::Modeling;
 
-GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree                                  opts, 
+GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree                                  opts,
                             Eigen::VectorXd                                       const& startPt,
                             std::vector<std::shared_ptr<muq::Modeling::ModPiece>> const& models,
                             std::shared_ptr<MultiIndexSet>                        const& multis) : GreedyMLMCMC(opts, startPt, CreateProblems(models), ProcessMultis(multis,models.size()))
 {
 }
-  
-GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree                                  opts, 
+
+GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree                                  opts,
                             Eigen::VectorXd                                       const& startPt,
                             std::vector<std::shared_ptr<AbstractSamplingProblem>> const& problems,
                             std::shared_ptr<MultiIndexSet>                        const& multis) : GreedyMLMCMC(opts, std::make_shared<DefaultComponentFactory>(opts,startPt,ProcessMultis(multis,problems.size()),problems))
-{ 
+{
 }
 
 GreedyMLMCMC::GreedyMLMCMC (boost::property_tree::ptree opts, std::shared_ptr<MIComponentFactory> componentFactory)
@@ -46,10 +46,10 @@ std::vector<std::shared_ptr<AbstractSamplingProblem>> GreedyMLMCMC::CreateProble
   std::vector<std::shared_ptr<AbstractSamplingProblem>> output(models.size());
   for(unsigned int i=0; i<models.size(); ++i)
     output.at(i) = std::make_shared<SamplingProblem>(models.at(i));
-  
+
   return output;
 }
-      
+
 
 std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::GetSamples() const {
   return std::make_shared<MultiIndexEstimator>(boxes);
@@ -88,9 +88,9 @@ std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::Run() {
       var_mle += chain->Variance().cwiseQuotient(chain->ESS()).maxCoeff();
     }
 
-    if (var_mle <= std::pow(e,2)) {
+    if (var_mle <= e) {
       if (verbosity > 0)
-        std::cout << "val_mle " << var_mle << " below " << std::pow(e,2) << std::endl;
+        std::cout << "val_mle " << var_mle << " below " << e << std::endl;
       break;
     }
 
@@ -104,7 +104,7 @@ std::shared_ptr<MultiIndexEstimator> GreedyMLMCMC::Run() {
       }else{
         chain = boxes.at(i)->FinestChain()->GetSamples();
       }
-      
+
       double my_payoff = chain->Variance().maxCoeff() / boxes.at(i)->FinestChain()->TotalTime();
 
       if (my_payoff > payoff_l) {
@@ -164,7 +164,7 @@ void GreedyMLMCMC::Draw(bool drawSamples) {
   graphfile.close();
 }
 
-std::shared_ptr<MultiIndexSet> GreedyMLMCMC::ProcessMultis(std::shared_ptr<MultiIndexSet> const& multis, 
+std::shared_ptr<MultiIndexSet> GreedyMLMCMC::ProcessMultis(std::shared_ptr<MultiIndexSet> const& multis,
                                                            unsigned int numLevels)
 {
   if(multis){
