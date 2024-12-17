@@ -141,7 +141,7 @@ TEST(MLMCMCTest, GreedyMLMCMC)
 
   pt.put("NumSamples", 1e4); // number of samples for single level
   pt.put("NumInitialSamples", 1e3); // number of initial samples for greedy MLMCMC
-  pt.put("GreedyTargetVariance", 0.05); // estimator variance to be achieved by greedy algorithm
+  pt.put("GreedyTargetVariance", 0.0025); // estimator variance to be achieved by greedy algorithm
   pt.put("MLMCMC.Subsampling_0", 5); // estimator variance to be achieved by greedy algorithm
   pt.put("MLMCMC.Subsampling_1", 3); // estimator variance to be achieved by greedy algorithm
   pt.put("MLMCMC.Subsampling_2", 1); // estimator variance to be achieved by greedy algorithm
