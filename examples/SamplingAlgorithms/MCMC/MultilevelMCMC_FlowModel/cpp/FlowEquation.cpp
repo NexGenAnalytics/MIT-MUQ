@@ -266,7 +266,7 @@ Note that $\tilde{k}$ is implicitly contained in the right hand side of this exp
 
 
 ## Implementation
-MUQ implements components of models through the `ModPiece`.  Readers that are not familiar with the `ModPiece` class should consult the [model compoents tutorial](https://mituq.bitbucket.io/source/_site/latest/group__modpieces.html) before proceeding. 
+MUQ implements components of models through the `ModPiece`.  Readers that are not familiar with the `ModPiece` class should consult the [model compoents tutorial](https://nexgenanalytics.github.io/MIT-MUQ/latest/group__modpieces.html) before proceeding. 
 
 To define the adjoint-enabled flow equation solver derived above, we need to override 3 methods in the `ModPiece` base class: the `EvaluateImpl` function, which will solve $\mathbf{A}\mathbf{h}=\mathbf{f}$, the `GradientImpl` function, which will solve $\mathbf{A}p=\mathbf{s}$ and compute the gradient, and finally, the `ApplyHessianImpl` function, which will solve the incremtnal forward and adjoint problems for $\hat{\mathbf{p}}$ and $\hat{\mathbf{h}}$ before returning the Hessian action.  These functions are all contained in the `FlowEquation` class below.
 
@@ -817,7 +817,7 @@ instance of MUQ's `HessianOperator` class, which will internally call the `Apply
 /***
 #### Set up the eigenvalue solver
 We can now set up the eigen solver, compute the decomposition, and extract the eigenvalues and eigenvectors.  For more
-information, see documentation for the [StochasticEigenSolver](https://mituq.bitbucket.io/source/_site/latest/classmuq_1_1Modeling_1_1StochasticEigenSolver.html) class.
+information, see documentation for the [StochasticEigenSolver](https://nexgenanalytics.github.io/MIT-MUQ/latest/classmuq_1_1Modeling_1_1StochasticEigenSolver.html) class.
 */
   boost::property_tree::ptree opts;
   opts.put("NumEigs", numCells); // Maximum number of eigenvalues to compute

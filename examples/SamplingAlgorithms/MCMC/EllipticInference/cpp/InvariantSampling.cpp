@@ -389,7 +389,7 @@ std::shared_ptr<SampleCollection> SampleDILI(std::shared_ptr<ModPiece> const& po
 
 /***
 ## Sample Posterior with pCN
-For comparison with the DILI results, we will use a standard preconditioned Crank-Nicolson proposal.   This method is discretization invariant, but does not leverage the same structure as DILI and has much poorer performance.   Other geometry-aware enhancements of the pCN proposal are also available in MUQ (e.g., [$\infty$-MALA](https://mituq.bitbucket.io/source/_site/latest/classmuq_1_1SamplingAlgorithms_1_1InfMALAProposal.html)), but are not shown in this example.
+For comparison with the DILI results, we will use a standard preconditioned Crank-Nicolson proposal.   This method is discretization invariant, but does not leverage the same structure as DILI and has much poorer performance.   Other geometry-aware enhancements of the pCN proposal are also available in MUQ (e.g., [$\infty$-MALA](https://nexgenanalytics.github.io/MIT-MUQ/latest/classmuq_1_1SamplingAlgorithms_1_1InfMALAProposal.html)), but are not shown in this example.
 
 */
 std::shared_ptr<SampleCollection> SamplePCN(std::shared_ptr<ModPiece> const& posterior, 
