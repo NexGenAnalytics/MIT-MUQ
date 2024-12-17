@@ -16,7 +16,7 @@ int main() {
   pt::ptree options;
 
   options.put("NumInitialSamples", 1000); // number of initial samples for greedy MLMCMC
-  options.put("GreedyTargetVariance", 0.05); // Target estimator variance to be achieved by greedy algorithm
+  options.put("GreedyTargetVariance", 0.0025); // Target estimator variance to be achieved by greedy algorithm
   options.put("verbosity", 1); // show some output
   options.put("MLMCMC.Subsampling_0", 8);
   options.put("MLMCMC.Subsampling_1", 4);
